@@ -1,0 +1,111 @@
+<h1 id="report---verbali">REPORT - VERBALI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Report&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Verbali&quot;.</p>
+<h3>
+    > Report<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Verbali</span>
+</h3>
+<p>Questa pagina permette di visualizzare le informazioni di anagrafica delle stazioni e dei relativi parametri.</p>
+<p><img src="/bobo-help/rep_verbali/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Tabella dei verbali;</li>
+<li>Scheda Nuovo: inserisci un nuovo verbale (vedi &quot;Inserimento nuovo VERBALE&quot;);</li>
+</ul>
+</li>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/rep_verbali/img/[31]_calendar_date.png" alt="31" title="Calendario"></p>
+<p>      a. Data d'inizio;<br>
+      b. Data di fine;<br>
+      c. Pulsante <u>Applica</u>;<br>
+      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+      e. Calendario mese precedente;<br>
+      f. Calendario mese corrente.<br></p>
+</li>
+<li>
+<p>Seleziona <u>Provincia</u>;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei verbali sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella dei verbali;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p>Visualizza dettaglio <img src="/bobo-help/rep_verbali/img/pulsico/visual.png" height="45px" width="45px"></img> : cliccando questo pulsante è possibile aprire la visualizzazione del dettaglio del report:</p>
+<p><img src="/bobo-help/rep_verbali/img/[20]_dettaglio_verbale.png" alt="20" title="Dettaglio verbale"></p>
+</li>
+<li>
+<p>Modifica verbale <img src="/bobo-help/rep_verbali/img/pulsico/modif.png" height="45px" width="45px"></img> : cliccando questo pulsante è possibile modificare il verbale scelto; verrà ricaricato il report e sarà possibile modificarlo: cliccare su &quot;Invia report&quot; nell'ultima pagina per rendere effettive le modifiche.</p>
+</li>
+<li>
+<p>Elimina verbale <img src="/bobo-help/rep_verbali/img/pulsico/elim.png" height="45px" width="45px"></img> : cliccando questo pulsante è possibile eliminare il verbale scelto: verrà visualizzato il seguente messaggio di attenzione:</p>
+<p><img src="/bobo-help/rep_verbali/img/msg_elimina.png" alt="Messaggio - Elimina" title="Messaggio - Elimina"></p>
+<p>Cliccare &quot;Si, elimina&quot; per confermare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserimento-nuovo-verbale">Inserimento nuovo VERBALE</h2>
+<p><img src="/bobo-help/rep_verbali/img/[30]_nuovo_verbale.png" alt="30" title="Home"></p>
+<ol>
+<li>
+<p>Schede della pagina (come sopra);</p>
+</li>
+<li>
+<p>Seleziona <u>Verbalizzante</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Inserire la <u>Data</u> (<span style="color:red">*</span>obbligatorio): verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/rep_verbali/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<p>      a. Mese precedente;<br>
+      b. Mese successivo;<br>
+      c. Anno precedente;<br>
+      d. Anno successivo;<br>
+      e. Scelta del giorno;<br>
+      f. Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br></p>
+</li>
+<li>
+<p>Impostare l'<u>Ora d'inizio</u> della riunione (<span style="color:red">*</span>obbligatorio): di default viene impostata l'ora corrente;</p>
+</li>
+<li>
+<p>Impostare l'<u>Ora di fine</u> della riunione (<span style="color:red">*</span>obbligatorio);</p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+<p><img src="/bobo-help/rep_verbali/img/[61]_ora1.png" alt="61" title="Selezione ora">
+<img src="/bobo-help/rep_verbali/img/[62]_ora2.png" alt="62" title="Selezione minuti"></p>
+</li>
+<li>
+<p>Seleziona <u>Provincia</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Località</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Partecipanti</u>: possibile scelta multipla;</p>
+</li>
+<li>
+<p>Inserire l'<u>Oggetto del verbale</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Inserire il <u>Testo del verbale</u> (<span style="color:red">*</span>obbligatorio);</p>
+<p>Nel campo d'inserimento della descrizione è possibile applicare delle impostazioni per la formattazione del testo, di seguito la spiegazione dei pulsanti disponibili:</p>
+<p><img src="/bobo-help/rep_verbali/img/[31]_descrizione_verbale.png" alt="31" title="Descrizione verbale"></p>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento del nuovo verbale, oppure il pulsante 'Annulla' per ritornare alla scheda 'Report';</p>
+</li>
+</ol>

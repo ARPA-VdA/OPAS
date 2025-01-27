@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!--
+  Copyright (c) 2015-2018 Jean-Marc VIGLINO,
+  released under CeCILL-B (french BSD like) licence: http://www.cecill.info/
+-->
+  <title>ol-ext: Timeline control</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="A control to add timeline on a map." />
+  <meta name="keywords" content="ol, timeline, control, date" />
+
+  <!-- Prevent image error on load with https -->
+	<script>
+		if (location.protocol == 'https:' && !/^localhost/.test(location.host)) {
+      location.href = window.location.href.replace(/^https:/,'http:');
+		}
+	</script>
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    .options {
+      min-width: 18em;
+    }
+    .ol-attribution {
+      bottom: 4.5em;
+    }
+    .ol-timeline {
+      font-size: 2em;
+    }
+    .ol-timeline .ol-feature {
+      text-align: center;
+    }
+    .ol-timeline .ol-scroll {
+      height: 2em;
+    }
+    #select {
+      font-size: .85em;
+      margin: 1em 0;
+    }
+    #select p {
+      margin: 0;
+    }
+    #select .copy {
+      font-size: .9em;
+      color: #396;
+    }
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a href="../../index.html">
+    <h1>ol-ext: Timeline control</h1>
+  </a>
+  <div class="info">
+    <p>
+      The <i>ol/control/Timeline</i> can be used to filter features in a time interval.
+    </p>
+    <ul>
+      <li>
+        Use the <i>interval</i> option or the <i>setInterval()</i> method to set the interval displayed on the timeline.
+      </li>
+      <li>
+        Listen to the <i>scroll</i> event to check the start and end date of the interval.
+      </li>
+    </ul>
+    <p>
+      <a href="./map.control.timeline.html">More info and parameters</a>
+    </p>
+  </div>
+
+  <!-- Map div -->
+  <div id="map" style="width:600px; height:400px;"></div>
+
+  <div class='options'>
+    <p>
+      All events between:
+      <br/>
+      <span class='dateStart'></span> and <span class='dateEnd'></span>.
+    </p>
+    Interval: <select onchange="tline.setInterval($(this).val());">
+      <option value=''>none</option>
+      <option value='30d'>1 month</option>
+      <option value='60d'>2 month</option>
+      <option value='90d' selected='selected'>3 month</option>
+      <option value='.5y'>6 month</option>
+      <option value='1y'>1 year</option>
+    </select>
+    <div id="select"></div>
+  </div>
+  
+  <script type="text/javascript">
+
+  // Two base layers
+  var stamen = new ol.layer.Tile({
+    title: "Watercolor",
+    baseLayer: true,
+    source: new ol.source.Stamen({
+      layer: 'watercolor'
+    })
+  });
+
+  // Style function
+  var cache = {};
+  function style(select){
+    return function(f) {
+      var style = cache[f.get('img')+'-'+select];
+      if (!style) {
+        var img = new ol.style.Photo({
+          src: f.get('img'),
+          radius: select ? 20:15,
+          shadow: true,
+          stroke: new ol.style.Stroke({
+            width: 4,
+            color: select ? '#fff':'#fafafa'
+          }),
+          onload: function() { f.changed(); }
+        })
+        style = cache[f.get('img')+'-'+select] = new ol.style.Style({
+          image: img
+        })
+      }
+      return style;
+    }
+  };
+  
+  // GeoJSON layer with a preview attribute
+  var vectorSource = new ol.source.Vector({
+    url: '../data/fond_guerre.geojson',
+    projection: 'EPSG:3857',
+    format: new ol.format.GeoJSON(),
+		attributions: [ "&copy; <a href='https://data.culture.gouv.fr/explore/dataset/fonds-de-la-guerre-14-18-extrait-de-la-base-memoire'>data.culture.gouv.fr</a>" ]
+  });
+
+  var vector = new ol.layer.Vector({
+    name: '1914-18',
+    source: vectorSource,
+    style: style()
+  });
+
+  // The map
+  var map = new ol.Map ({
+    target: 'map',
+    view: new ol.View ({
+      zoom: 6,
+      center: [173664, 6166327]
+    }),
+    layers: [stamen, vector]
+  });
+
+  // One feature per year
+  var features = [];
+  for (var i=1915; i<1920; i++) {
+    features.push({
+      text: i,
+      date: new Date(i+'/01/01'),
+      endDate: new Date(i+'/12/31')
+    })
+  }
+
+  // Create Timeline control 
+  var tline = new ol.control.Timeline({
+    features: features,
+    interval: '90d',  // 90 days = 3 month interval
+    graduation: 'day', // 'month'
+    minDate: new Date('1914-01-01'),
+    maxDate: new Date('1920-01-01'),
+    getHTML: function(f){ return f.text; },
+    getFeatureDate: function(f){ return f.date; },
+    endFeatureDate: function(f) { return f.endDate }
+  });
+  map.addControl (tline);
+  tline.setDate('1915-06-01');
+
+  // Show features on scroll
+  tline.on('scroll', function(e){
+    // Start and end date
+    $('.dateStart').text(e.dateStart.toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'}));
+    $('.dateEnd').text(e.dateEnd.toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'}));
+    // Filter features visibility
+    vectorSource.getFeatures().forEach(function(f) {
+      var date = new Date(f.get('date'));
+      if (date<e.dateStart || date>e.dateEnd) {
+        f.setStyle([]);
+      } else {
+        f.setStyle();
+      }
+    });
+  });
+
+  // Show feature on select
+  var select = new ol.interaction.Select({ hitTolerance: 5, style: style(true) });
+  map.addInteraction(select);
+  select.on('select', function(e){
+    var f = e.selected[0];
+    if (f) {
+      // Center
+      tline.setDate(f.get('date'));
+      // Show info
+			var info = $("#select").html("");
+			$("<img>").attr('src',f.get("img")).appendTo(info);
+			$("<p>").text(f.get("text")).appendTo(info);
+      $("<p>").text(f.get("commune")+" ("+f.get("region")+" - "
+        + (new Date(f.get("date"))).toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'})
+        + ")").appendTo(info);
+			$("<p>").addClass('copy').html("&copy; "+f.get("copy")+" - "+f.get("author")).appendTo(info);
+		} else {
+      $("#select").html("<p>Select an image.</p>");
+    }
+  });
+
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,1527 @@
+openapi: 3.0.3
+# openapi: 3.1.0
+info:
+  version: "0.0.2"
+  title: OPAS API
+  description: "A REST Web API exposing **OPAS** services and information." # can use Markdown
+  license:
+    name: GNU LICENSE
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+servers:
+  # description: ""
+  - url: https://opas.isprambiente.it/api/v1/
+  #   # description: ""
+  # - url: https://opas.isprambiente.it/api/v2/
+tags:
+  # description: ""
+  - name: Info
+    # description: ""
+  - name: Authorization
+    # description: ""
+  - name: Metadata
+    # description: ""
+  - name: Data
+paths:
+  # Info
+  /:
+    get:
+      summary: "Welcome"
+      tags:
+        - Info
+      responses:
+        "200":
+          description: "OK - A welcoming JSON object"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    description: "WS message"
+                    type: string
+                  client:
+                    description: "Client information"
+                    type: string
+                  version:
+                    description: "Version"
+                    type: string
+        "400":
+          description: "BAD_REQUEST"
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/Error'
+        "401":
+          description: "UNAUTHORIZED"
+  /organization:
+    get:
+      summary: "Get organization info"
+      tags:
+        - Info
+      x-mojo-to:
+        controller: main
+        action: organization
+      responses:
+        "200":
+          description: "OK - JSON object with information about the organization"
+          content:
+            application/json:
+              schema:
+                description: "Organization information"
+                type: object
+                properties:
+                  organization:
+                    $ref: "#/components/schemas/Organization"
+        "400":
+          description: "BAD_REQUEST"
+        "401":
+          description: "UNAUTHORIZED"
+  # Authorization
+  /login:
+    post:
+      summary: "Authentication token request"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+            encoding:
+              email:
+                allowReserved: true
+              password:
+                allowReserved: true
+      tags:
+        - Authorization
+      x-mojo-to:
+        controller: main
+        action: login
+      responses:
+        200:
+          description: "OK - JSON object containing the required JWT token and the correspondent refresh token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  algorithm:
+                    type: string
+                    description: "Algorithm"
+                  exp:
+                    type: integer
+                    description: "Expiration Time"
+                  iat:
+                    type: integer
+                    description: "Issued At"
+                  token:
+                    type: string
+                    description: "HEADER.PAYLOAD.SIGNATURE"
+                  token_type:
+                    type: string
+                    description: "Token type"
+                  refreshToken:
+                    type: string
+                    description: "HEADER.PAYLOAD.SIGNATURE"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+        # default:
+        #   description: error payload
+        #   content:
+        #     application/json:
+        #       schema:
+        #         type: object
+        #         properties:
+        #           data:
+        #             type: object
+        #             items:
+        #               type: object
+  /refresh-token:
+    post:
+      summary: "Refresh authentication token"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  description: "Token to refresh"
+                  type: string
+      tags:
+        - Authorization
+      x-mojo-to:
+        controller: main
+        action: refreshToken
+      responses:
+        200:
+          description: "OK - JSON object containing the refreshed JWT authentication token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: "HEADER.PAYLOAD.SIGNATURE"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /logout:
+    get:
+      summary: Logout
+      security:
+        - BearerAuth: []
+      tags:
+        - Authorization
+      x-mojo-to:
+        controller: main
+        action: logout
+      responses:
+        200:
+          description: Logout message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out
+  # Metadata
+  /dashboard:
+    get:
+      summary: "Main information"
+      security:
+        - BearerAuth: []
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: main
+        action: dashboard
+      responses:
+        200:
+          description: "OK - JSON object with dashboard information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /stations:
+    get:
+      summary: "Get stations information"
+      security:
+        - BearerAuth: []
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: stations
+      responses:
+        200:
+          description: "OK - JSON object with stations metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Station"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /stations/{region_istat_code}:
+    get:
+      summary: "Get station information of a given Italy's region name"
+      description: |
+        Here there is the legend to choose the requested ISTAT code:
+
+        ___01___  _Piemonte_<br>
+        ___02___  _Valle d'Aosta_<br>
+        ___03___  _Lombardia_<br>
+        ___04___  _Trentino Alto Adige_<br>
+        ___05___  _Veneto_<br>
+        ___06___  _Friuli-Venezia Giulia_<br>
+        ___07___  _Liguria_<br>
+        ___08___  _Emilia Romagna_<br>
+        ___09___  _Toscana_<br>
+        ___10___  _Umbria_<br>
+        ___11___  _Marche_<br>
+        ___12___  _Lazio_<br>
+        ___13___  _Abruzzo_<br>
+        ___14___  _Molise_<br>
+        ___15___  _Campania_<br>
+        ___16___  _Puglia_<br>
+        ___17___  _Basilicata_<br>
+        ___18___  _Calabria_<br>
+        ___19___  _Sicilia_<br>
+        ___20___  _Sardegna_
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: region_istat_code
+          schema:
+            $ref: "#/components/schemas/Region"
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: station
+      responses:
+        200:
+          description: "OK - JSON object with requested station metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Station"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /stations/{station_id}:
+    get:
+      summary: "Get station information by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: station
+      responses:
+        200:
+          description: "OK - JSON object with requested station metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  station:
+                    $ref: "#/components/schemas/StationDetail"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /parameters:
+    get:
+      summary: "Get parameters information"
+      security:
+        - BearerAuth: []
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: parameters
+      responses:
+        200:
+          description: "OK - JSON object with parameters metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parameters:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Parameter"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /parameters/{parameter_id}:
+    get:
+      summary: "Get parameter information by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: parameter_id
+          description: "Parameter unique ID; corresponds to the field ___id___ of the previous call ___/parameters___"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: parameter
+      responses:
+        200:
+          description: "OK - JSON object with requested parameter metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parameter:
+                    $ref: "#/components/schemas/Parameter"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /stations-parameters/{station_id}/{parameter_id}:
+    get:
+      summary: "Get parameter information of a given station by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: parameter_id
+          description: "Parameter unique ID; corresponds to the field ___id___ of the previous call ___/parameters___"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: stationParameters
+      responses:
+        200:
+          description: "OK - JSON object with requested station metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  station:
+                    $ref: "#/components/schemas/StationDetail"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /sites:
+    get:
+      summary: "Get sites information"
+      security:
+        - BearerAuth: []
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: sites
+      responses:
+        200:
+          description: "OK - JSON object with sites metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sites:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Site"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /campaigns/{station_id}:
+    get:
+      summary: "Get campaigns information of a given station by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: campaigns
+      responses:
+        200:
+          description: "OK - JSON object with requested campaign metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allocations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Allocation"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /campaigns/{station_id}/{date_time}:
+    get:
+      summary: "Get campaigns information in a given date of a given station by ID"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-01-01T00:00:00)<br>
+            __OR__<br>
+            Unix epoch time (es. 1704067200 -> 01/01/2024 00:00:00)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: campaignsDates
+      responses:
+        200:
+          description: "OK - JSON object with requested campaign metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allocations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Allocation"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  # Data
+  /series:
+    get:
+      summary: "Get all data series"
+      description: __ALERT !!!__<br><br>This API call return a VERY LARGE JSON object -> DO NOT TRY IT to avoid blocking the page.<br>Instead, call it from command-line interface using curl<br><br>`curl -X 'GET' 'https://opas.isprambiente.it/api/series' --Header "Authorization:` `Bearer [YOUR_TOKEN]"`
+      security:
+        - BearerAuth: []
+      tags:
+        - Data
+      x-mojo-to:
+        controller: metadata
+        action: series
+      responses:
+        200:
+          description: "OK - JSON object with data series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  series:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Series"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series/{region_istat_code}:
+    get:
+      summary: "Get all data series of stations located in a given Italy's region"
+      description: |
+        Here there is the legend to choose the requested ISTAT code:
+
+        ___01___  _Piemonte_<br>
+        ___02___  _Valle d'Aosta_<br>
+        ___03___  _Lombardia_<br>
+        ___04___  _Trentino Alto Adige_<br>
+        ___05___  _Veneto_<br>
+        ___06___  _Friuli-Venezia Giulia_<br>
+        ___07___  _Liguria_<br>
+        ___08___  _Emilia Romagna_<br>
+        ___09___  _Toscana_<br>
+        ___10___  _Umbria_<br>
+        ___11___  _Marche_<br>
+        ___12___  _Lazio_<br>
+        ___13___  _Abruzzo_<br>
+        ___14___  _Molise_<br>
+        ___15___  _Campania_<br>
+        ___16___  _Puglia_<br>
+        ___17___  _Basilicata_<br>
+        ___18___  _Calabria_<br>
+        ___19___  _Sicilia_<br>
+        ___20___  _Sardegna_
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: region_istat_code
+          schema:
+            $ref: "#/components/schemas/Region"
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: metadata
+        action: series
+      responses:
+        200:
+          description: "OK - JSON object with data series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  series:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Series"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series/{station_id}:
+    get:
+      summary: "Get all data series of a given station by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: metadata
+        action: series
+      responses:
+        200:
+          description: "OK - JSON object with requested station series"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  series:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Series"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data/{series_id}/{hours}:
+    get:
+      summary: "Get data series by given ID and number of hours"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: hours
+          description: "Number of hours for which data is requested"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: series
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeries"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data/{series_id}/{start_date_time}/{end_date_time}:
+    get:
+      summary: "Get data series by given ID and time period"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: start_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Start date of the period expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+        - in: path
+          name: end_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-29T12:00:00)<br>
+            __OR__<br>
+            End date of the period expressed in Unix epoch time (es. 1711670400 -> 29/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesFrame
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeries"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data-synchro/{series_id}/{last_ie_date_time}:
+    get:
+      summary: "Get last inserted or edited data series by given ID and date time"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: last_ie_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Date time of last inserted/edited data expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesSynchroFrame
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeriesSynchro"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+
+components:
+  schemas:
+    Error:
+      description: "Error information"
+      type: object
+      properties:
+        status:
+          description: "Status"
+          type: string
+        error:
+          description: "Error name"
+          type: string
+        code:
+          description: "Error code"
+          type: integer
+        error_description:
+          description: "Error description"
+          type: string
+    Organization:
+      description: "Organization information"
+      type: object
+      properties:
+        creator_organization:
+          description: "Creator"
+          type: string
+        point_of_contact_organization:
+          description: "Point of contact"
+          type: string
+        conditions_for_access_and_use:
+          description: "Conditions for access and usage"
+          type: string
+        limitations_on_public_access:
+          description: "Limitations on public access"
+          type: string
+    Login:
+      description: "Login information"
+      type: object
+      properties:
+        email:
+          description: "User email address"
+          type: string
+          format: email
+        password:
+          description: "User password"
+          type: string
+          format: password
+      required:
+        - email
+        - password
+    Dashboard:
+      description: "General user information and API usage"
+      type: object
+      properties:
+        message:
+          description: "Message"
+          type: string
+        user.name:
+          description: "User name"
+          type: string
+        user.surname:
+          description: "User surname"
+          type: string
+        requests:
+          $ref: "#/components/schemas/Request"
+        data.quality:
+          description: "Information about data quality codes"
+          type: object
+          properties:
+            "0":
+              description: "Code description"
+              type: string
+            "1":
+              description: "Code description"
+              type: string
+            "-1":
+              description: "Code description"
+              type: string
+    Request:
+      description: "Information about all the requests (public/reserved) available for the logged user"
+      type: object
+      properties:
+        public:
+          description: "List of all public calls available for the logged user"
+          type: object
+          properties:
+            a:
+              description: "Public call"
+              type: string
+            b:
+              description: "Public call"
+              type: string
+            c:
+              description: "Public call"
+              type: string
+        reserved:
+          description: "List of all reserved calls available for the logged user"
+          type: object
+          properties:
+            a:
+              description: "Reserved call"
+              type: string
+            b:
+              description: "Reserved call"
+              type: string
+            c:
+              description: "Reserved call"
+              type: string
+    Region:
+      description: "List of ISTAT codes for the Italy's region"
+      type: string
+      enum:
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
+        - "07"
+        - "08"
+        - "09"
+        - "10"
+        - "11"
+        - "12"
+        - "13"
+        - "14"
+        - "15"
+        - "16"
+        - "17"
+        - "18"
+        - "19"
+        - "20"
+    Station:
+      description: "Station information"
+      type: object
+      properties:
+        id:
+          description: "Station ID"
+          type: integer
+        name:
+          description: "Station name"
+          type: string
+        active:
+          description: "Station status"
+          type: boolean
+        note:
+          description: "Station notes"
+          type: string
+        external_id:
+          description: "Station external ID"
+          type: string
+        startup_date:
+          description: "Station startup date"
+          type: string
+          format: date-time
+        dismiss_date:
+          description: "Station dismiss date"
+          type: string
+          format: date-time
+        media_path:
+          description: "Station media path"
+          type: string
+        region_istat_code:
+          description: "Region ISTAT code"
+          type: string
+        region_name:
+          description: "Region name"
+          type: string
+        locality:
+          description: "Station locality"
+          type: string
+        zone:
+          description: "Station zone"
+          type: string
+        basin:
+          description: "Station basin"
+          type: string
+        community:
+          description: "Station community"
+          type: string
+        north_utm:
+          description: "Station north coordinate in meters"
+          type: number
+        east_utm:
+          description: "Station east coordinate in meters"
+          type: number
+        altitude:
+          description: "Station altitude in meters"
+          type: integer
+        lat_wgs84:
+          description: "Station latitude in degrees"
+          type: number
+        lon_wgs84:
+          description: "Station longitude in degrees"
+          type: number
+        national_code:
+          description: "Station national code"
+          type: string
+        network_type_desc:
+          description: "Station network description"
+          type: string
+        network_type_name:
+          description: "Station network name"
+          type: string
+        roaming_type_desc:
+          description: "Station roaming type"
+          type: string
+        typology_desc:
+          description: "Station typology"
+          type: string
+        measure_type_desc:
+          description: "Station measure type"
+          type: string
+        cadence_type_desc:
+          description: "Station cadence"
+          type: string
+        cadence_type_min:
+          description: "Station cadence minutes"
+          type: integer
+        metadata_note:
+          description: "Station metadata notes"
+          type: string
+        export_id:
+          description: "Station export ID"
+          type: string
+        ws_name:
+          description: "Station name for web service"
+          type: string
+    Parameter:
+      description: "Parameter information"
+      type: object
+      properties:
+        id:
+          description: "Parameter ID"
+          type: integer
+        name:
+          description: "Parameter name"
+          type: string
+        unit:
+          description: "Parameter unit"
+          type: string
+        conversion_factor_curr:
+          description: "Parameter's current conversion factor"
+          type: number
+        conversion_history:
+          description: "History of the various conversion factors for the parameter"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversionFactor"
+        conversion_unit:
+          description: "Parameter conversion unit"
+          type: string
+        offset:
+          description: "Parameter offset"
+          type: integer
+        decimals:
+          description: "Parameter number of decimals"
+          type: integer
+        active:
+          description: "Parameter status"
+          type: boolean
+        note:
+          description: "Parameter note"
+          type: string
+        type_desc:
+          description: "Parameter typology"
+          type: string
+        treatment:
+          description: "Parameter treatment"
+          type: string
+        aggr_hh_enabled:
+          description: "Parameter hourly aggregation status"
+          type: boolean
+        aggr_hh_perc:
+          description: "Parameter hourly aggregation valid data percentage"
+          type: string
+        aggr_dd_enabled:
+          description: "Parameter daily aggregation status"
+          type: boolean
+        aggr_dd_perc:
+          description: "Parameter daily aggregation valid data percentage"
+          type: string
+        aggr_mm_enabled:
+          description: "Parameter monthly aggregation status"
+          type: boolean
+        aggr_mm_perc:
+          description: "Parameter monthly aggregation valid data percentage"
+          type: string
+        aggr_yy_enabled:
+          description: "Parameter yearly aggregation status"
+          type: boolean
+        aggr_yy_perc:
+          description: "Parameter yearly aggregation valid data percentage"
+          type: string
+        info_note:
+          description: "Parameter information notes"
+          type: string
+    ConversionFactor:
+      description: "Detail of the parameter's conversion factor"
+      type: object
+      properties:
+        index:
+          description: "Generic counter"
+          type: integer
+        value:
+          description: "Conversion factor"
+          type: number
+        date_from:
+          description: "Start date of the factor's validity period"
+          type: string
+          format: date
+        date_to:
+          description: "End date of the factor's validity period"
+          type: string
+          format: date
+    StationDetail:
+      description: "Detail of the station"
+      type: object
+      properties:
+        id:
+          description: "Station ID"
+          type: integer
+        name:
+          description: "Station name"
+          type: string
+        external_id:
+          description: "Station external ID"
+          type: string
+        export_id:
+          description: "Station export ID"
+          type: string
+        parameters:
+          description: "Array of the parameters analyzed on the station"
+          type: array
+          items:
+            $ref: "#/components/schemas/StationParamDetail"
+    StationParamDetail:
+      description: "Detail of the parameter on the station"
+      type: object
+      properties:
+        series_id:
+          description: "Data series ID"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        database_id:
+          description: "Parameter ID of the station's datatable"
+          type: integer
+        id:
+          description: "Parameter ID"
+          type: integer
+        external_id:
+          description: "Parameter external ID"
+          type: string
+        export_id1:
+          description: "First parameter export ID"
+          type: string
+        export_id2:
+          description: "Second parameter export ID"
+          type: string
+        name:
+          description: "Parameter name"
+          type: string
+        unit:
+          description: "Parameter unit"
+          type: string
+        conversion_factor_curr:
+          description: "Parameter's current conversion factor"
+          type: number
+        conversion_history:
+          description: "History of the various conversion factors for the parameter"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversionFactor"
+        conversion_unit:
+          description: "Parameter conversion unit"
+          type: string
+        decimals:
+          description: "Parameter number of decimals"
+          type: integer
+        active:
+          description: "Parameter status"
+          type: boolean
+        note:
+          description: "Parameter note"
+          type: string
+    Site:
+      description: "Site information"
+      type: object
+      properties:
+        id:
+          description: "Site ID"
+          type: integer
+        name:
+          description: "Site name"
+          type: string
+        network_names:
+          description: "Site's networks"
+          type: array
+          items:
+            type: string
+        municipality_name:
+          description: "Municipality name"
+          type: string
+        province_name:
+          description: "Province name"
+          type: string
+        region_name:
+          description: "Region name"
+          type: string
+        locality:
+          description: "Site's locality"
+          type: string
+        altitude:
+          description: "Site's altitude"
+          type: integer
+        wgs84_lat:
+          description: "Site's latitude in WGS84 notation"
+          type: number
+        wgs84_lon:
+          description: "Site's longitude in WGS84 notation"
+          type: number
+        note:
+          description: "Site's notes"
+          type: string
+    Allocation:
+      description: "Campaign information"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_override_id:
+          description: "Station override ID"
+          type: integer
+        station_external_id:
+          description: "Station external ID"
+          type: string
+        site_id:
+          description: "Site ID"
+          type: integer
+        site_name:
+          description: "Site name"
+          type: string
+        network_names:
+          description: "Site's networks"
+          type: array
+          items:
+            type: string
+        site_locality:
+          description: "Site's locality"
+          type: string
+        site_altitude:
+          description: "Site's altitude"
+          type: string
+        site_wgs84_lat:
+          description: "Site's latitude in WGS84 notation"
+          type: number
+        site_wgs84_lon:
+          description: "Site's longitude in WGS84 notation"
+          type: number
+        site_note:
+          description: "Site's notes"
+          type: string
+        allocation_startup_date:
+          description: "Campaign's startup date"
+          type: string
+          format: date-time
+        allocation_dismiss_date:
+          description: "Campaign's dismiss date"
+          type: string
+          format: date-time
+        allocation_note:
+          description: "Campaign's notes"
+          type: string
+        campaign_id:
+          description: "Campaign's ID"
+          type: integer
+        campaign_name:
+          description: "Campaign's name"
+          type: string
+    Series:
+      description: "Data series's full object"
+      type: object
+      properties:
+        series_id:
+          description: "Data series ID"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        database_id:
+          description: "Parameter ID of the station's datatable"
+          type: integer
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_external_id:
+          description: "Station external ID"
+          type: string
+        station_name:
+          description: "Station name"
+          type: string
+        station_active:
+          description: "Station status"
+          type: boolean
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter external ID"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_active:
+          description: "Parameter status"
+          type: boolean
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        parameter_conv_curr:
+          description: "Parameter's current conversion factor"
+          type: number
+          format: double
+        parameter_conv_history:
+          description: "History of the various conversion factors for the parameter"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversionFactor"
+        parameter_conv_unit:
+          description: "Parameter conversion unit"
+          type: string
+        parameter_decimals:
+          description: "Parameter number of decimals"
+          type: integer
+        parameter_type_desc:
+          description: "Parameter type description"
+          type: string
+        parameter_note:
+          description: "Parameter notes"
+          type: string
+        station_param_active:
+          description: "Station-parameter association's status"
+          type: boolean
+        station_param_note:
+          description: "Station-parameter association's status"
+          type: string
+        region_istat_code:
+          description: "Region ISTAT code"
+          type: string
+        region_name:
+          description: "Region name"
+          type: string
+    DataSeries:
+      description: "Data series object"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_external_id:
+          description: "Station external ID"
+          type: string
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter external ID"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        series_id:
+          description: "Data series ID"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        series_data:
+          description: "Array of data"
+          type: array
+          items:
+            $ref: "#/components/schemas/Data"
+    DataSeriesSynchro:
+      description: "Data series object"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_external_id:
+          description: "Station external ID"
+          type: string
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter external ID"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        series_id:
+          description: "Data series ID"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        series_data:
+          description: "Array of data"
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSynchro"
+    Data:
+      description: "Data object"
+      type: object
+      properties:
+        measure_date_time:
+          description: "Measure date time"
+          type: string
+          format: date-time
+        measure_id:
+          description: "Measure ID"
+          type: integer
+        measure_value:
+          description: "Measure value"
+          type: number
+        measure_perc:
+          description: "Measure percentage of data"
+          type: number
+        measure_min:
+          description: "Measure minimum data"
+          type: number
+        measure_min_time:
+          description: "Measure minimum data's time of acquisition"
+          type: string
+        measure_max:
+          description: "Measure maximum data"
+          type: number
+        measure_max_time:
+          description: "Measure maximum data's time of acquisition"
+          type: string
+        measure_std_dev:
+          description: "Measure standard deviation"
+          type: number
+        measure_code:
+          description: "Measure code"
+          type: number
+        station_code:
+          description: "Station code"
+          type: number
+        auto_validity_code:
+          description: "Validity code assigned by automatic systems"
+          type: number
+        post_validity_code:
+          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          type: number
+        final_validity_code:
+          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          type: number
+        extract_code:
+          description: "Measure extract code"
+          type: number
+        measure_insert_ts:
+          description: "Measure insert time into the database"
+          type: string
+          format: date-time
+        measure_update_obj:
+          description: "Measure last update time"
+          type: object
+    DataSynchro:
+      description: "Data object"
+      type: object
+      properties:
+        measure_date_time:
+          description: "Measure date time"
+          type: string
+          format: date-time
+        measure_id:
+          description: "Measure ID"
+          type: integer
+        measure_value:
+          description: "Measure value"
+          type: number
+        measure_perc:
+          description: "Measure percentage of data"
+          type: number
+        measure_min:
+          description: "Measure minimum data"
+          type: number
+        measure_min_time:
+          description: "Measure minimum data's time of acquisition"
+          type: string
+        measure_max:
+          description: "Measure maximum data"
+          type: number
+        measure_max_time:
+          description: "Measure maximum data's time of acquisition"
+          type: string
+        measure_std_dev:
+          description: "Measure standard deviation"
+          type: number
+        measure_code:
+          description: "Measure code"
+          type: number
+        station_code:
+          description: "Station code"
+          type: number
+        auto_validity_code:
+          description: "Validity code assigned by automatic systems"
+          type: number
+        post_validity_code:
+          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          type: number
+        final_validity_code:
+          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          type: number
+        extract_code:
+          description: "Measure extract code"
+          type: number
+        measure_insert_ts:
+          description: "Measure insert time into the database"
+          type: string
+          format: date-time
+        measure_update_ts:
+          description: "Measure update time into the database"
+          type: string
+          format: date-time
+        measure_update_obj:
+          description: "Measure last update time"
+          type: object
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,97 @@
+<h1 id="statistiche---indicatori-giornalieri">STATISTICHE - INDICATORI GIORNALIERI</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Statistiche&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Indicatori giornalieri&quot;.</p>
+<h3>
+    > Statistiche<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Indicatori giornalieri</span>
+</h3>
+<p>Sono presenti le seguenti schede:</p>
+<p><img src="/bobo-help/stat_indicatori/img/[10]_schede.png" alt="10" title="Schede"></p>
+<ul>
+<li><u>Calcolo indicatori</u>: è possibile calcolare le statistiche selezionando il giorno e la provincia, in seguito scaricarle in versione PDF;</li>
+<li><u>Provincia/Rete</u>: è possibile visualizzare le statistiche giornaliere selezionando una data dal calendario e filtrando per provincia o rete;</li>
+<li><u>Stazioni</u>: è possibile visualizzare le statistiche giornaliere per una data stazione selezionando il periodo interessato;</li>
+<li><u>Limiti riferimento</u>: vengono visualizzati, per ogni inquinante, i limiti di riferimento con i massimi superamenti annuali previsti.</li>
+</ul>
+<h2 id="calcolo-indicatori">Calcolo indicatori</h2>
+<p><img src="/bobo-help/stat_indicatori/img/[20]_calcolo_indicatori.png" alt="20" title="Calcolo indicatori"></p>
+<ol>
+<li>
+<p><u>Data</u>: verrà visualizzato il seguente form per la selezione della data:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/stat_indicatori/img/[65]_data.png" alt="65" title="Selezione data"></p>
+<p>      a. Mese precedente;</p>
+<p>      b. Mese successivo;</p>
+<p>      c. Anno precedente;</p>
+<p>      d. Anno successivo;</p>
+<p>      e. Scelta del giorno;</p>
+<p>      f. Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);</p>
+</li>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+<p><img src="/bobo-help/stat_indicatori/img/[21]_selez_reti.png" alt="24" title="Seleziona rete"></p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li><u>Calcola STAT.</u> <img src="/bobo-help/stat_indicatori/img/pulsico/calcola_stat.png" height="45px"></img> : cliccando questo pulsante si effettua il calcolo delle statistiche in base al giorno, la rete e la provincia selezionate;</li>
+<li><u>Genera PDF</u> <img src="/bobo-help/stat_indicatori/img/pulsico/genera_pdf.png" height="45px"></img> : una volta calcolate le statistiche, cliccando questo pulsante, è possibile generare il PDF riassuntivo che sarà successivamente a disposizione per il download nella tabella sottostante.</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei PDF sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Filtro di ricerca nella tabella: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei report PDF;</p>
+</li>
+<li>
+<p>Pulsante <u>PDF</u> <img src="/bobo-help/stat_indicatori/img/pulsico/pdf.png" height="35px"></img>: apre la visualizzazione del PDF;</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="provinciarete">Provincia/Rete</h2>
+<p><img src="/bobo-help/stat_indicatori/img/[30]_provincia_rete.png" alt="30" title="Provincia/rete"></p>
+<ol>
+<li><u>Data</u> (come sopra);</li>
+<li>Elenco reti disponibili sul portale;</li>
+<li>Elenco province disponibili sul portale;</li>
+<li>Tabella delle statistiche;</li>
+</ol>
+<h2 id="stazioni">Stazioni</h2>
+<p><img src="/bobo-help/stat_indicatori/img/[40]_stazioni.png" alt="40" title="Stazioni"></p>
+<ol>
+<li>
+<p>Periodo temporale;</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dei dati.</p>
+<p>L'utente ha due possibilità: selezionare il periodo dall'elenco di default presente sulla sinistra (punto &quot;a.&quot;), oppure impostarlo manualmente (nell'elenco di default verrà selezionato automaticamente &quot;Personalizza&quot;). In quest'ultimo caso, è importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/stat_indicatori/img/[000]_new_calendar_date.png" alt="000" title="Calendario"></p>
+<p>      a. Periodi di default;</p>
+<p>      b. Calendario mese precedente;</p>
+<p>      c. Calendario mese corrente;</p>
+<p>      f. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Pulsante <u>Applica</u>;</p>
+</li>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/stat_indicatori/img/[22]_selez_stazioni.png" alt="22" title="Seleziona stazione"></p>
+</li>
+<li>
+<p>Tabella delle statistiche;</p>
+</li>
+</ol>
+<h2 id="limiti-riferimento">Limiti riferimento</h2>
+<p><img src="/bobo-help/stat_indicatori/img/[50]_limiti_rif.png" alt="50" title="Limiti riferimento"></p>

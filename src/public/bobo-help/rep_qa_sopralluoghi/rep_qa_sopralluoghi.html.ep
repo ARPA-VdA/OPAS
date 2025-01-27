@@ -1,0 +1,118 @@
+<h1 id="report---sopralluoghi">REPORT - SOPRALLUOGHI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Report&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Sopralluoghi&quot;.</p>
+<h3>
+    > Report<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Sopralluoghi</span>
+</h3>
+<p>Questa pagina permette di visualizzare, inserire e modificare i report sopralluoghi presenti sul portale.</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>Report</u>: visualizza la tabella dei report;</li>
+<li><u>Nuovo</u>: pagina per l'inserimento di un nuovo report (vedi &quot;Inserisci nuovo SOPRALLUOGO&quot;);</li>
+</ul>
+</li>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[41]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>       a. Valori preimpostati OPPURE personalizzati dall'utente;<br>
+       b. Pulsante per visualizzare il mese precedente;<br>
+       c. Pulsante per visualizzare il mese successivo.<br>
+       d. Calendario mese precedente;<br>
+       e. Calendario mese successivo.<br>
+       f. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+       g. Pulsante <u>Applica</u>;<br></p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei report sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei report: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Data di emissione del report;</li>
+<li>Nome dell'operatore che ha fatto il report;</li>
+<li>Comune;</li>
+<li>Località;</li>
+<li>Nominativi dei partecipanti al sopralluogo;</li>
+<li>Eventuali allegati;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti d'azione:</p>
+<ul>
+<li>
+<p><u>Visualizza</u> <img src="/bobo-help/rep_qa_sopralluoghi/img/pulsico/visualizza.png" height="40px"></img> : viene aperta una nuova scheda della pagina dove verrà visualizzato il dettaglio del report sopralluoghi selezionato;</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[30]_visualizza.png" alt="30" title="Visualizza report"></p>
+</li>
+<li>
+<p><u>Modifica</u> <img src="/bobo-help/rep_qa_sopralluoghi/img/pulsico/modifica.png" height="40px"></img> : si aprirà la scheda di modifica del report (scheda uguale alla scheda di inserimento di un nuovo report, ma effettuerà la modifica)</p>
+</li>
+<li>
+<p><u>Scarica PDF</u> <img src="/bobo-help/rep_qa_sopralluoghi/img/pulsico/scarica-pdf.png" height="40px"></img> : verrà scaricato il PDF del report selezionato;</p>
+</li>
+<li>
+<p><u>Elimina</u> <img src="/bobo-help/rep_qa_sopralluoghi/img/pulsico/elimina.png" height="40px"></img> : elimina il report selezionato;</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-sopralluogo">Inserisci nuovo SOPRALLUOGO</h2>
+<p>Cliccando sulla scheda &quot;Nuovo&quot;, sarà possibile inserire una nuova taratura compilando i vari campi:</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[20]_nuovo_report.png" alt="20" title="Nuovo report"></p>
+<ol>
+<li>
+<p>Schede della pagina (come sopra);</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco comuni;</p>
+</li>
+<li>
+<p>Inserire la località;</p>
+</li>
+<li>
+<p>Data e ora del sopralluogo: verrà visualizzato il seguente form per la selezione della data e dell'ora:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></li>
+</ol>
+<p>Ora:</p>
+<p><img src="/bobo-help/rep_qa_sopralluoghi/img/[61]_ora1.png" alt="61" title="Selezione ora">
+<img src="/bobo-help/rep_qa_sopralluoghi/img/[62]_ora2.png" alt="62" title="Selezione minuti"></p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+</li>
+<li>
+<p>Partecipanti al sopralluogo;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Aggiungi immagini in allegato al report: al click verrà visualizzata la finestra di sistema per scegliere i file;</p>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci report</u> e <u>Annulla</u> : cliccare il pulsante Inserisci report per effettuare l'inserimento del nuovo report', oppure il pulsante Annulla per ritornare alla scheda 'Report';</p>
+</li>
+</ol>

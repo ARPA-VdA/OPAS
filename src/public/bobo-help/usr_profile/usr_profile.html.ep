@@ -1,0 +1,97 @@
+<h1 id="menu-utente---profilo">PROFILO</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sul proprio username posto sopra il menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Profilo&quot;.</p>
+<h3>
+    v 'Utente'<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Profilo</span>
+</h3>
+<p>In questa sezione l'utente può visualizzare le proprie informazioni personali e modificarne alcune di esse, come ad esempio numero di telefono, email oppure la password.</p>
+<h2 id="scheda-%22info%22">Scheda &quot;Info&quot;</h2>
+<p><img src="/bobo-help/usr_profile/img/[61]_profilo_utente_info_adm.png" alt="61" title="Profilo utente"></p>
+<ol>
+<li>
+<p>Visualizzazione avatar, ruolo, indirizzo email e numero di telefono dell'utente;
+L'avatar di default dell'utente è definito in base al ruolo di quest'ultimo:</p>
+<p><img src="/bobo-help/usr_profile/img/[71]_icona_quad.png" height="150px" width="150px"></img> --&gt; Utente semplice
+<img src="/bobo-help/usr_profile/img/[70]_icona_alp.png" height="150px" width="150px"></img> --&gt; Admin</p>
+</li>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>Info</u>: schermata visualizzata in questo momento;</li>
+<li><u>Modifica</u>: modifica dei dati dell'utente;</li>
+<li><u>Password</u>: modifica password;</li>
+</ul>
+</li>
+<li>
+<p>Informazioni principali:</p>
+<ul>
+<li><u>Nome completo</u>;</li>
+<li><u>Email</u>;</li>
+<li><u>Ruolo</u>;</li>
+<li><u>Num. cellulare</u>;</li>
+<li><u>Num. telefono</u>;</li>
+<li><u>Scadenza sessione</u>;</li>
+</ul>
+</li>
+<li>
+<p>A quale azienda è associato l'account dell'utente;</p>
+</li>
+<li>
+<p>Informazioni dell'azienda a cui l'utente è associato:</p>
+<ul>
+<li><u>Logo</u>;</li>
+<li><u>Indirizzo</u>;</li>
+<li><u>N° telefono</u>;</li>
+<li><u>Sito web</u>;</li>
+<li><u>Email</u>;</li>
+<li><u>Descrizione</u>;</li>
+</ul>
+</li>
+</ol>
+<h2 id="scheda-%22modifica%22">Scheda &quot;Modifica&quot;</h2>
+<p>Attraverso questa scheda è possibile apportare modifiche ai dati relativi al proprio profilo utente.
+SI ricorda di prestare attenzione ai campi obbligatori (<span style="color:red">*</span>) e di salvare per rendere effettive le modifiche.</p>
+<p><img src="/bobo-help/usr_profile/img/[81]_profilo_utente_modifica_adm.png" alt="81" title="Modifica utente"></p>
+<ol>
+<li>Campo <u>Nome</u> (<span style="color:red">*</span>obbligatorio);</li>
+<li>Campo <u>Secondo nome</u>;</li>
+<li>Campo <u>Cognome</u> (<span style="color:red">*</span>obbligatorio);</li>
+<li>Campo <u>Ruolo</u>;</li>
+<li>Campo <u>Numero cellulare</u>;</li>
+<li>Campo <u>Numero telefono</u>;</li>
+<li>Campo <u>Email</u> (<span style="color:red">*</span>obbligatorio);</li>
+<li><u>Avatar</u> (vedi &quot;Avatar&quot;);</li>
+<li>Campo <u>Scadenza</u> (<span style="color:red">*</span>obbligatorio): selezionare il periodo di tempo durante il quale rimarrà attiva la sessione del portale (ovvero, per quanto tempo non sarà necessario mettere la password qualora si chiuda il browser);</li>
+<li>Pulsanti <u>Salva</u> e <u>Annulla</u> : cliccare il pulsante Salva per effettuare le modifiche, oppure il pulsante Annulla per ritornare alla scheda 'Info';</li>
+</ol>
+<h3 id="avatar">Avatar</h3>
+<p>È possibile trascinare in questo punto il proprio avatar, un'immagine/foto dal proprio PC.
+Si aprirà la finestra del sistema operativo che permetterà all'utente di selezionare il file che si vuole caricare (L'immagine <u>DEVE NECESSARIAMENTE AVERE</u> una delle seguenti estensioni: .jpg, .jpeg, .png, .gif);</p>
+<p><img src="/bobo-help/usr_profile/img/[84]_win_avatars.png" alt="84" title="Scelta dell'immagine"></p>
+<p>Una volta scelta l'immagine verrà visualizzata nel campo Avatar:</p>
+<p><img src="/bobo-help/usr_profile/img/[83]_avatars.png" alt="83" title="Avatar"></p>
+<p>Infine premere il pulsante <img src="/bobo-help/usr_profile/img/[85]_salva.png" alt="10" title="Salva"> per confermare la modifica:</p>
+<p><img src="/bobo-help/usr_profile/img/[86]_modif_ava.png" alt="86" title="Utente"></p>
+<p>Inoltre, <u>NON È POSSIBILE CARICARE PIÙ DI UN FILE</u> o verrà visualizzato il seguente errore:</p>
+<p><img src="/bobo-help/usr_profile/img/[82]_errore_max_avatars.png" alt="82" title="Errore caricamento"></p>
+<h2 id="scheda-%22password%22">Scheda &quot;Password&quot;</h2>
+<p>Attraverso questa scheda è possibile la propria password di accesso al portale.</p>
+<p><img src="/bobo-help/usr_profile/img/[91]_profilo_utente_pwd_adm.png" alt="91" title="Password"></p>
+<ol>
+<li>
+<p><u>Modifica password</u>;</p>
+</li>
+<li>
+<p>Campo <u>Nuova password</u>;</p>
+</li>
+<li>
+<p>Campo <u>Ripeti password</u>;<br></p>
+<p>I due campi DEVONO COINCIDERE!</p>
+</li>
+<li>
+<p>Cliccare il <u>pulsante Salva</u> per salvare le modifiche;</p>
+</li>
+<li>
+<p>Cliccare il <u>pulsante Annulla</u> per ritornare alla scheda Info;</p>
+</li>
+</ol>

@@ -1,0 +1,7 @@
+{
+  "esversion": 6,
+  "boss": true,
+  "eqnull": true,
+  "shadow": true,
+  "sub": true
+}

@@ -1,0 +1,617 @@
+% layout 'default';
+% title 'Validazione - impostazioni avanzate';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/avanzate/validazione.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist" id="tab-main">
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#groups" role="tab"><i class="ti-panel"></i> Sottogruppi</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#abnormal" role="tab"><i class="icon-layers"></i> Regole per parametro</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#abnormal-st" role="tab"><i class="ti-layers-alt"></i> Regole per stazione</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big">
+
+            <div class="tab-pane p-20 active" id="groups" role="tabpanel">
+                <h4 class="box-title">Pannello di creazione dei <strong>sottogruppi per la validazione</strong></h4>
+                <hr class="m-t-0 m-b-20">
+                <div class="row" id="settings-main">
+                    <div id="settings-tree" class="col-lg-3">
+                        <h5 class="divider-title">Sottogruppi attuali</h5>
+                        <div class="row">
+                            <div class="col-lg-12" id="subgroup-search">
+                                <input type="text" id="input-search" value="" class="form-control">
+                            </div>
+                            <div class="col-lg-12" id="group-json" >
+                            </div>
+                        </div>
+                    </div>
+                    <div id="settings-form" class="col-lg-9">
+                        <h5 class="divider-title">Aggiungi sottogruppo di stazioni</h5>
+                        <form id="subgroup-config" name="subgroup-config" class="form">
+                            <input type="hidden" class="form-control clear-field" id="subgroup-fill" name="subgroup-fill">
+                            <input type="hidden" class="form-control clear-field" id="subgroup-id" name="subgroup-id">
+
+                            <div class="form-group row">
+                                <label for="subgroup-name" class="col-sm-2 col-form-label">Nome sottogruppo</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control clear-field" id="subgroup-name" name="subgroup-name" placeholder="Nome sottogruppo...">
+                                </div>
+                                <label for="subgroup-public" class="col-sm-2 col-form-label">Pubblico</label>
+                                <div class="col-sm-2">
+                                    <label class="switch">
+                                        <input type="checkbox" class="view-pg clear-field" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android" name="subgroup-public" id="subgroup-public">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="subgroup-groups" class="col-sm-2 col-form-label">Gruppi associati</label>
+                                <div class="col-sm-6">
+                                    <select class="custom-select col-12 select2-multiple clear-field" id="subgroup-groups" name="subgroup-groups" multiple="multiple" data-placeholder="Seleziona..." style="width: 100%">
+                                        % foreach my $portal_group (@{$portal_groups_list}){
+                                            <option value="<%=$portal_group->{'gr_id'} %>"><%=$portal_group->{'gr_name'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span class="form-info text-info"><i class="ti-info-alt"></i>  Il sottogruppo pubblico verrà visualizzato da tutti gli utenti del tuo portale. Non sarà necessario associare i gruppi</span>
+                                </div>
+                            </div>
+                            <hr class="m-t-20">
+                            <div class="form-group row">
+                                <div class="col-sm-12">
+                                    <button type="submit" class="btn btn-info btn-sm m-b-15" name="subgroup-btn-add" id="subgroup-btn-add"> <i class="icon-refresh"></i> Genera sottogruppo</button>
+                                    <!-- <button type="button" class="btn btn-inverse" name="subgroup-btn-cancel" id="subgroup-btn-cancel">Annulla</button> -->
+                                </div>
+                            </div>
+                        </form>
+
+                        <form id="subgroup-detail" name="subgroup-detail">
+                            <h5 class="divider-title">Aggiungi stazioni e pannelli visualizer</h5>
+
+                            <div class="form-group row" id="edit-params">
+                                <div class="col-lg-6 col-stat">
+                                    <label for="select-stations">Seleziona le <strong>stazioni del sottogruppo</strong></label>
+                                    <div class="form-group row">
+                                        <!-- <label for="networks" class="col-sm-2 col-form-label">Reti</label> -->
+                                        <div class="col-lg-6">
+                                            <select class="custom-select col-12 select2-multiple clear-field" id="networks" name="networks" multiple="multiple" data-placeholder="Seleziona rete..." style="width: 100%">
+                                                % foreach my $network (@{$networks}){
+                                                    <option value="<%=$network->{'st_network_id'} %>"><%=$network->{'st_network_name'} %></option>
+                                                % }
+                                            </select>
+                                        </div>
+                                        <!-- <label for="provinces" class="col-sm-2 col-form-label">Provincia</label> -->
+                                        <div class="col-lg-6">
+                                            <select class="custom-select col-12" id="provinces" name="provinces">
+                                                <option value="-1">Seleziona provincia...</option>
+                                                % my $region = '';
+                                                % foreach my $province (@{$provinces}){
+                                                    % if ($region eq ''){
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }else{
+                                                        % if ($region eq $province->{'region_id'}){
+                                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                        % } else {
+                                                            </optgroup>
+                                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                        % }
+                                                    % }
+                                                    % $region = $province->{'region_id'};
+                                                % }
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="multiselect" data-id="stat">
+                                        <select multiple="multiple" id="subgroup-stat" name="subgroup-stat[]" class="clear-field">
+                                        </select>
+                                    </div> -->
+                                    <div class="form-group row multi-sel-group">
+                                        <div class="col-sm-5">
+                                            <select name="from[]" id="multiselect1" class="form-control multi-style" size="15" multiple="multiple">
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-2 m-t-45">
+                                            <button type="button" id="multiselect1_rightAll" class="btn btn-block"><i class="fa fa-angle-double-right"></i></button>
+                                            <button type="button" id="multiselect1_rightSelected" class="btn btn-block"><i class="fa fa-angle-right"></i></button>
+                                            <button type="button" id="multiselect1_leftSelected" class="btn btn-block"><i class="fa fa-angle-left"></i></button>
+                                            <button type="button" id="multiselect1_leftAll" class="btn btn-block"><i class="fa fa-angle-double-left"></i></button>
+                                        </div>
+
+                                        <div class="col-sm-5">
+                                            <select name="subgroup-stat[]" id="subgroup-stat" class="form-control multi-style" size="15" multiple="multiple"></select>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <button type="button" id="multiselect1_move_up" class="btn btn-block"><i class="fa fa-angle-up"></i></button>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <button type="button" id="multiselect1_move_down" class="btn btn-block"><i class="fa fa-angle-down"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-vis">
+                                    <label for="subgroup-vis[]" class="pt-45">Seleziona <strong>pannelli visualizer</strong></label>
+                                    <!-- <div class="multiselect" data-id="vis">
+                                        <select multiple="multiple" id="subgroup-vis" name="subgroup-vis[]" class="clear-field">
+                                            % foreach my $panel (@{$panels}){
+                                            <option value="<%=$panel->{'page_id'} %>"><%=$panel->{'page_name'} %></option>
+                                            % }
+
+                                        </select>
+                                    </div> -->
+                                    <div class="form-group row multi-sel-group">
+                                        <div class="col-sm-5">
+                                            <select name="from[]" id="multiselect2" class="form-control multi-style" size="20" multiple="multiple">
+                                                % my $category = '';
+                                                % foreach my $panel (@{$panels}){
+                                                    % if ($category eq ''){
+                                                        <optgroup label="<%= $panel->{'category_name'} %>">
+                                                        <option value="<%=$panel->{'page_id'} %>"><%=$panel->{'page_name'} %></option>
+                                                    % }else{
+                                                        % if ($category eq $panel->{'category_name'}){
+                                                            <option value="<%=$panel->{'page_id'} %>"><%=$panel->{'page_name'} %></option>
+                                                        % } else {
+                                                            </optgroup>
+                                                            <optgroup label="<%= $panel->{'category_name'} %>">
+                                                            <option value="<%=$panel->{'page_id'} %>"><%=$panel->{'page_name'} %></option>
+                                                        % }
+                                                    % }
+                                                    % $category = $panel->{'category_name'};
+                                                % }
+                                                </optgroup>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-2 m-t-45">
+                                            <button type="button" id="multiselect2_rightAll" class="btn btn-block"><i class="fa fa-angle-double-right"></i></button>
+                                            <button type="button" id="multiselect2_rightSelected" class="btn btn-block"><i class="fa fa-angle-right"></i></button>
+                                            <button type="button" id="multiselect2_leftSelected" class="btn btn-block"><i class="fa fa-angle-left"></i></button>
+                                            <button type="button" id="multiselect2_leftAll" class="btn btn-block"><i class="fa fa-angle-double-left"></i></button>
+                                        </div>
+
+                                        <div class="col-sm-5">
+                                            <select name="subgroup-vis[]" id="subgroup-vis" class="form-control multi-style" size="21" multiple="multiple"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                        <div id="subgroup-save" class="saving-page">
+                            <button type="button" class="btn btn-success" name="subgroup-add" id="subgroup-add"> <i class="icon-magic-wand"></i> Salva sottogruppo</button>
+                            <button type="button" class="btn btn-inverse" name="subgroup-cancel" id="subgroup-cancel">Annulla</button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-pane p-20" id="abnormal" role="tabpanel">
+
+                <div class="last-reporting m-b-30" id="view-data-abnormal">
+                    <h4 class="box-title m-b-5">Dati considerati sospetti/errati <strong>per parametro</strong></h4>
+                    <h6 class="subttl-top">Visualizza <code>le impostazioni dei parametri</code> da considerare sospetti/errati nel periodo di tempo impostato</h6>
+                    <hr class="m-t-0 m-b-20">
+                    <h3 class="period-title-top m-b-5 p-t-5 clear-view" id="view-param">pluviometro <small>( La Thuile - La Grande Tête )</small></h3>
+                    <h5 class="period-title p-b-5">dal <strong id="view-date-from" class="clear-view">15°</strong> al <strong id="view-date-to" class="clear-view">60°</strong> giorno dell'anno (Julian Days)</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="abnormal-data-container">
+                                <div class="third c1 text-danger">Dato errato</div>
+                                <div class="third c2 text-info">Dato sospetto</div>
+                                <div class="third c3">Dato valido</div>
+                                <div class="third c4 text-info">Dato sospetto</div>
+                                <div class="third c5 text-danger">Dato errato</div>
+
+                                <div class="first a1"></div>
+                                <div class="first a2"></div>
+                                <div class="first a3"></div>
+                                <div class="first a4"></div>
+                                <div class="first a5"></div>
+
+                                <div class="second b1 text-danger clear-view" id="view-data-error-min">-300.22<br /><small>mm</small></div>
+                                <div class="second b2 text-info clear-view" id="view-data-susp-min">-100.54<br /><small>mm</small></div>
+                                <div class="second b3"></div>
+                                <div class="second b4 text-info clear-view" id="view-data-susp-max">100.23<br /><small>mm</small></div>
+                                <div class="second b5 text-danger clear-view" id="view-data-error-max">300.30<br /><small>mm</small></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6">
+                            <div class="abnormal-data-gap">
+                                <div class="a1"></div>
+                                <div class="a2"></div>
+                                <div class="a3 text-danger clear-view" id="view-gap-error">34.45</div>
+                                <div class="a4"></div>
+
+                                <div class="b1"></div>
+                                <div class="b2 text-info clear-view" id="view-gap-susp">103.88</div>
+                                <div class="b3"></div>
+
+                                <div class="c1 text-info">Scalino sospetto<br><small class="clear-view view-gap-unit">(mm)</small></div>
+                                <div class="c2 text-danger">Scalino errato<br><small class="clear-view view-gap-unit">(mm)</small></div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="abnormal-data-segment">
+                                <div class="first a1"></div>
+                                <div class="first a2"></div>
+                                <div class="first a3"></div>
+                                <div class="first a4"></div>
+                                <div class="first a5"></div>
+                                <div class="first a6"></div>
+                                <div class="first a7"></div>
+                                <div class="first a8"></div>
+                                <div class="first a9"></div>
+                                <div class="first a10"></div>
+                                <div class="first a11"></div>
+                                <div class="first a12"></div>
+
+                                <div class="second b1">Persistenza sospetta<br><small>(n° dati uguali)</small></div>
+                                <div class="second b2 clear-view" id="view-pers-susp">221.20</div>
+                                <div class="second b3"></div>
+
+                                <div class="third c1">Persistenza errata<br><small>(n° dati uguali)</small></div>
+                                <div class="third c2 clear-view" id="view-pers-error">305.11</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-danger" name="reporting-save" id="view-data-close"> <i class="icon-close"></i> CHIUDI</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="last-reporting editing-abn m-b-30" id="edit-data-abnormal">
+                    <h4 class="box-title m-b-5">Dati considerati sospetti/errati <strong> per parametro</strong></h4>
+                    <h6 class="subttl-top">Inserisci o modifica <code>le impostazioni per parametro</code> da considerare sospetti/errati nel periodo di tempo impostato</h6>
+                    <hr class="m-t-0 m-b-20">
+                    <form class="form" id="new-parameter-abn">
+                        <input type="hidden" name="abn-plid" id="abn-plid" class="clear-edit" value="">
+                        <h3 class="period-title-top m-b-10 p-t-5">
+                            <small>
+                                Reti:
+                                <span id="select2-inline-cont">
+                                    <select name="abn-net" id="abn-net" class="custom-select col-12 select2-multiple" multiple="multiple" data-placeholder="Seleziona...">
+                                        % foreach my $network (@{$networks}){
+                                        <option value="<%= $network->{st_network_id} %>"><%= $network->{st_network_desc} %></option>
+                                        % }
+                                    </select>
+                                </span>
+                            </small>
+                            <br>
+                            Parametro:
+                            <select name="abn-param" id="abn-param" class="clear-edit" >
+                                <option value="-1">Seleziona...</option>
+                                % foreach my $param (@{$params}){
+                                <option value="<%= $param->{parameter_id} %>" data-unit="<%= $param->{parameter_unit} %>"><%= $param->{parameter_name} %></option>
+                                % }
+                            </select>
+                        </h3>
+                        <h5 class="period-title p-b-5">dal <input type="number" name="abn-date-from" id="abn-date-from" placeholder="GG N°" class="clear-edit" /> al <input type="number" class="clear-edit" name="abn-date-to" id="abn-date-to" placeholder="GG N°" /> giorno dell'anno (Julian Days)</h5>
+                        <!-- <input type="hidden" id="reporting-id" name="reporting-id" value="">
+                        <div class="row m-b-10">
+                            <div class="col-md-12">
+                                <textarea class="form-control" id="reporting-text" name="reporting-text" rows="6"></textarea>
+                            </div>
+                        </div> -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="abnormal-data-container">
+                                    <div class="third c1 text-danger">Dato errato</div>
+                                    <div class="third c2 text-info">Dato sospetto</div>
+                                    <div class="third c3">Dato valido</div>
+                                    <div class="third c4 text-info">Dato sospetto</div>
+                                    <div class="third c5 text-danger">Dato errato</div>
+
+                                    <div class="first a1"></div>
+                                    <div class="first a2"></div>
+                                    <div class="first a3"></div>
+                                    <div class="first a4"></div>
+                                    <div class="first a5"></div>
+
+                                    <div class="second b1 text-danger"><input type="text" name="abn-error-min" id="abn-error-min" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b2 text-info"><input type="text" name="abn-susp-min" id="abn-susp-min" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b3"></div>
+                                    <div class="second b4 text-info"><input type="text" name="abn-susp-max" id="abn-susp-max" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b5 text-danger"><input type="text" name="abn-error-max" id="abn-error-max" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="abnormal-data-gap">
+                                    <div class="a1"></div>
+                                    <div class="a2"></div>
+                                    <div class="a3 text-danger"><input type="text" name="abn-gap-error" id="abn-gap-error" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="a4"></div>
+
+                                    <div class="b1"></div>
+                                    <div class="b2 text-info"><input type="text" name="abn-gap-susp" id="abn-gap-susp" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="b3"></div>
+
+                                    <div class="c1 text-info">Scalino sospetto<br><small class="clear-edit-label">(mm)</small></div>
+                                    <div class="c2 text-danger">Scalino errato<br><small class="clear-edit-label">(mm)</small></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="abnormal-data-segment">
+                                    <div class="first a1"></div>
+                                    <div class="first a2"></div>
+                                    <div class="first a3"></div>
+                                    <div class="first a4"></div>
+                                    <div class="first a5"></div>
+                                    <div class="first a6"></div>
+                                    <div class="first a7"></div>
+                                    <div class="first a8"></div>
+                                    <div class="first a9"></div>
+                                    <div class="first a10"></div>
+                                    <div class="first a11"></div>
+                                    <div class="first a12"></div>
+
+                                    <div class="second b1">Persistenza sospetta<br><small>(n° dati uguali)</small></div>
+                                    <div class="second b2"><input type="number" name="abn-pers-susp" id="abn-pers-susp" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="second b3"></div>
+
+                                    <div class="third c1">Persistenza errata<br><small>(n° dati uguali)</small></div>
+                                    <div class="third c2"><input type="number" name="abn-pers-error" id="abn-pers-error" placeholder="DAL N°" class="clear-edit" /></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-danger" name="abn-save" id="abn-save"> <i class="ti-save"></i> Salva</button>
+                                <button type="button" class="btn btn-inverse" name="abn-cancel" id="abn-cancel">Annulla</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <h4 class="box-title">
+                    Gestione degli eventuali <strong>dati sospetti/errati per parametro</strong>
+                    <button type="button" class="btn btn-info float-right" name="new-abnormal" id="new-abnormal"> <i class="icon-globe"></i> Nuovo</button>
+                </h4>
+                <hr class="m-t-0 m-b-20">
+                <table class="table table-striped tbl-abnormal tbl-commands text-center" id="abnormal-data-table" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="bobo-nowrap"></th>
+                            <th class="text-left">Reti</th>
+                            <th class="text-left">Parametro</th>
+                            <th>Dal <small>(Julian&nbsp;Day)</small></th>
+                            <th>Al <small>(Julian&nbsp;Day)</small></th>
+                            <th>Min sospetto</th>
+                            <th>Max sospetto</th>
+                            <th>Min errore</th>
+                            <th>Max errore</th>
+                            <th>Scalino sospetto</th>
+                            <th>Scalino errore</th>
+                            <th>Persist. sospetta</th>
+                            <th>Persist. Errore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane p-20" id="abnormal-st" role="tabpanel">
+
+                <div class="last-reporting m-b-30" id="station-view-data-abnormal">
+                    <h4 class="box-title m-b-5">Dati considerati <strong>sospetti/errati per parametro</strong> - REGOLE PER STAZIONE</h4>
+                    <h6 class="subttl-top">Visualizza <code>le impostazioni dei parametri per stazione</code> da considerare sospetti/errati nel periodo di tempo impostato</h6>
+                    <hr class="m-t-0 m-b-20">
+                    <h3 class="period-title-top m-b-5 p-t-5 clear-view" id="station-view-param">pluviometro <small>( La Thuile - La Grande Tête )</small></h3>
+                    <h5 class="period-title p-b-5">dal <strong id="station-view-date-from" class="clear-view">15°</strong> al <strong id="station-view-date-to" class="clear-view">60°</strong> giorno dell'anno (Julian Days)</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="abnormal-data-container">
+                                <div class="third c1 text-danger">Dato errato</div>
+                                <div class="third c2 text-info">Dato sospetto</div>
+                                <div class="third c3">Dato valido</div>
+                                <div class="third c4 text-info">Dato sospetto</div>
+                                <div class="third c5 text-danger">Dato errato</div>
+
+                                <div class="first a1"></div>
+                                <div class="first a2"></div>
+                                <div class="first a3"></div>
+                                <div class="first a4"></div>
+                                <div class="first a5"></div>
+
+                                <div class="second b1 text-danger clear-view" id="station-view-data-error-min">-300.22<br /><small>mm</small></div>
+                                <div class="second b2 text-info clear-view" id="station-view-data-susp-min">-100.54<br /><small>mm</small></div>
+                                <div class="second b3"></div>
+                                <div class="second b4 text-info clear-view" id="station-view-data-susp-max">100.23<br /><small>mm</small></div>
+                                <div class="second b5 text-danger clear-view" id="station-view-data-error-max">300.30<br /><small>mm</small></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6">
+                            <div class="abnormal-data-gap">
+                                <div class="a1"></div>
+                                <div class="a2"></div>
+                                <div class="a3 text-danger clear-view" id="station-view-gap-error">34.45</div>
+                                <div class="a4"></div>
+
+                                <div class="b1"></div>
+                                <div class="b2 text-info clear-view" id="station-view-gap-susp">103.88</div>
+                                <div class="b3"></div>
+
+                                <div class="c1 text-info">Scalino sospetto<br><small class="station-view-gap-unit">(mm)</small></div>
+                                <div class="c2 text-danger">Scalino errato<br><small class="station-view-gap-unit">(mm)</small></div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="abnormal-data-segment">
+                                <div class="first a1"></div>
+                                <div class="first a2"></div>
+                                <div class="first a3"></div>
+                                <div class="first a4"></div>
+                                <div class="first a5"></div>
+                                <div class="first a6"></div>
+                                <div class="first a7"></div>
+                                <div class="first a8"></div>
+                                <div class="first a9"></div>
+                                <div class="first a10"></div>
+                                <div class="first a11"></div>
+                                <div class="first a12"></div>
+
+                                <div class="second b1">Persistenza sospetta<br><small>(n° dati uguali)</small></div>
+                                <div class="second b2 clear-view" id="station-view-pers-susp">221.20</div>
+                                <div class="second b3"></div>
+
+                                <div class="third c1">Persistenza errata<br><small>(n° dati uguali)</small></div>
+                                <div class="third c2 clear-view" id="station-view-pers-error">305.11</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-danger" name="reporting-save" id="station-view-data-close"> <i class="icon-close"></i> CHIUDI</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="last-reporting editing-abn m-b-30" id="station-edit-data-abnormal">
+                    <h4 class="box-title m-b-5">Dati considerati <strong>sospetti/errati per parametro - REGOLE PER STAZIONE</strong></h4>
+                    <h6 class="subttl-top">Inserisci o modifica <code>le impostazioni dei parametri per stazione</code> da considerare sospetti/errati nel periodo di tempo impostato</h6>
+                    <hr class="m-t-0 m-b-20">
+                    <form class="form" id="station-new-parameter-abn">
+                        <input type="hidden" name="abn-plid" id="station-abn-plid" class="clear-edit" value="">
+                        <h3 class="period-title-top m-b-10 p-t-5">
+                            <small>
+                                Stazione:
+                                <span id="select2-inline-cont">
+                                    <select name="abn-st" id="station-abn-st" class="clear-edit" >
+                                        <option value="-1">Seleziona...</option>
+                                    </select>
+                                </span>
+                            </small>
+                            - Parametro:
+                            <select name="abn-param" id="station-abn-param" class="clear-edit" >
+                                <option value="-1">Seleziona...</option>
+                            </select>
+
+                        </h3>
+                        <h5 class="period-title p-b-5">dal <input type="number" name="abn-date-from" id="station-abn-date-from" placeholder="GG N°" class="clear-edit" /> al <input type="number" class="clear-edit" name="abn-date-to" id="station-abn-date-to" placeholder="GG N°" /> giorno dell'anno (Julian Days)</h5>
+                        <!-- <input type="hidden" id="reporting-id" name="reporting-id" value=""> -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="abnormal-data-container">
+                                    <div class="third c1 text-danger">Dato errato</div>
+                                    <div class="third c2 text-info">Dato sospetto</div>
+                                    <div class="third c3">Dato valido</div>
+                                    <div class="third c4 text-info">Dato sospetto</div>
+                                    <div class="third c5 text-danger">Dato errato</div>
+
+                                    <div class="first a1"></div>
+                                    <div class="first a2"></div>
+                                    <div class="first a3"></div>
+                                    <div class="first a4"></div>
+                                    <div class="first a5"></div>
+
+                                    <div class="second b1 text-danger"><input type="text" name="abn-error-min" id="station-abn-error-min" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b2 text-info"><input type="text" name="abn-susp-min" id="station-abn-susp-min" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b3"></div>
+                                    <div class="second b4 text-info"><input type="text" name="abn-susp-max" id="station-abn-susp-max" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                    <div class="second b5 text-danger"><input type="text" name="abn-error-max" id="station-abn-error-max" placeholder="DAL N°" class="clear-edit" /><br /><small class="clear-edit-label">mm</small></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="abnormal-data-gap">
+                                    <div class="a1"></div>
+                                    <div class="a2"></div>
+                                    <div class="a3 text-danger"><input type="text" name="abn-gap-error" id="station-abn-gap-error" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="a4"></div>
+
+                                    <div class="b1"></div>
+                                    <div class="b2 text-info"><input type="text" name="abn-gap-susp" id="station-abn-gap-susp" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="b3"></div>
+
+                                    <div class="c1 text-info">Scalino sospetto<br><small class="clear-edit-label">(mm)</small></div>
+                                    <div class="c2 text-danger">Scalino errato<br><small class="clear-edit-label">(mm)</small></div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="abnormal-data-segment">
+                                    <div class="first a1"></div>
+                                    <div class="first a2"></div>
+                                    <div class="first a3"></div>
+                                    <div class="first a4"></div>
+                                    <div class="first a5"></div>
+                                    <div class="first a6"></div>
+                                    <div class="first a7"></div>
+                                    <div class="first a8"></div>
+                                    <div class="first a9"></div>
+                                    <div class="first a10"></div>
+                                    <div class="first a11"></div>
+                                    <div class="first a12"></div>
+
+                                    <div class="second b1">Persistenza sospetta<br><small>(n° dati uguali)</small></div>
+                                    <div class="second b2"><input type="number" name="abn-pers-susp" id="station-abn-pers-susp" placeholder="DAL N°" class="clear-edit" /></div>
+                                    <div class="second b3"></div>
+
+                                    <div class="third c1">Persistenza errata<br><small>(n° dati uguali)</small></div>
+                                    <div class="third c2"><input type="number" name="abn-pers-error" id="station-abn-pers-error" placeholder="DAL N°" class="clear-edit" /></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-danger" name="abn-save" id="station-abn-save"> <i class="ti-save"></i> Salva</button>
+                                <button type="button" class="btn btn-inverse" name="abn-cancel" id="station-abn-cancel">Annulla</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <h4 class="box-title">
+                    Gestione degli eventuali <strong>dati sospetti/errati per parametro - REGOLE PER STAZIONE</strong>
+                    <button type="button" class="btn btn-info float-right" name="new-abnormal" id="station-new-abnormal"> <i class="icon-globe"></i> Nuovo</button>
+                </h4>
+                <hr class="m-t-0 m-b-20">
+                <table class="table table-striped tbl-abnormal tbl-commands text-center" id="station-abnormal-data-table" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="bobo-nowrap"></th>
+                            <th class="text-left">Stazione</th>
+                            <th class="text-left">Parametro</th>
+                            <th>Dal <small>(Julian&nbsp;Day)</small></th>
+                            <th>Al <small>(Julian&nbsp;Day)</small></th>
+                            <th>Min sospetto</th>
+                            <th>Max sospetto</th>
+                            <th>Min errore</th>
+                            <th>Max errore</th>
+                            <th>Scalino sospetto</th>
+                            <th>Scalino errore</th>
+                            <th>Persist. sospetta</th>
+                            <th>Persist. Errore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>

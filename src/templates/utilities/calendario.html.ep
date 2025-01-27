@@ -1,0 +1,95 @@
+% layout 'default';
+% title 'Calendario delle attività';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utilities/calendario.js'))%>" type="text/javascript"></script>
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Calendario delle attività</h4>
+                        <h6 class="card-subtitle">Visualizza su calendario le attività da svolgere o già effettuate sulla tua rete. Potrai vederli suddivisi nelle singole giornate.</h6>
+                        <!-- <h4 class="title-generic-green m-t-20">Legenda degli interventi</h4> -->
+                        <!-- <hr class="m-t-0 m-b-20"> -->
+                        <!-- <div class="row m-b-20">
+                            <div class="col-sm-4" id="legend-programmati">
+                                <div class="legend-cal btn-block btn-sm btn-info">Programmati</div>
+                            </div>
+                            <div class="col-sm-4" id="legend-correttivi">
+                                <div class="legend-cal btn-block btn-sm btn-primary">Correttivi</div>
+                            </div>
+                            <div class="col-sm-4" id="legend-altri">
+                                <div class="legend-cal btn-block btn-sm btn-success">Altri</div>
+                            </div>
+                        </div> -->
+                        <div id="planning-calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DETTAGLIO TICKET -->
+<div class="modal fade" id="full-ticket" tabindex="-1" role="dialog" aria-labelledby="ticket-detail" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content content-calendar">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link text-danger" data-dismiss="modal" id="changestatus-cancel"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL DETTAGLIO TARATURA AUTOMATICA -->
+<div class="modal fade" id="full-auto-calib" tabindex="-1" role="dialog" aria-labelledby="auto-calib-detail" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary" id="title-calib-auto">Tarature del <strong></strong></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-4" id="events-list">
+                        <h4 class="box-title text-info">Seleziona una <strong>taratura...</strong></h4>
+
+                        <table id="daily-table" class="display table-compressed responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th>Ora</th>
+                                    <th>Stazione</th>
+                                    <th>Param.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-8" id="events-chart">
+                        <h4 class="box-title text-info">Taratura <strong></strong> delle ore <strong></strong></h4>
+                        <div id="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link text-danger" data-dismiss="modal" id="changestatus-cancel"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>

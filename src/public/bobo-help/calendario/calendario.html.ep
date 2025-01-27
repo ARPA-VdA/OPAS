@@ -1,0 +1,44 @@
+<h1 id="calendario">CALENDARIO</h1>
+<br>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce "Calendario" posta nel menu principale di sinistra.</p>
+<h3>
+    > <span style="color:red">Calendario</span>
+</h3>
+<p>Verrà visualizzata la seguente schermata:</p>
+<p><img src="/bobo-help/calendario/img/[10]_calendario.png" alt="10" title="Calendario"></p>
+<ol>
+<li>Pulsante &quot;<u>Oggi</u>&quot;: ritorna alla pagina del calendario del giorno corrente;</li>
+<li>Pulsante &quot;<u>Avanti/Indietro</u>&quot;: scorrere avanti o indietro tra i mesi dell'anno selezionato;</li>
+<li>Pulsante &quot;<u>Anni</u>&quot;: scorrere avanti o indietro tra gli anni visualizzati;</li>
+<li>Calendario delle attività (il giorno corrente è colorato di giallo);</li>
+</ol>
+<p>In questa pagina è possibile visualizzare su calendario le attività da svolgere o già effettuate sulla propria rete di appartenenza. Se nello stesso giorno sono presenti molteplici attività dello stesso tipo, verrà riportato il numero totale di esse a fianco della tipologia (ad esempio: 30 tarature automatiche).</p>
+<p>Cliccando su una attività, verrà visualizzato un popup contenente le informazioni relative a quella selezionata.</p>
+<p><img src="/bobo-help/calendario/img/[20]_day.png" alt="20" title="Dettaglio calendario"></p>
+<p>Le possibili attività sono:</p>
+<h3 id="report-manutenzione">Report MANUTENZIONE</h3>
+<p><img src="/bobo-help/calendario/img/[21]_rep_man.png" alt="" title="Report manutenzione"></p>
+<h3 id="report-tarature">Report TARATURE</h3>
+<p><img src="/bobo-help/calendario/img/[22]_rep_tar.png" alt="" title="Report tarature"></p>
+<h3 id="tarature-automatiche">Tarature AUTOMATICHE</h3>
+<p><img src="/bobo-help/calendario/img/[24]_tar_auto.png" alt="" title="Tarature automatiche"></p>
+<ol>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei dati;</p>
+</li>
+<li>
+<p>Cliccando sul pulsante &quot;Visualizza grafico&quot; <img src="/bobo-help/calendario/img/[100]_graph_icon.png" width="45px" height="40px"></img> verrà visualizzato il grafico del parametro selezionato:</p>
+<p><img src="/bobo-help/calendario/img/[24]_visual_grafico.png" alt="" title="Tarature automatiche"></p>
+<p>Inoltre, è possibile scaricare il grafico in formato JPEG, oppure i dati della taratura in formato CSV, cliccando sul pulsante <img src="/bobo-help/calendario/img/[101]_graph_icon_2.png" width="40px" height="40px"></img> e selezionando il formato desiderato.</p>
+</li>
+<li>
+<p>Esplorazione delle pagine della tabella;</p>
+</li>
+</ol>
+<h3 id="ticket-generale--evolutivo--correttivo">Ticket GENERALE / EVOLUTIVO / CORRETTIVO</h3>
+<p><img src="/bobo-help/calendario/img/[30]_tick_chiuso.png" alt="" title="Ticket chiuso"></p>
+<h3 id="ticket-programmato">Ticket PROGRAMMATO</h3>
+<p><img src="/bobo-help/calendario/img/[23]_tick_progr.png" alt="" title="Ticket programmato"></p>

@@ -1,0 +1,87 @@
+%------------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+%
+%   Script Name : preamble.tex
+%        Author : Ecometer s.n.c.
+%          Date : 2024-09-30
+%   Description : LaTeX preamble file
+%
+%------------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------
+% DOCUMENT CLASS
+%------------------------------------------------------------------------------
+\documentclass[a4paper,10pt]{scrartcl} % article (KOMA-Script)
+
+%------------------------------------------------------------------------------
+% FONT
+%------------------------------------------------------------------------------
+%% font 'Roboto Light'
+\usepackage[sfdefault,light]{roboto}
+\usepackage[T1]{fontenc}
+
+%------------------------------------------------------------------------------
+% PACKAGES
+%------------------------------------------------------------------------------
+\usepackage[utf8]{inputenc} % encoding used in input file if it is not ascii
+\usepackage[italian]{babel} % convenzioni tipografiche italiane
+\usepackage[left=1cm, right=1cm, top=0.5cm, bottom=3.5cm, includeheadfoot]{geometry} % permette la modifica della gabbia del documento
+\usepackage[pdftex]{graphicx} % inclusione di oggetti grafici esterni (\includegraphics)
+\usepackage{color} % per testo colorato
+
+\usepackage{geometry} % per gestire i margini delle minipage
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=5mm,
+    right=5mm,
+}
+
+\usepackage{enumitem} % modificare gli ambienti enumerate, itemize e description
+\usepackage{fancyhdr} % facilities per la costruzione di headers e footers
+\usepackage{lastpage} % allow to refer to the last page of a document: \pageref{LastPage}
+\usepackage{subfigure} % support for the inclusion of small ???gures and tables
+\usepackage{amssymb} % symbols
+\usepackage{typearea} % setting typearea for KOMA-script
+\usepackage{verbatim} % contains a reimplementation of the verbatim environment
+\usepackage{booktabs} % per tabelle
+\usepackage{array} % per tabelle
+\usepackage{longtable} % per tabelle su più pagine
+\usepackage{tabu} % Flexible LATEX tabulars
+\usepackage{wasysym} % per disegnare pallini vuoti/pieni \Circle \CIRCLE
+\usepackage{tikz} % create graphic elements
+\usepackage{tabularx} % Tabulars with adjustable-width columns
+\usepackage{tasks} % Horizontally columned lists
+\usepackage{pifont} % Access to PostScript standard Symbol and Dingbats fonts
+\usepackage{xcolor} % per colorare le linee dell'header e del footer
+\usepackage{adjustbox} % Graphics package-alike macros for “general” boxes
+\usepackage{hhline} % Better horizontal lines in tabulars and arrays
+\usepackage{colortbl} % colori linee tabelle
+\usepackage{textcomp} % per � simbolo
+
+% per aggiungere hyperlink
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blueCF,
+    filecolor=blueCF,
+    urlcolor=blueCF,
+}
+
+\usepackage{multirow} % Create tabular cells spanning multiple rows
+\usepackage{datetime2} % per inserire data e ora
+
+\usepackage{multicol} % Intermix single and multiple columns
+\setlength{\columnsep}{0.5cm}
+
+\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
+\usepackage{ragged2e} % Alternative versions of “ragged”-type commands
+\usepackage{soul} % Hyphenation for letterspacing, underlining, and more
+\usepackage{float} % Improved interface for floating objects
+\usepackage{gensymb} % Generic symbols for both text and math mode
+
+%------------------------------------------------------------------------------
+% RENEWCOMMANDS BY USER
+%------------------------------------------------------------------------------
+\renewcommand{\arraystretch}{1.23} % this reduces the vertical spacing between rows

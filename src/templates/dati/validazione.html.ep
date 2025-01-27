@@ -1,0 +1,505 @@
+% layout 'tools';
+% title 'Validazione';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/validazione_layout.js'))%>" type="text/javascript"></script>
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/validazione.js'))%>" type="text/javascript"></script>
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/validazione_settings.js'))%>" type="text/javascript"></script>
+<link  href="<%=url_for(helperGetFileVersion('/bobo-css/tools.css'))%>" rel="stylesheet">
+
+
+<script type="text/javascript">
+    var id        = '<%= $id %>';
+    var dateStart = '<%= $start %>';
+    var dateEnd   = '<%= $end %>';
+
+    var resetFVC    = ( parseInt("<%= $page_options->{'reset'} %>") == 1 ? true : false );
+    var closureDate = "<%= $page_options->{'closure'} %>";
+    if(closureDate)
+        closureDate = moment(closureDate).format('DD/MM/YYYY');
+</script>
+<div class="preloader"></div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-main" id="validation-navbar">
+    <a href="/" class="go-to-portal" data-toggle="tooltip" data-original-title="Torna al portale"><i class="ti-share-alt"></i></a>
+    <a class="navbar-brand" href="/dat_validazione"><i class="fa-solid fa-binary-circle-check"></i> Validazione</a>
+    <a href="/help/dat_validazione" class="go-to-help" data-toggle="tooltip" data-original-title="Accedi alla documentazione" target="_blank"><i class="ti-help-alt"></i></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto" id="analyser-menu">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-strumenti" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Strumenti
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown-strumenti">
+                    <!-- <a class="dropdown-item" href="#">Imposta colori</a> -->
+                    <!-- <div class="dropdown-divider"></div> -->
+                    <a class="dropdown-item" href="javascript:void(0)" data-target="#settings-analyser" data-toggle="modal">Opzioni</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" id="all-tree" href="#">Carica albero completo</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+    % if( defined $page_options->{'closure'} ){
+        <div class="blocked-right" data-toggle="tooltip" title="Dati non editabili prima di questa data (impostata dagli amministratori del sistema)">Dati bloccati prima del <strong></strong></div>
+    % }
+    <a href="/str_ava_validazione" class="navbar-right" data-toggle="tooltip" title="Apri impostazioni Validazione"><i class="ti-settings"></i></a>
+</nav>
+<div class="row bg-grey no-gutters" id="validation-nogutters">
+    <div class="col-sm-12">
+        <div class="analyser-buttons clearfix">
+            <!-- BOTTONI DI ESEMPIO
+            <button type="button" class="btn btn-primary"><i class="ti-settings"></i></button>
+            <button type="button" class="btn btn-secondary"><i class="mdi mdi-home-variant"></i></button>
+            <button type="button" class="btn btn-info"><i class="ti-ruler-alt"></i></button>
+            <button type="button" class="btn btn-link">Link</button> -->
+
+            <div class="btn-set" id="btnset-time">
+                <div class="input-group group-buttons">
+                    <div class="input-group-prepend" id="start-date-btns">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-calendar-multiple"></i></button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" id="start-date-today" href="#">Oggi</a>
+                            <a class="dropdown-item" id="start-date-yest" href="#">Ieri</a>
+                            <a class="dropdown-item" id="start-date-tda" href="#">3 giorni fa</a>
+                            <div role="separator" class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="start-date-fdm" href="#">Primo gg mese</a>
+                            <a class="dropdown-item" id="start-date-fdy" href="#">Primo gg anno</a>
+                            <a class="dropdown-item" id="start-date-curr-fdm" href="#">Primo gg mese corrente</a>
+                            <a class="dropdown-item" id="start-date-curr-fdy" href="#">Primo gg anno corrente</a>
+                            <div role="separator" class="dropdown-divider"></div>
+                            <div class="dropdown-item-simple"> <button id="start-date-pd" class="btn btn-dark btn-sm">-</button><span class="centered-label">Giorno</span><button id="start-date-nd" class="btn btn-dark btn-sm">+</button> </div>
+                            <div class="dropdown-item-simple"> <button id="start-date-pm" class="btn btn-dark btn-sm">-</button><span class="centered-label">Mese</span><button id="start-date-nm" class="btn btn-dark btn-sm">+</button> </div>
+                            <div class="dropdown-item-simple"> <button id="start-date-pa" class="btn btn-dark btn-sm">-</button><span class="centered-label">Anno</span><button id="start-date-na" class="btn btn-dark btn-sm">+</button> </div>
+                        </div>
+                    </div>
+                    <input type="text" class="form-control masked-input" id="date-start" placeholder="GG/MM/AAAA">
+                </div>
+                <div class="input-group group-buttons">
+                    <div class="input-group-prepend" id="end-date-btns">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-calendar-multiple"></i></button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" id="end-date-today" href="#">Oggi</a>
+                            <div role="separator" class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="end-date-copy" href="#">Copia data inizio</a>
+                            <div role="separator" class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="end-date-ldy" href="#">Ultimo gg anno</a>
+                            <a class="dropdown-item" id="end-date-ldm" href="#">Ultimo gg mese</a>
+                            <div role="separator" class="dropdown-divider"></div>
+                            <div class="dropdown-item-simple"> <button id="end-date-pd" class="btn btn-dark btn-sm">-</button><span class="centered-label">Giorno</span><button id="end-date-nd" class="btn btn-dark btn-sm">+</button> </div>
+                            <div class="dropdown-item-simple"> <button id="end-date-pm" class="btn btn-dark btn-sm">-</button><span class="centered-label">Mese</span><button id="end-date-nm" class="btn btn-dark btn-sm">+</button> </div>
+                            <div class="dropdown-item-simple"> <button id="end-date-pa" class="btn btn-dark btn-sm">-</button><span class="centered-label">Anno</span><button id="end-date-na" class="btn btn-dark btn-sm">+</button> </div>
+                        </div>
+                    </div>
+                    <input type="text" class="form-control masked-input" id="date-end" placeholder="GG/MM/AAAA">
+                </div>
+                <button id="update-data" type="button" class="btn btn-secondary mr-1" data-toggle="tooltip" data-placement="top" title="Aggiorna i tab sulla base delle date e della fascia temporale richiesta">
+                    <i class="icon-refresh"></i> Aggiorna
+                </button>
+                % if ( defined @{$codes}[0] && $user_grants->{user_insert} && $user_grants->{user_update} ) {
+                <button id="validate-daily" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Contrassegna come validati tutti i parametri visualizzati">
+                    <i class="icon-check"></i> <%= @{$codes}[0]->{fvc_code_desc} %>
+                </button>
+                % }
+
+                % if ( $user_grants->{user_insert} && $user_grants->{user_update} ) {
+                <span class="btn button-divider"></span>
+                <button id="val-calendar" type="button" class="btn btn-info mr-1" data-toggle-second="tooltip" data-placement="top" data-original-title="Validazione parametri tramite calendario" data-target="#validation-by-calendar" data-toggle="modal">
+                    <i class="icon-calendar"></i> Calendario
+                </button>
+                <span class="btn button-divider"></span>
+                <button id="val-clipboard" type="button" class="btn btn-secondary mr-1" data-toggle-second="tooltip" data-placement="top" data-original-title="Attiva modalità avanzata per inserimento/modifica dei dati">
+                    <i class="icon-note"></i> Mod. avanzata: OFF
+                </button>
+                <button id="val-clipboard-copy" type="button" class="btn btn-primary mr-1" data-toggle-second="tooltip" data-placement="top" data-original-title="Copia tabella">
+                    <i class="ti-layers"></i> Copia tabella
+                </button>
+                <!-- <button id="val-clipboard-paste" type="button" class="btn btn-primary mr-1 clipboard-hide" data-toggle-second="tooltip" data-placement="top" data-original-title="Copia tabella">
+                    <i class="ti-clipboard"></i> Incolla
+                </button> -->
+                <button id="val-clipboard-save" type="button" class="btn btn-primary mr-1 clipboard-hide" data-toggle-second="tooltip" data-placement="top" data-original-title="Salva modifiche">
+                    <i class="ti-save-alt"></i> Salva
+                </button>
+                <button id="val-clipboard-canc" type="button" class="btn btn-primary mr-1 clipboard-hide" data-toggle-second="tooltip" data-placement="top" data-original-title="Annulla modifiche">
+                    <i class="ti-back-left"></i> Annulla
+                </button>
+                <button id="val-clipboard-info" type="button" class="btn btn-danger clipboard-hide rounded-circle mr-1 circle-tool" data-toggle-second="tooltip" data-placement="top" data-original-title="Informazioni sull'utilizzo della modalità avanzata" data-target="#adv-validation-info" data-toggle="modal">
+                    <i class="icon-info"></i>
+                </button>
+                % }
+                <span class="btn button-divider"></span>
+                <div class="btn-group mr-1" role="group">
+                    <button id="btnGroupDrop2" type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle-second="tooltip" data-placement="right" title="Resetta i tab (svuota)">
+                    Reset
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                        <a class="dropdown-item" id="reset-active-tab" href="#">Tab attivo</a>
+                        <a class="dropdown-item" id="reset-all-tabs" href="#">Tutti i tab</a>
+                    </div>
+                </div>
+                <button id="deselect-cells" type="button" class="btn btn-primary mr-1" data-toggle="tooltip" data-placement="top" title="Deseleziona tutte le celle">
+                    <i class="ti-loop"></i> Deseleziona
+                </button>
+                <button id="undo-edit" type="button" class="btn btn-primary mr-1" data-toggle="tooltip" data-placement="top" title="Annulla le modifiche dei valori">
+                    <i class="ti-back-left"></i> Annulla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL IMPOSTAZIONI -->
+<div class="modal fade" id="settings-analyser" tabindex="-1" role="dialog" aria-labelledby="settings-analyser" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modifica impostazioni</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row no-gutters">
+                    <div class="col-sm-3">
+                        <div class="nav flex-column nav-pills nav-settings" id="settings-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active" data-toggle="pill" href="#tab-generali" role="tab"  aria-selected="true"><i class="fa fa-cogs" aria-hidden="true"></i> Generali</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-grafici" role="tab"  aria-selected="false"><i class="fa-solid fa-chart-pie"></i> Grafici</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-tabelle" role="tab" aria-selected="false"><i class="fa fa-th-large" aria-hidden="true"></i> Tabelle</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-filtri" role="tab" aria-selected="false"><i class="fa fa-filter" aria-hidden="true"></i> Filtri</a>
+                        </div>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="tab-content tab-settings" id="settings-tab-content">
+                            <div class="tab-pane fade show active" id="tab-generali" role="tabpanel">
+                                <h4>Generali</h4>
+                                <h5>Estrazione dati</h5>
+                                <div class="form-group row">
+                                    <label for="data-per-param" class="col-sm-4 col-form-label">Visualizza per parametro</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="data-per-param" id="data-per-param">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <label for="data-converted" class="col-sm-4 col-form-label">Visualizza dati convertiti</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="data-converted" id="data-converted">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <h5>Albero di navigazione</h5>
+                                <div class="form-group row">
+                                    <label for="visible-stid" class="col-sm-4 col-form-label">Visualizza STID</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="visible-stid" id="visible-stid">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="visible-altitude" class="col-sm-4 col-form-label">Visualizza QUOTA</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="visible-altitude" id="visible-altitude">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-grafici" role="tabpanel">
+                                <h4>Grafici</h4>
+                                <h5>Visualizzazione</h5>
+                                <div class="form-group row">
+                                    <label for="chart-nav" class="col-sm-4 col-form-label">Visualizza navigatore grafico</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="chart-nav" id="chart-nav">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-label-x-angle" class="col-sm-4 col-form-label">Angolo etichette asse X</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="chart-label-x-angle" id="chart-label-x-angle" class="form-control clear-macro" min="0" max="90">
+                                        <span class="legend-settings">Inserisci un valore tra 0 e 90 (gradi)</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="offset-sm-4 col-sm-4 sel-left">
+                                        <h6 class="text-primary">Grafico</h6>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <h6 class="text-primary">Immagine esportata</h6>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-title-font" class="col-sm-4 col-form-label">Dimensione font titolo</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-title-font" id="chart-title-font" class="form-control clear-macro" min="5" max="30">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-title-font" id="exp-chart-title-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-label-font" class="col-sm-4 col-form-label">Dimensione font etichette</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-label-font" id="chart-label-font" class="form-control clear-macro" min="5" max="30" >
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-label-font" id="exp-chart-label-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-legend-font" class="col-sm-4 col-form-label">Dimensione font legenda</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-legend-font" id="chart-legend-font" class="form-control clear-macro" min="5" max="30">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-legend-font" id="exp-chart-legend-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-tabelle" role="tabpanel">
+                                <h4>Tabelle</h4>
+                                <h5>Layout</h5>
+                                <div class="form-group row">
+                                    <label for="table-filters" class="col-sm-4 col-form-label">Visualizza filtri</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="table-filters" id="table-filters">
+                                            <span class="slider round"></span>
+                                        </label><br>
+                                        <span class="legend-settings">Abilita filtri di visualizzazione</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-filtri" role="tabpanel">
+                                <h4>Filtri</h4>
+                                <h5>Nessuna opzione</h5>
+                                Al momento non è possibile modificare le impostazioni
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="apply-settings"><i class="mdi mdi-check-all"></i> Applica in locale</button>
+                % if($user_grants->{user_insert} && $user_grants->{user_update}){
+                <button type="button" class="btn btn-primary" id="save-settings"><i class="ti-save-alt"></i> Salva nel DB</button>
+                % }
+                <button type="button" class="btn btn-link" data-dismiss="modal" id="dismiss-settings"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL INFORMAZIONI SU VALIDAZIONE AVANZATA -->
+<div class="modal fade" id="adv-validation-info" tabindex="-1" role="dialog" aria-labelledby="adv-validation-info" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info" id="">Informazioni sull'utilizzo della modalità avanzata</h5>
+                <button type="button" class="close close-val-box" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Breve guida</h5>
+                <p>Attivando questa funzionalità, si abilitano <strong>le azioni di copia - incolla sulla tabella</strong> per agevolare l'inserimento e/o la modifica di grandi moli di dati.</p>
+                <p class="m-b-0">Una volta attivata la modalità avanzata:</p>
+                <ol>
+                    <li>cliccare sul <strong>bottone blu Copia tabella</strong>;</li>
+                    <li>sul proprio dispositivo aprire un nuovo foglio di calcolo (es: Excel) e incollare la tabella copiata;</li>
+                    <li>inserire e/o modificare i dati come si desidera;</li>
+                    <li>copiare la tabella modificata selezionando <strong>TUTTE le colonne</strong> precedentemente incollate, non solo quelle modificate (<strong>CTRL+A</strong> per selezione veloce);</li>
+                    <li>tornare sul tool Validazione e mettere a fuoco la tabella cliccando (<strong>click singolo o doppio</strong>) sulla colonna delle date;</li>
+                    <li>incollare la tabella tramite la combinazione di tasti <strong>CTRL+V</strong>. Se la tabella non è stata precedentemente messa a fuoco, non verrà applicato nessun tipo di aggiornamento quindi ripetere il punto 5. Le celle modificate saranno evidenziate tramite uno sfondo rosso;</li>
+                    <li>salvare le modifiche nel database tramite il <strong>bottone blu Salva</strong>, oppure cliccare su <strong>Annulla per cancellare</strong> le modifiche e disabilitare la modalità avanzata.</li>
+                </ol>
+                <h5>Note aggiuntive</h5>
+                <p>Quando la modalità avanzata è attiva vengono automaticamente <strong>disabilitate tutte le funzioni di selezione/modifica/validazione</strong> delle celle.<br>
+                In caso di inserimento o modifica di dati convertiti, i <strong>valori saranno salvati nel database nella loro versione base</strong> (non convertiti).<br>
+                <strong>NON E' POSSIBILE incollare un numero diverso di colonne</strong> da quelle visualizzate.<br>
+                <strong>NON E' POSSIBILE aggiungere delle nuove righe</strong> rispetto a quelle estratte.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link close-val-box" data-dismiss="modal" id="val-cal-cancel"><i class="ti-close"></i> CHIUDI</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VALIDAZIONE A CALENDARIO DEI PARAMETRI -->
+<div class="modal fade" id="validation-by-calendar" tabindex="-1" role="dialog" aria-labelledby="validation-by-calendar" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info" id="exampleModalLongTitle">Calendario per la validazione o modifica dei parametri</h5>
+                <button type="button" class="close close-val-box" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="form-horizontal form-modal" id="val-cal-form">
+                <div class="modal-body">
+                    <p>Tramite questo form è possibile modificare/validare/invalidare un parametro per un determinato periodo temporale.</p>
+                    <div class="form-group row">
+                        <label for="val-cal-date" class="col-sm-2 col-form-label">Periodo temp.</label>
+                        <div class="input-group col-sm-4">
+                            <input class="form-control input-daterange-datepicker" type="text" id="val-cal-date" name="val-cal-date" value="" />
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                            </div>
+                        </div>
+                        <label for="val-cal-prov" class="col-sm-2 col-form-label">Provincia</label>
+                        <div class="col-sm-4">
+                            <select class="custom-select" id="val-cal-prov" name="val-cal-prov">
+                                <option value="-1">Seleziona provincia...</option>
+                                % my $region = '';
+                                % foreach my $province (@{$provinces}){
+                                    % if ($region eq ''){
+                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                    % }else{
+                                        % if ($region eq $province->{'region_id'}){
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % } else {
+                                            </optgroup>
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }
+                                    % }
+                                    % $region = $province->{'region_id'};
+                                % }
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="val-cal-stat" class="col-sm-2 col-form-label">Stazione</label>
+                        <div class="col-sm-4">
+                            <select class="custom-select" id="val-cal-stat" name="val-cal-stat">
+                                <option value="-1">Seleziona stazione...</option>
+                            </select>
+                        </div>
+                        <label for="val-cal-param" class="col-sm-2 col-form-label">Parametro</label>
+                        <div class="col-sm-4">
+                            <select class="custom-select" id="val-cal-param" name="val-cal-param">
+                                <option value="-1">Seleziona parametro...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label for="" class="col-sm-2 col-form-label">Attività da svolgere</label>
+                        <div class="col-sm-10">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="btn-activities" id="editing-btn" value="editing-btn">
+                                <label class="form-check-label normal" for="editing-btn">Modifica</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="btn-activities" id="validation-btn" value="validation-btn">
+                                <label class="form-check-label normal" for="validation-btn">Validazione</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                &nbsp;&nbsp;
+                                <input class="form-check-input" type="checkbox" id="filtering-btn" value="filtering-btn" disabled>
+                                <label class="form-check-label" for="filtering-btn">Filtrare per valore</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                &nbsp;&nbsp;
+                                <input class="form-check-input" type="checkbox" id="filtering-code-btn" value="filtering-code-btn" disabled>
+                                <label class="form-check-label" for="filtering-code-btn">Filtrare per codice</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-10 text-danger">
+                            <strong>ATTENZIONE!</strong> I filtri e le operazioni sono applicati ai dati <strong>NON</strong> convertiti
+                        </div>
+                    </div>
+                    <hr class="filtering-group hr-dashed">
+                    <div class="form-group row filtering-group" id="filtering">
+                        <label for="val-cal-filter" class="col-sm-2 col-form-label">Filtra per valore</label>
+                        <div class="col-sm-4" style="max-width: 235px;">
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Minore di.."><</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Minore/uguale a..."><=</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Uguale a...">=</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Maggiore/uguale a...">></button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Maggiore di...">>=</button>
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" id="val-cal-filter" name="val-cal-filter" class="form-control" />
+                        </div>
+                    </div>
+                    <hr class="filtering-code-group hr-dashed">
+                    <div class="form-group row filtering-code-group" id="filtering-code">
+                        <label for="code-cal-filter" class="col-sm-2 col-form-label">Filtra per codice</label>
+                        <div class="col-sm-4" style="max-width: 235px;">
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Minore di.."><</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Minore/uguale a..."><=</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Uguale a...">=</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Maggiore/uguale a...">></button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Maggiore di...">>=</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Contiene...">⊃</button>
+                        </div>
+                        <div class="col-sm-4">
+                            <select class="custom-select" id="code-cal-filter" name="code-cal-filter">
+                                <option value="">Seleziona codice...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr class="editing-group hr-dashed">
+                    <div class="form-group row editing-group" id="calendar-operations">
+                        <label for="val-cal-oper" class="col-sm-2 col-form-label">Operazioni</label>
+                        <div class="col-sm-4" style="max-width: 235px;">
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Aggiungi...">+</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Sottrai...">-</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Moltiplica per...">*</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Dividi per...">/</button>
+                            <button type="button" class="btn" data-toggle="tooltip" data-title="Sostituisci...">=</button>
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" id="val-cal-oper" name="val-cal-oper" class="form-control" />
+                        </div>
+                    </div>
+                    <hr class="validation-group hr-dashed">
+                    <div class="form-group row validation-group">
+                        <label for="val-cal-cod" class="col-sm-2 col-form-label">Codice</label>
+                        <div class="col-sm-4">
+                            <select class="custom-select" id="val-cal-cod" name="val-cal-cod">
+                                <option value="">Seleziona codice...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    % if($user_grants->{user_insert} && $user_grants->{user_update}){
+                        <button type="submit" class="btn btn-primary" id="val-cal-save" disabled><i class="mdi mdi-check-all"></i> Applica</button>
+                    % }
+                    <button type="button" class="btn btn-danger" id="val-cal-reset"><i class="ti-back-left"></i> Reset</button>
+                    <button type="button" class="btn btn-link close-val-box" data-dismiss="modal" id="val-cal-cancel"><i class="ti-close"></i> CHIUDI</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENUTI GOLDENLAYOUT -->
+<div id="wrapper">
+    <div class="layoutContainer" id="validation-main"></div>
+</div>
+
+<!-- MODAL CODICI DI VALIDITA' -->
+%= include 'include/common/codes';

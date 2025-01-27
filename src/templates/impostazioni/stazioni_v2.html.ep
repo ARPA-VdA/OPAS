@@ -1,0 +1,413 @@
+% layout 'default';
+% title 'Anagrafica rete - Stazioni';
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/impostazioni/stazioni_v2.js'))%>" type="text/javascript"></script>
+<script type="text/javascript">
+    // from url
+    var stid = parseInt('<%= $stid %>');
+
+    var typologies       = '<%= @{$typologies}[0]->{total} %>';
+    var roamingTypes     = '<%= @{$roaming_types}[0]->{total} %>';
+    var measuresTypes    = '<%= @{$measures_types}[0]->{total} %>';
+    var measuresCadences = '<%= @{$measures_cadences}[-1]->{total} %>';
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Le stazioni della tua rete</h4>
+                        <h6 class="card-subtitle">Da questa pagina puoi aggiungere, modificare e visualizzare le stazioni appartenenti alla tua rete</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#list" role="tab"><i class="fa-sharp fa-light fa-list-ul"></i> <span class="hidden-xs-down">Stazioni</span></a> </li>
+                    <li class="nav-item" id="hidden-tab"> <a class="nav-link text-info" data-toggle="tab" href="#new-element" role="tab"><i class="fa-light fa-square-plus"></i> <span class="hidden-xs-down" id="inner-new-station">Nuova</span></a> </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content tab-big">
+                    <div class="tab-pane p-10 p-t-15 active" id="list" role="tabpanel">
+                        <div class="row m-b-10">
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="networks" name="networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="provinces" name="provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                </select>
+                            </div>
+                        <!--     <div class="col-lg-3">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div> -->
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="status" name="status">
+                                    <option value="-1">Seleziona stato...</option>
+                                    <option value="0">Attiva</option>
+                                    <option value="1">Non attiva</option>
+                                    <option value="2">Sospesa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table class="display responsive table table-hover table-striped" id="table-stations" width="100%">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Rete</th>
+                                    <th>Provincia</th>
+                                    <th>Comune</th>
+                                    <th>Località</th>
+                                    <th>Attiva dal</th>
+                                    <th>Pubblica</th>
+                                    <th>Stato</th>
+                                    <!-- <th>Mapper</th> -->
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Rete</th>
+                                    <th>Provincia</th>
+                                    <th>Comune</th>
+                                    <th>Località</th>
+                                    <th>Attiva dal</th>
+                                    <th>Pubblica</th>
+                                    <th>Stato</th>
+                                    <!-- <th>Mapper</th> -->
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-10 p-t-15" id="new-element" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuova <strong>STAZIONE</strong></h4>
+                        <form class="form form-medium" id="station-form">
+                            <h5 class="divider-title"><i class="icon-info"></i> Iniziali</h5>
+                            <input type="hidden" class="clear-input" id="station-id" name="station-id" value="">
+                            <div class="form-group row">
+                                <label for="station-name" class="col-md-2 col-form-label">Nome stazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="station-name" name="station-name" placeholder="Nome stazione...">
+                                </div>
+                                <label for="station-network" class="col-md-2 col-form-label">Rete <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="station-network" name="station-network">
+                                        <option value="-1">Seleziona rete...</option>
+                                        % foreach my $network (@{$networks}){
+                                            <option value="<%= $network->{'st_network_id'} %>"><%= $network->{'st_network_name'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-schemadb" class="col-md-2 col-form-label">Schema database <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-12" id="station-schemadb" name="station-schemadb">
+                                        <option value="">Seleziona schema...</option>
+                                        % foreach my $schema (@{$schemas}){
+                                            <option value="<%= $schema->{'schema_name'} %>"><%= $schema->{'schema_name'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="station-tabledb" class="col-md-2 col-form-label">Tabella database
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Nome della tabella su database: <strong>generato AUTOMATICAMENTE e non modificabile</strong></span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input disabled class="form-control clear-input" type="text" value="" id="station-tabledb" name="station-tabledb" placeholder="Tabella db...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-headerfile" class="col-md-2 col-form-label">Header file
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Nome del file CSV prodotto dal data logger: <strong>generato AUTOMATICAMENTE e modificabile solo DOPO la creazione della stazione</strong>. Deve coincidere con quello in periferia.</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input disabled class="form-control clear-input" type="text" value="" id="station-headerfile" name="station-headerfile" placeholder="Header file...">
+                                </div>
+                                <label for="station-roaming" class="col-md-2 col-form-label">
+                                    Categoria <!-- st_info_roaming_type_fk -->
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                            <strong>Stazione fissa:</strong> stazioni con postazione fissa;<br>
+                                            <strong>Stazione mobile:</strong> stazioni/strumenti con postazione mobile (rilocabili tramite la sezione Campagne);<br>
+                                            <strong>Stazione virtuale:</strong> stazioni fittizie create a fini reportistici per raggruppare strumenti particolari (radiazioni) o in manutenzione (laboratori);
+                                        </span></span></span>
+                                    </a>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="station-roaming" name="station-roaming">
+                                        <option value="-1">Seleziona...</option>
+                                        % foreach my $roaming (@{$roaming_types}){
+                                            <option value="<%= $roaming->{'st_roaming_id'} %>"><%= $roaming->{'st_roaming_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <h5 class="divider-title"><i class="icon-directions"></i> Dati geografici</h5>
+                            <div class="form-group row">
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-primary" name="btn-map-selection" id="btn-map-selection"> <i class="ti-map-alt"></i> scegli da mappa</button>
+                                </div>
+                                <div class="col-10 map-container">
+                                    <div id="map-selection" class="mini-map" tabindex="0"></div>
+                                    <p class="m-b-0"><strong class="text-info">UTILIZZO:</strong> clicca sulla mappa nel punto che vuoi definire come "sito" e sposta il cursore per migliorarne la precisione.<br>Tutti <strong>i campi della geolocalizzazione si compileranno automaticamente</strong></p>
+                                </div>
+                            </div>
+                            <hr class="hr-dashed m-b-10">
+                            <div class="form-group row">
+                                <label for="station-region" class="col-2 col-form-label">Regione</label>
+                                <div class="col-4">
+                                    <select class="custom-select clear-select col-12" id="station-region" name="station-region">
+                                        <option value="-1">Seleziona regione...</option>
+                                        % foreach my $region (@{$regions}){
+                                            <option value="<%= $region->{'region_id'} %>"><%= $region->{'region_name'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="station-province" class="col-2 col-form-label">Provincia</label>
+                                <div class="col-4">
+                                    <select class="custom-select clear-select col-12" id="station-province" name="station-province">
+                                        <option value="-1">Seleziona provincia...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-municipality" class="col-2 col-form-label">
+                                    Comune 
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Per i mezzi mobili selezionare il comune che coincide con la provincia di riferimento.</span></span></span>
+                                    </a>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-4">
+                                    <select class="custom-select clear-select col-12" id="station-municipality" name="station-municipality">
+                                        <option value="-1">Seleziona comune...</option>
+                                    </select>
+                                </div>
+                                <label for="station-locality" class="col-2 col-form-label">Località</label>
+                                <div class="col-4">
+                                    <input type="text" class="form-control clear-input" id="station-locality" name="station-locality" placeholder="Località...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-wgs84-lat" class="col-2 col-form-label">Latitudine WGS84 [°N] <span class="text-danger">*</span></label>
+                                <div class="col-4">
+                                    <input type="text" class="form-control clear-input" id="station-wgs84-lat" name="station-wgs84-lat" placeholder="Latitudine...">
+                                </div>
+                                <label for="station-wgs84-lon" class="col-2 col-form-label">Longitudine WGS84 [°E] <span class="text-danger">*</span></label>
+                                <div class="col-4">
+                                    <input type="text" class="form-control clear-input" id="station-wgs84-lon" name="station-wgs84-lon" placeholder="Longitudine...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-altitude" class="col-2 col-form-label">Quota [m s.l.m.]</label>
+                                <div class="col-4">
+                                    <input type="text" class="form-control clear-input" id="station-altitude" name="station-altitude" placeholder="Quota...">
+                                </div>
+                                <label for="station-zone" class="col-md-2 col-form-label">Zona</label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="station-zone" name="station-zone" placeholder="Zona...">
+                                </div>
+                            </div>
+                            <div class="hidden-part">
+                                <h5 class="divider-title"><i class="icon-settings"></i> Generali</h5>
+                                <div class="form-group row m-b-0">
+                                    <label for="station-active" class="col-md-2 col-form-label">Stazione attiva</label>
+                                    <div class="col-md-2">
+                                        <input type="checkbox" id="station-active" name="station-active" checked class="js-switch" data-color="#79a030" />
+                                    </div>
+                                    <label for="station-realtime" class="col-md-2 col-form-label">Real-time attivo</label>
+                                    <div class="col-md-2">
+                                        <input type="checkbox" id="station-realtime" name="station-realtime" class="js-switch" data-color="#79a030" />
+                                    </div>
+                                    <label for="station-suspended" class="col-md-2 col-form-label">
+                                        Stazione sospesa
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Se sospesa, viene esclusa da tutti gli script di gestione del sistema.</span></span></span>
+                                        </a>
+                                    </label>
+                                    <div class="col-md-2">
+                                        <input type="checkbox" id="station-suspended" name="station-suspended" class="js-switch" data-color="#79a030" />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-startup-date" class="col-md-2 col-form-label">Inizio acquisizione <span class="text-danger">*</span></label>
+                                    <div class="input-group col-md-4">
+                                        <input type="text" class="form-control clear-input station-date" id="station-startup-date" name="station-startup-date" placeholder="DD/MM/YYYY">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="icon-calender"></i></span>
+                                        </div>
+                                    </div>
+                                    <label for="station-dismiss-date" class="col-md-2 col-form-label">Fine acquisizione</label>
+                                    <div class="input-group col-md-4">
+                                        <input type="text" class="form-control clear-input station-date" id="station-dismiss-date" name="station-dismiss-date" placeholder="DD/MM/YYYY">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="icon-calender"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-visible-id" class="col-md-2 col-form-label">ID stazione</label>
+                                    <div class="col-md-2">
+                                        <input class="form-control clear-input" disabled type="text" value="" id="station-visible-id" name="station-visible-id" placeholder="ID stazione...">
+                                    </div>
+                                    <label for="station-control-id" class="col-md-2 col-form-label">ID telecontrollo</label>
+                                    <div class="col-md-2">
+                                        <input class="form-control clear-input" type="text" value="" id="station-control-id" name="station-control-id" placeholder="ID telecontrollo...">
+                                    </div>
+                                    <label for="station-extra-id" class="col-md-2 col-form-label font-italic">
+                                        ID esterno stazione
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id stazione esposto dall'API e usato per la mappatura con i sistemi interni di ciascuna ARPA</span></span></span>
+                                        </a>
+                                    </label>
+                                    <div class="col-md-2">
+                                        <input class="form-control clear-input" type="text" value="" id="station-extra-id" name="station-extra-id" placeholder="ID esterno stazione...">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-note" class="col-md-2 col-form-label">Note</label>
+                                    <div class="col-md-10">
+                                        <textarea class="form-control clear-input" id="station-note" name="station-note" rows="4"></textarea>
+                                    </div>
+                                </div>
+                                <hr class="hr-dashed m-b-10">
+                                <h6 class="title-stat m-b-20"><i class="ti-ruler-pencil"></i> Impostazioni <strong>avanzate stazione</strong></h6>
+                                <h5 class="divider-title"><i class="icon-plus"></i> Maggiori informazioni</h5>
+                                <div class="form-group row">
+                                    <label for="station-shortname" class="col-md-2 col-form-label">Nome breve <span class="text-danger">*</span></label>
+                                    <div class="col-md-4">
+                                        <input class="form-control clear-input" type="text" value="" id="station-shortname" name="station-shortname" placeholder="Nome breve...">
+                                    </div>
+                                    <label for="station-longname" class="col-md-2 col-form-label">Nome intero</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control clear-input" type="text" value="" id="station-longname" name="station-longname" placeholder="Nome intero...">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-measure" class="col-md-2 col-form-label">
+                                        Tipo misurazione <!-- st_info_measure_fk -->
+                                    </label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select clear-select col-md-12" id="station-measure" name="station-measure">
+                                            <option value="-1">Seleziona...</option>
+                                            % foreach my $measure (@{$measures_types}){
+                                                <option value="<%= $measure->{'measure_type_id'} %>"><%= $measure->{'measure_type_desc'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                    <label for="station-cadence" class="col-md-2 col-form-label">
+                                        Cadenza misurazione <!-- st_info_cadence_fk -->
+                                    </label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select clear-select col-md-12" id="station-cadence" name="station-cadence">
+                                            <option value="-1">Seleziona...</option>
+                                            % foreach my $cadence (@{$measures_cadences}){
+                                                <option value="<%= $cadence->{'measure_cadence_id'} %>"><%= $cadence->{'measure_cadence_desc'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-typology" class="col-md-2 col-form-label">
+                                        Tipo stazione <span class="text-danger">*</span> <!-- st_info_typology_fk -->
+                                    </label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select clear-select col-md-12" id="station-typology" name="station-typology">
+                                            <option value="-1">Seleziona...</option>
+                                            % foreach my $typology (@{$typologies}){
+                                                <option value="<%= $typology->{'st_typology_id'} %>"><%= $typology->{'st_typology_desc'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- <div class="form-group row">
+                                     <label for="station-national-code" class="col-md-2 col-form-label">Codice nazionale</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="station-national-code" name="station-national-code" placeholder="Codice nazionale...">
+                                    </div>
+                                </div> -->
+                                <h5 class="divider-title"><i class="fa-light fa-file-import"></i> Varie Import</h5>
+                                <div class="form-group row">
+                                    <label for="station-import-id" class="col-md-2 col-form-label">Codice web service</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control clear-input" type="text" value="" id="station-import-id" name="station-import-id" placeholder="Codice web service...">
+                                    </div>
+                                </div>
+                                <h5 class="divider-title"><i class="fa-light fa-file-export"></i> Varie Export</h5>
+                                <div class="form-group row">
+                                    <label for="station-published" class="col-md-2 col-form-label">Stazione pubblica</label>
+                                    <div class="col-md-10">
+                                        <input type="checkbox" id="station-published" name="station-published" class="js-switch" data-color="#79a030" /><br>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-export-active" class="col-md-2 col-form-label">Export attivo</label>
+                                    <div class="col-md-3">
+                                        <input type="checkbox" id="station-export-active" name="station-export-active" class="js-switch" data-color="#79a030" /><br>
+                                    </div>
+                                    <label for="station-export-id" class="col-md-2 col-form-label">
+                                        Export ID
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id stazione usato per l'export di file CSV o estensioni personalizzate</span></span></span>
+                                        </a>
+                                    </label>
+                                    <div class="col-md-5">
+                                        <input class="form-control clear-input" type="text" value="" id="station-export-id" name="station-export-id" placeholder="Export ID...">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="station-ws-active" class="col-md-2 col-form-label">Webservice attivo</label>
+                                    <div class="col-md-3">
+                                        <input type="checkbox" id="station-ws-active" name="station-ws-active" class="js-switch" data-color="#79a030" /><br>
+                                    </div>
+                                    <label for="station-ws-name" class="col-md-2 col-form-label">Nome per webservice</label>
+                                    <div class="col-md-5">
+                                        <input class="form-control clear-input" type="text" value="" id="station-ws-name" name="station-ws-name" placeholder="Nome per webservice...">
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="" id="station-save"> <i class="ti-save"></i> Salva</button>
+                                    <button type="button" class="btn btn-inverse" name="" id="station-cancel">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

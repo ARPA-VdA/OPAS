@@ -1,0 +1,203 @@
+% layout 'default';
+% title 'Impostazioni di rete - Grafici Openair';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/openair.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza i Grafici Openair</h4>
+                        <h6 class="card-subtitle">Da questa pagina puoi visualizzare i grafici OpenAir riguardanti gli inquinanti delle stazioni della tua rete</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <!-- if user has insert grant -->
+                    <li class="nav-item"> <a class="nav-link active text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Configurazioni</span></a> </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="new" role="tabpanel">
+                        % if ($user_grants->{user_insert}){
+                        <div class="last-reporting" data-id="">
+                            <h4 class="box-title">Crea una <strong>nuova configurazione</strong></h4>
+                            <hr class="m-t-0 m-b-20">
+                            <form class="form" id="openair-form" name="openair-form">
+                                <div class="form-group row">
+                                    <label for="openair-date" class="col-2 col-form-label">Intervallo date <span class="text-danger">*</span></label>
+                                    <div class="input-group col-md-10">
+                                        <input class="form-control input-daterange-datepicker clear-input" type="text" name="openair-date" id="openair-date" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="openair-wind-calm" class="col-2 col-form-label">Calma di vento <span class="text-danger">*</span></label>
+                                    <div class="col-4">
+                                        <input type="text" class="form-control clear-input" name="openair-wind-calm" id="openair-wind-calm">
+                                    </div>
+                                    <label for="station-instr-type" class="col-2 col-form-label">Categoria</label>
+                                    <div class="col-4">
+                                        <select  class="custom-select col-12 clear-select" name="openair-equip-cat" id="openair-equip-cat">
+                                            <option value="-1">Seleziona strumenti...</option>
+                                            % foreach my $category ( @{$categories} )
+                                            % {
+                                                <option value="<%= $category->{'category_id'} =%>"><%= $category->{'category_name'} =%></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                </div>
+                                <h5 class="divider-title">Aggiungi la stazione dell' <strong>inquinante</strong></h5>
+                                <div class="form-group row">
+                                    <label for="openair-prov-poll" class="col-2 col-form-label">Prov. inquinante</label>
+                                    <div class="col-4">
+                                        <select class="custom-select clear-select col-12" id="openair-prov-poll" name="openair-prov-poll" data-change="openair-stat-poll">
+                                            <option value="-1">Seleziona provincia...</option>
+                                            % my $region = '';
+                                            % foreach my $province (@{$provinces}){
+
+                                                % if ($region eq ''){
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }else{
+                                                    % if ($region eq $province->{'region_id'}){
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }
+                                                % }
+                                                % $region = $province->{'region_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <label for="openair-stat-poll" class="col-2 col-form-label">Staz. inquinante <span class="text-danger">*</span></label>
+                                    <div class="col-4">
+                                        <select class="custom-select col-12 clear-select select2-multiple" id="openair-stat-poll" name="openair-stat-poll">
+                                            <option value="-1">Seleziona stazione...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <h5 class="divider-title">Aggiungi la stazione <strong>meteo</strong></h5>
+                                <div class="form-group row">
+                                    <label for="openair-prov-wea" class="col-2 col-form-label">Prov. meteo</label>
+                                    <div class="col-4">
+                                        <select class="custom-select clear-select col-12" id="openair-prov-wea" name="openair-prov-wea" data-change="openair-stat-wea">
+                                            <option value="-1">Seleziona provincia...</option>
+                                            % $region = '';
+                                            % foreach my $province (@{$provinces}){
+
+                                                % if ($region eq ''){
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }else{
+                                                    % if ($region eq $province->{'region_id'}){
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }
+                                                % }
+                                                % $region = $province->{'region_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <label for="openair-stat-wea" class="col-2 col-form-label">Staz. meteo <span class="text-danger">*</span></label>
+                                    <div class="col-4">
+                                        <select class="custom-select col-12 clear-select select2-multiple" id="openair-stat-wea" name="openair-stat-wea">
+                                            <option value="-1">Seleziona stazione...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <h5 class="divider-title">Limiti del grafico <strong>imposta il range</strong></h5>
+                                <div class="form-group row">
+                                    <label for="openair-limit-low" class="col-2 col-form-label">Limite inferiore</label>
+                                    <div class="col-4">
+                                        <input type="text" class="form-control clear-input" name="openair-limit-low" id="openair-limit-low" placeholder="Es. 50">
+                                    </div>
+                                    <label for="openair-limit-high" class="col-2 col-form-label">Limite superiore</label>
+                                    <div class="col-4">
+                                        <input type="text" class="form-control clear-input" name="openair-limit-high" id="openair-limit-high" placeholder="Es. 100">
+                                    </div>
+                                </div>
+                                <h5 class="divider-title">Gestione della <strong>scala del grafico</strong></h5>
+                                <div class="form-group row">
+                                    <label for="openair-scale" class="col-2 col-form-label">Impostazioni scala <span class="text-danger">*</span></label>
+                                    <div class="col-10">
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="openair-scale-default" name="openair-scale" class="custom-control-input" value="0" checked>
+                                            <label class="custom-control-label" for="openair-scale-default">Default</label>
+                                        </div>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="openair-scale-numb" name="openair-scale" class="custom-control-input" value="1">
+                                            <label class="custom-control-label" for="openair-scale-numb">N° fasce della scala</label>
+                                            <input type="number" min="1" class="form-control control-dep clear-input" name="openair-insert-num" id="openair-insert-num" placeholder="Es. 5">
+                                        </div>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="openair-scale-step" name="openair-scale" class="custom-control-input" value="2">
+                                            <label class="custom-control-label" for="openair-scale-step">Ripartizione step della scala</label>
+                                            <input type="text" class="form-control control-dep clear-input" name="openair-insert-step" id="openair-insert-step" placeholder="Es. 0,8,18,34,57,81,101">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-info" name="openair-save" id="openair-save"> <i class="ti-save"></i> Crea grafici</button>
+                                        <button type="button" class="btn btn-inverse" name="openair-cancel" id="openair-cancel">Annulla</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        % }
+                        <h4 class="box-title text-success m-t-30">Archivio configurazioni <strong>della giornata</strong></h4>
+                        <hr class="m-t-0 m-b-20">
+                        <table id="charts-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Intervallo date</th>
+                                    <th>Calma di vento</th>
+                                    <th>Categoria</th>
+                                    <th>Staz. inquinante</th>
+                                    <th>Staz. meteo</th>
+                                    <th>Lim. inferiore</th>
+                                    <th>Lim. superiore</th>
+                                    <th>Tipo scala</th>
+                                    <th>Impostazioni</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Intervallo date</th>
+                                    <th>Calma di vento</th>
+                                    <th>Categoria</th>
+                                    <th>Staz. inquinante</th>
+                                    <th>Staz. meteo</th>
+                                    <th>Lim. inferiore</th>
+                                    <th>Lim. superiore</th>
+                                    <th>Tipo scala</th>
+                                    <th>Impostazioni</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

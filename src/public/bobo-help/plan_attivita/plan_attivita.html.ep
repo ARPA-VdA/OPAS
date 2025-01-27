@@ -1,0 +1,167 @@
+<h1 id="planning---attivit%C3%A0">PLANNING - ATTIVITÀ</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Planning&quot; posta nel menu principale di sinistra e selezionare &quot;Attività&quot;.</p>
+<h3>
+    > Planning<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Attività</span>
+</h3>
+<p>Verrà visualizzata la seguente schermata:</p>
+<p><img src="/bobo-help/plan_attivita/img/[10]_planning.png" alt="10" title="Planning"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+</li>
+<li>
+<p><u>Calendario – Periodo Temporale</u></p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione delle attività.
+È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.
+Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/plan_attivita/img/[120]_calendar_date.png" alt="120" title="Calendario"></p>
+<p>     a. Data d'inizio;</p>
+<p>     b. Data di fine;</p>
+<p>     c. Pulsante <u>Applica</u>;</p>
+<p>     d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>     e. Calendario mese precedente;</p>
+<p>     f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Filtro <u>Società</u>: selezionare una società per filtrare la tabella sottostante; le società disponibili saranno quelle appartenenti alla propria rete.</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei bollettini sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella delle attività;</p>
+<p>All'accesso, verranno visualizzati tutti i ticket la cui scadenza rientra nel periodo temporale impostato a prescindere dallo stato in cui si trovano(aperti, presi in carico o chiusi). Vengono inoltre riportati anche i ticket ancora aperti, ma che risultano scaduti, ovvero presentano una data di scadenza precedente al periodo temporale impostato.</p>
+<p>Questa impostazione permette di fornire all'utente una panoramica delle attività in programma e, inoltre, di evidenziare eventuali ticket che risultano in ritardo.</p>
+</li>
+<li>
+<p>Pulsante <u>Visualizza</u></p>
+<p>Cliccando il pulsante <img src="/bobo-help/plan_attivita/img/[ico]_visual.png" width="40px" height="40px"></img> è possibile visualizzare il dettaglio del ticket scelto e il suo stato, con tutti i passaggi di apertura/chiusura, in formato simile a quello di una chat di messaggistica:</p>
+<p><img src="/bobo-help/plan_attivita/img/[30]_visual.png" alt="30" title="Visualizza attività"></p>
+<p>Inoltre, la sezione &quot;Presa in carico del ticket&quot; verrà visualizzata in maniera diversa se il ticket è già stato preso in carico oppure no:</p>
+<ul>
+<li>
+<p>Preso in carico:</p>
+<p><img src="/bobo-help/plan_attivita/img/[62]_ticket_preso.png" alt="62" title="Ticket preso in carico"></p>
+</li>
+<li>
+<p>Non preso in carico:</p>
+<p><img src="/bobo-help/plan_attivita/img/[61]_ticket_non_preso.png" alt="61" title="Ticket non preso in carico"></p>
+<p>Se si è il destinatario del ticket (oppure si ha il permesso perché amministratori) sarà possibile prenderlo in carico:</p>
+<p><img src="/bobo-help/plan_attivita/img/[60]_presa_in_carico.png" alt="60" title="Presa in carico"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsante <u>Modifica</u></p>
+<p>Cliccando il pulsante <img src="/bobo-help/plan_attivita/img/[ico]_modif.png" width="40px" height="40px"></img> è possibile modificare il ticket; il pulsante sarà disponibile solo se il ticket non è stato ancora preso in carico.</p>
+</li>
+<li>
+<p>Pulsante <u>Ticket APERTO</u>:</p>
+<p>Cliccando il pulsante <img src="/bobo-help/plan_attivita/img/[ico]_ticket_aperto.png" width="140px" height="70px"></img> è possibile procedere alla chiusura del ticket (quest'operazione è possibile anche dalla visualizzazione del dettaglio dell'attività):</p>
+<p><img src="/bobo-help/plan_attivita/img/[40]_chiudi_ticket.png" alt="40" title="Chiudi ticket"></p>
+</li>
+<li>
+<p>Pulsante <u>Elimina</u>:</p>
+<p>Cliccando il pulsante <img src="/bobo-help/plan_attivita/img/[ico]_del.png" width="40px" height="45px"></img> è possibile eliminare il ticket scelto:</p>
+<p><img src="/bobo-help/plan_attivita/img/[51]_del.png" alt="51" title="Messaggio di eliminazione"></p>
+<p>Premere &quot;Si, elimina&quot; per eseguire l'operazione.</p>
+</li>
+<li>
+<p>Pulsante <u>Ticket CHIUSO</u>:</p>
+<p>Cliccando il pulsante <img src="/bobo-help/plan_attivita/img/[ico]_ticket_chiuso.png" width="140px" height="70px"></img> è possibile procedere alla riapertura del ticket (quest'operazione è possibile anche dalla visualizzazione del dettaglio dell'attività):</p>
+<p><img src="/bobo-help/plan_attivita/img/[41]_riapri_ticket.png" alt="41" title="Riapri ticket"></p>
+</li>
+<li>
+<p><u>Esplorazione delle pagine</u>;</p>
+</li>
+</ol>
+<h3 id="scheda-%22nuovo%22">Scheda &quot;Nuovo&quot;</h3>
+<p>Cliccando la scheda &quot;Nuovo&quot; sarà possibile inserire una nuova attività (ticket):</p>
+<p><img src="/bobo-help/plan_attivita/img/[20]_nuovo.png" alt="20" title="Scheda nuovo"></p>
+<ol>
+<li>
+<p>Seleziona <u>Tipo</u> (<span style="color:red">*</span>obbligatorio):</p>
+<p><img src="/bobo-help/plan_attivita/img/[21]_tipo.png" alt="21" title="Seleziona tipo"></p>
+<p>Quando viene selezionato un tipo di ticket, verranno visualizzati i seguenti campi relativi alle tempistiche di esecuzione dell'attività:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/plan_attivita/img/[25]_inserito_il.png" alt="25" title="Data d'inserimento"> : questo campo non sarà modificabile in quanto la data d'inserimento sarà la data/ora corrente;</p>
+</li>
+<li>
+<p><img src="/bobo-help/plan_attivita/img/[26]_scadenza_il.png" alt="26" title="Scadenza"> : se selezionato il tipo &quot;Correttivo&quot;, verrà impostata di default la data relativa a tre giorni lavorativi successivi alla quella d'inserimento. Tuttavia, è possibile impostare una qualsiasi data successiva a quella d'inserimento del ticket;</p>
+</li>
+<li>
+<p><img src="/bobo-help/plan_attivita/img/[27]_da_eseguire_il.png" alt="27" title="Da eseguire il"> : sostituisce il campo &quot;Inserito il&quot; quando si seleziona il tipo &quot;Evolutivo&quot; (modificabile);</p>
+</li>
+</ul>
+<p>Le date/ore vengono impostate attraverso il il seguente form di selezione:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/plan_attivita/img/[130]_data.png" alt="130" title="Selezione data"></p>
+<p>     a. Mese precedente;<br>
+     b. Mese successivo;<br>
+     c. Anno precedente;<br>
+     d. Anno successivo;<br>
+     e. Scelta del giorno;<br>
+     f. Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></p>
+<p>Ora:</p>
+<p><img src="/bobo-help/plan_attivita/img/[131]_ora1.png" alt="131" title="Selezione ora">
+<img src="/bobo-help/plan_attivita/img/[132]_ora2.png" alt="132" title="Selezione minuti"></p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+</li>
+<li>
+<p>Seleziona <u>Categoria</u> (<span style="color:red">*</span>obbligatorio):</p>
+<p><img src="/bobo-help/plan_attivita/img/[22]_categoria.png" alt="22" title="Seleziona categoria"></p>
+</li>
+<li>
+<p>Seleziona <u>Urgenza</u> (<span style="color:red">*</span>obbligatorio):</p>
+<p><img src="/bobo-help/plan_attivita/img/[23]_urgenza.png" alt="23" title="Seleziona urgenza"></p>
+</li>
+<li>
+<p>Seleziona <u>Provincia</u>: agisce da filtro per l'estrazione delle stazioni;</p>
+</li>
+<li>
+<p>Seleziona <u>Stazione</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Equipaggiamento</u>: verranno visualizzati gli strumenti presenti sulla stazione scelta in precedenza (se non si compila il campo &quot;Stazione&quot;, la lista degli equipaggiamenti disponibili sarà vuota);</p>
+</li>
+<li>
+<p>Campo <u>Assegnato a</u> (<span style="color:red">*</span>obbligatorio): selezionare l'azienda a cui assegnare il ticket (verranno visualizzate le aziende associate alla propria rete);</p>
+</li>
+<li>
+<p>Seleziona <u>Ripetizione</u> (<span style="color:red">*</span>obbligatorio):</p>
+<p><img src="/bobo-help/plan_attivita/img/[24]_ripetizione.png" alt="24" title="Seleziona ripetizione"></p>
+</li>
+<li>
+<p>Campo <u>Ripeti fino a</u> : impostare la data limite per la ripetizione del ticket (se selezionata la ripetizione &quot;Solo una volta&quot;, il campo non sarà modificabile);</p>
+</li>
+<li>
+<p><u>Titolo</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Descrizione</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Inserisci ticket</u>: effettua l'inserimento del ticket;</p>
+<p>Qualora non si siano compilati tutti i campi correttamente, verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/plan_attivita/img/[50]_err_salvataggio.png" alt="50" title="Attenzione"></p>
+<p>Invece, se tutto è stato compilato correttamente, il messaggio sarà il seguente</p>
+<p><img src="/bobo-help/plan_attivita/img/[52]_save.png" alt="52" title="Salvataggio"></p>
+<p>N.B. Una volta inserito un ticket, l'utente resterà sulla scheda d'inserimento. Questa impostazione risulta utile qualora l'utente debba inserire molteplici ticket per la stessa stazione.</p>
+</li>
+<li>
+<p><u>Svuota campi</u>: ripulisce tutti i campi del form.</p>
+</li>
+<li>
+<p><u>Annulla</u>: chiudi la scheda &quot;Nuovo&quot; e torna alla tabella delle attività.</p>
+</li>
+</ul>
+</li>
+</ol>

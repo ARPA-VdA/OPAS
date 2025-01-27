@@ -1,0 +1,29 @@
+/* inserito per l'immagine della login */
+html, body, .login-register{
+    height: 100%;
+}
+*img {  image-rendering: -webkit-optimize-contrast;}
+
+/* --- login --- */
+#recover-form {
+  display: none;
+}
+
+.login-box a.text-center{
+    display: block;
+}
+.login-register{
+    background-size: auto 80%;
+    background-position: left bottom;
+    background-image: url(/bobo-img/bg-login.png);
+}
+.toggle-password.input-group-text{
+    padding: 0.375rem 0.6rem;
+    border-radius: 0px;
+}
+.form-material .form-control.my-pwd{
+    background-color: #e8f0fe;
+    border: none;
+    background-image: none;
+    padding: 0px 10px;
+}

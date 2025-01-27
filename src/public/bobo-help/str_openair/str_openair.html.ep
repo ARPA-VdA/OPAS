@@ -1,0 +1,78 @@
+<h1 id="strumenti---grafici-openair">GRAFICI OPENAIR</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Strumenti&quot; posta nel menu principale di sinistra e cliccare sull'elemento &quot;Grafici OpenAir&quot;.</p>
+<h3>
+    > Strumenti<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Grafici OpenAir</span>
+</h3>
+<p>Attraverso questo strumento è possibile generare e visualizzare i grafici OpenAir riguardanti gli inquinanti delle stazioni della propria rete di appartenenza.</p>
+<p><img src="/bobo-help/str_openair/img/[10]_index.png" alt="10" title="Grafici OpenAir"></p>
+<ol>
+<li>
+<p>Creazione di una nuova configurazione;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle configurazioni sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle configurazioni: cliccando il pulsante <img src="/bobo-help/str_openair/img/pulsico/visual.png" height="50px"></img> è possibile visualizzare le immagini dei grafici, organizzate per tipologia:</p>
+<p><img src="/bobo-help/str_openair/img/[30]_grafici.png" alt="30" title="Grafici"></p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="crea-una-nuoca-configurazione">Crea una nuoca configurazione</h2>
+<p><img src="/bobo-help/str_openair/img/[20]_config.png" alt="20" title="Nuova configurazione"></p>
+<p>Per generare i grafici compilare i seguenti campi:</p>
+<ol>
+<li>
+<p>Intervallo date (<span style="color:red">*</span>obbligatorio);</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>L'utente ha due possibilità: selezionare il periodo dall'elenco di default presente sulla sinistra (punto &quot;a.&quot;), oppure impostarlo manualmente (nell'elenco di default verrà selezionato automaticamente &quot;Personalizza&quot;). In quest'ultimo caso, è importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/str_openair/img/[000]_new_calendar_date.png" alt="000" title="Calendario"></p>
+<p>      a. Periodi di default;</p>
+<p>      b. Calendario mese precedente;</p>
+<p>      c. Calendario mese corrente;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Pulsante <u>Applica</u>;</p>
+</li>
+<li>
+<p>Calma di vento (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Categoria di strumenti: è possibile selezionare una categoria per generare i grafici SOLO per quella tipologia d'inquinante. Qualora non si selezioni niente, verranno generate le immagini per TUTTI gli inquinanti;</p>
+</li>
+<li>
+<p>Provincia della stazione inquinante (filtro per il campo 5.);</p>
+</li>
+<li>
+<p>Stazione inquinante (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Provincia della stazione meteo (filtro per il campo 7.);</p>
+</li>
+<li>
+<p>Stazione meteo (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Limite inferiore dei grafici;</p>
+</li>
+<li>
+<p>Limite superiore dei grafici;</p>
+</li>
+<li>
+<p>Impostazione della scala dei grafici (<span style="color:red">*</span>obbligatorio): è possibile scegliere tra 3 possibilità:</p>
+<ul>
+<li><u>Default</u>: la scala viene gestita automaticamente dallo script di generazione delle immagini;</li>
+<li><u>N° fasce della scala</u>: inserire il numero di fasce in cui verrà ripartita la scala;</li>
+<li><u>Ripartizione step della scala</u>: inserire una serie di numeri, in ordine crescente, per definire ogni step della scala;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <img src="/bobo-help/str_openair/img/pulsico/crea_grafici.png" height="50px"></img> per effettuare la richiesta di generazione dei grafici, oppure il pulsante &quot;Annulla&quot; per ripulire il form.</p>
+</li>
+</ol>

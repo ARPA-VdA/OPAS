@@ -1,0 +1,123 @@
+% layout 'default';
+% title 'Dati - analisi copertura';
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/statistiche/copertura.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Analisi copertura dati</h4>
+                        <h6 class="card-subtitle">Pagina di analisi della copertura e della validità dei dati per ogni stazione in un determinato periodo</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-group col-md-3" style="margin-bottom: 20px;">
+                        <input class="form-control input-daterange-datepicker" type="text" data-date-format="yyyy"  name="daterange" value="" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="custom-select col-12" id="networks" name="networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class=" col-md-3">
+                        <select class="custom-select col-12" id="provinces" name="provinces">
+                            <option value="-1">Seleziona provincia...</option>
+                        </select>
+                    </div>
+                    <div class=" col-md-3">
+                        <select class="custom-select col-12" id="stations" name="stations">
+                            <option value="-1">Seleziona stazione...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#coverage-chart" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-chart-areaspline"></i></span> <span class="hidden-xs-down">Grafici</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#coverage-tbl" id="new-bulletin" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-table"></i></span> <span class="hidden-xs-down" id="inner-new-bulletin">Tabelle</span></a> </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content hide-el">
+                    <div class="tab-pane p-20 active" id="coverage-chart" role="tabpanel">
+                        <div class="row">
+                            <!-- <div class="col-lg-4">
+                                <div class="charts" id="chart1"></div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="charts" id="chart2"></div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="charts" id="chart3"></div>
+                            </div> -->
+                        </div>
+                    </div>
+                    <div class="tab-pane p-20" id="coverage-tbl" role="tabpanel">
+
+                        <h3 id="station-title-tbl" class="tbl-title text-info m-b-20">Stazione di: <strong id="sel-station"></strong></h3>
+
+                        <div id="station-coverage-legend" class="legend">
+                            <h5 class="text-primary">Legenda: percentuale mensile di ricezione dei dati</strong></h5>
+                            <span>
+                                <button type="button" class="btn waves-effect waves-light btn-rounded btn-sm no-data">&nbsp;&nbsp;&nbsp;</button> Nessun dato
+                            </span>
+                            <span>
+                                <button type="button" class="btn waves-effect waves-light btn-rounded btn-sm few-data">&nbsp;&nbsp;&nbsp;</button> Da 1% al 74%
+                            </span>
+                            <span>
+                                <button type="button" class="btn waves-effect waves-light btn-rounded btn-sm lot-data">&nbsp;&nbsp;&nbsp;</button> Dal 75% al 99%
+                            </span>
+                            <span>
+                                <button type="button" class="btn waves-effect waves-light btn-rounded btn-sm all-data">&nbsp;&nbsp;&nbsp;</button> 100% dei dati
+                            </span>
+                        </div>
+
+                        <div class="station-coverage">
+
+                            <h4 class="tbl-title text-success m-b-10">Tabella sulla <strong>percentuale di <em>ricezione</em> dei dati</strong></h4>
+                            <div id="data-coverage" class="table tbl-data">
+                            </div>
+                            <div class="download-buttons-nopag">
+                                <button id="download-csv" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Download CSV">
+                                    <i class="ti-download"></i> CSV
+                                </button>
+                                <button id="download-xlsx" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Download XLSX">
+                                    <i class="ti-download"></i> XLSX
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="m-t-25">
+
+                        <div class="station-validity">
+
+                            <h4 class="tbl-title text-success m-b-10">Tabella sulla <strong>percentuale di <em>validità</em> dei dati ricevuti</strong></h4>
+                            <div id="data-validity" class="table tbl-data">
+                            </div>
+                            <div class="download-buttons-nopag">
+                                <button id="download-csv-validity" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Download CSV">
+                                    <i class="ti-download"></i> CSV
+                                </button>
+                                <button id="download-xlsx-validity" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Download XLSX">
+                                    <i class="ti-download"></i> XLSX
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

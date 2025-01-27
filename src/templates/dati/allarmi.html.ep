@@ -1,0 +1,73 @@
+% layout 'default';
+% title 'Dati - Allarmi';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/allarmi.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza tutti gli ALLARMI RILEVATI</h4>
+                        <h6 class="card-subtitle">Visualizza gli allarmi riferiti alle stazioni e filtrali in base alle tue esigenze</h6>
+                    </div>
+                </div>
+
+                <div class="row m-b-10">
+                    <div class="input-group col-md-3">
+                        <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <select class="custom-select col-12" id="networks" name="networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="custom-select col-12" id="provinces" name="provinces">
+                            <option value="-1">Seleziona provincia...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="custom-select col-12" id="stations" name="stations">
+                            <option value="-1">Seleziona stazione...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="checkbox" id="hide-door" name="hide-door" class="js-switch" data-color="#79a030" />
+                        <label for="hide-door">Nascondi <b>Porta aperta</b></label>
+                    </div>
+                </div>
+
+                <table id="alarmst-table" class="table table-hover table-striped" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Data ora</th>
+                            <th>Stazione</th>
+                            <th>Tipo allarme</th>
+                            <th>Rientrato</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Data ora</th>
+                            <th>Stazione</th>
+                            <th>Tipo allarme</th>
+                            <th>Rientrato</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,150 @@
+% layout 'default';
+% title 'Dati - tarature automatiche';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/tarature_aut.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    var stid      = '<%= $stid %>';
+    var dateStart = '<%= $start %>';
+
+</script>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Tarature automatiche</h4>
+                        <h6 class="card-subtitle">Visualizza i risultati delle tarature automatiche in formato tabellare.</h6>
+                    </div>
+                </div>
+
+                <div id="lightbox-chart" class="white-popup mfp-hide">
+                    <h4 class="box-title text-info">Taratura <strong></strong> delle ore <strong></strong></h4>
+                    <div id="chart-container"></div>
+                </div>
+
+                <div class="row m-b-10">
+                    <div class="input-group col-md-2">
+                        <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <select class="custom-select col-12" id="networks" name="networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class=" col-md-2">
+                        <select class="custom-select col-12" id="provinces" name="provinces">
+                            <option value="-1">Seleziona provincia...</option>
+                        </select>
+                    </div>
+                    <div class=" col-md-2">
+                        <select class="custom-select col-12" id="stations" name="stations">
+                            <option value="-1">Seleziona stazione...</option>
+                        </select>
+                    </div>
+                    <div class=" col-md-2">
+                        <select class="custom-select col-12" id="parameters" name="parameters">
+                            <option value="-1">Seleziona parametro...</option>
+                            % foreach my $parameter (@{$parameters}){
+                                <option value="<%= $parameter->{'param_id'} %>"><%= $parameter->{'param_name'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class=" col-md-2">
+                        <input type="checkbox" id="result-active" name="result-active" class="js-switch" data-color="#79a030" />
+                        <label for="result-active">Taratura con risultato</label>
+                    </div>
+                </div>
+
+                <table id="calibs-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="bobo-nowrap"></th>
+                            <th class="bobo-nowrap">Data</th>
+                            <th>Stazione</th>
+                            <th>Param.</th>
+                            <th>Tipo</th>
+                            <th>Stato</th>
+                            <th class="bobo-nowrap">Valore</th>
+                            <th class="bobo-nowrap">Riferimento</th>
+                            <th class="bobo-nowrap">Tolleranza</th>
+                            <th>Risultato</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th class="bobo-nowrap"></th>
+                            <th class="bobo-nowrap">Data</th>
+                            <th>Stazione</th>
+                            <th>Param.</th>
+                            <th>Tipo</th>
+                            <th>Stato</th>
+                            <th class="bobo-nowrap">Valore</th>
+                            <th class="bobo-nowrap">Riferimento</th>
+                            <th class="bobo-nowrap">Tolleranza</th>
+                            <th>Risultato</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Nav tabs -->
+                <!-- <ul class="nav nav-tabs customtab main-tab" role="tablist"> -->
+                    <!-- <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#result" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Risultati</span></a> </li> -->
+                    <!-- <li class="nav-item show-cal"> <a class="nav-link" data-toggle="tab" href="#cal-tab" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-flask"></i></span> <span class="hidden-xs-down">Calendario</span></a> </li> -->
+                <!-- </ul> -->
+
+                <!-- Tab panes -->
+                <!-- <div class="row"> -->
+                    <!-- <div class="tab-pane p-20 active" id="result" role="tabpanel"> -->
+
+
+                    <!-- </div> -->
+                    <!-- <div class="tab-pane p-20" id="cal-tab" role="tabpanel">
+
+                        <div class="row">
+                            <div class="col-lg-12 m-b-30">
+                                <div id="calendar"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4" id="events-list">
+                                <h4 class="box-title">Tarature del <strong></strong></h4>
+                                <hr class="m-t-0 m-b-20">
+
+                                <table id="daily-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th class="bobo-nowrap"></th>
+                                            <th>Ora</th>
+                                            <th>Stazione</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-lg-8" id="events-chart">
+                                <h4 class="box-title">Taratura <strong></strong> delle ore <strong></strong></h4>
+                                <hr class="m-t-0 m-b-20">
+                                <div id="chart-container"></div>
+                            </div>
+                        </div>
+
+                    </div> -->
+                <!-- </div> -->
+            </div>
+        </div>
+    </div>
+</div>

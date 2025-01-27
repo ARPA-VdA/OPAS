@@ -1,0 +1,179 @@
+% layout 'default';
+% title 'QA - report sopralluoghi';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/qa_sopralluoghi.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Visualizza i report SOPRALLUOGHI inseriti</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo report che vuoi visualizzare</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Report</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="report-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-6">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class=" col-md-6">
+                                <select class="custom-select col-12" id="provinces" name="provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <table id="report-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Comune</th>
+                                    <th>Località</th>
+                                    <th>Partecipanti</th>
+                                    <th>Allegati</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Comune</th>
+                                    <th>Località</th>
+                                    <th>Partecipanti</th>
+                                    <th>Allegati</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo SOPRALLUOGO</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="survey-form" name="survey-form">
+                            <input type="hidden" class="clear-input" id="survey-id" name="survey-id" value="">
+                            <div class="form-group row">
+                                <label for="survey-prov" class="col-md-2 col-form-label">Provincia <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="survey-prov" name="survey-prov">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % $region = '';
+                                        % foreach my $province (@{$provinces}){
+
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <label for="survey-district" class="col-md-2 col-form-label">Comune <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12"  id="survey-district" name="survey-district">
+                                        <option value="-1">Seleziona comune...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="survey-place" class="col-md-2 col-form-label">Località <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control clear-input" id="survey-place" name="survey-place" placeholder="Località...">
+                                </div>
+                                <label for="survey-datetime" class="col-md-2 col-form-label">Data/ora <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input" id="survey-datetime" name="survey-datetime" placeholder="mm/dd/yyyy">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="survey-operators" class="col-md-2 col-form-label">Partecipanti </label>
+                                <div class="col-md-10">
+                                    <select class="custom-select clear-select col-md-12"  id="survey-operators" name="survey-operators" multiple>
+                                        % foreach my $user (@{$users}){
+                                            <option value="<%= $user->{'us_id'} %>"><%= $user->{'us_name'}%> <%= $user->{'us_surname'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="survey-note" class="col-md-2 col-form-label">Note <span class="text-danger">*</span></label>
+                                <div class="col-md-10">
+                                    <div class="summernote" id="survey-text" name="survey-text" required></div>
+                                </div>
+                            </div>
+                            <h5 class="divider-title" >Allegati</h5>
+                            <div class="form-group row">
+                                <label for="survey-attach" class="col-md-2 col-form-label">Aggiungi immagini</label>
+                                <div class="col-md-10">
+                                    <div id="survey-attach" class="dropzone"></div>
+                                </div>
+                            </div>
+                            <div class="row report-gallery-big m-b-10">
+                                <div class="col-md-10 offset-md-2" id="img-container">
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="btn-survey-form" id="btn-survey-form"> <i class="ti-save"></i> Inserisci report</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-survey-form" id="cancel-survey-form">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

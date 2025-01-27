@@ -1,0 +1,283 @@
+% layout 'default';
+% title 'Verbali ALIMS';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/alims.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza i VERBALI ALIMS inseriti</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo report che vuoi visualizzare</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Report</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="report-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-3">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class="input-group col-md-3">
+                                <select class="custom-select col-12" id="provinces" name="provinces" data-change="stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="input-group col-md-3">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class="input-group col-md-3">
+                                <select class="custom-select col-12" id="analytics" name="analytics">
+                                    <option value="-1">Pacchetti analitici: TUTTI</option>
+                                    % foreach my $analytic (@{$analytics}){
+                                        <option value="<%= $analytic->{'ana_id'} %>"><%= $analytic->{'ana_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <table id="report-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Codice</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <!-- <th>N° Filtri</th>-->
+                                    <th>Filtri validi</th>
+                                    <th>Filtri annullati</th>
+                                    <th>Multiplo</th>
+                                    <th>Inviato</th>
+                                    <th>Ricevuto</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Codice</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <!-- <th>N° Filtri</th>-->
+                                    <th>Filtri validi</th>
+                                    <th>Filtri annullati</th>
+                                    <th>Multiplo</th>
+                                    <th>Inviato</th>
+                                    <th>Ricevuto</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo VERBALE ALIMS</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="form-alims" name="form-alims">
+                            <input type="hidden" class="clear-input" id="id-alims" name="id-alims" value="">
+                            <div class="form-group row m-b-0">
+                                <label for="datetime-alims" class="col-md-2 col-form-label">Data e ora <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input" id="datetime-alims" name="datetime-alims" placeholder="mm/dd/yyyy hh:mm">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="number-alims" class="col-md-2 col-form-label">Numero verbale</label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" id="number-alims" name="number-alims" placeholder="Inserire numero verbale">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-4 offset-lg-8 col-md-12 offset-md-0">
+                                    <span class="text-info"><i class="fa-regular fa-circle-info"></i> Valore generato automaticamente</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="prov-alims" class="col-md-2 col-form-label">Provincia</label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12 clear-select" id="prov-alims" name="prov-alims" data-change="station-alims">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % $region = '';
+                                        % foreach my $province (@{$provinces}){
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <label for="station-alims" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12" id="station-alims" name="station-alims">
+                                        <option value="-1">Seleziona...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="instrument-alims" class="col-md-2 col-form-label">Strumento <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12 clear-select" id="instrument-alims" name="instrument-alims">
+                                        <option value="-1">Seleziona strumento...</option>
+                                    </select>
+                                </div>
+                                <label for="argument-alims" class="col-md-2 col-form-label">Argomento <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12 clear-select" id="argument-alims" name="argument-alims">
+                                        <option value="-1">Seleziona argomento...</option>
+                                        % foreach my $argument (@{$arguments}){
+                                            <option value="<%= $argument->{'arg_id'} %>"><%= $argument->{'arg_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="form-group row">
+                                <label for="analytics-alims" class="col-md-2 col-form-label">Pacchetti analitici <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12 clear-select" id="analytics-alims" name="analytics-alims" multiple="multiple">
+                                        % foreach my $analytic (@{$analytics}){
+                                            <option value="<%= $analytic->{'ana_id'} %>"><%= $analytic->{'ana_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <div class="col-md-4 offset-md-2 m-t-5">
+                                    <div class="custom-control custom-checkbox p-l-0">
+                                        Filtro multiplo&nbsp;&nbsp;<input type="checkbox" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android"  id="multi-alims" name="multi-alims" />
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form" id="form-filters-alims" name="form-filters-alims">
+                            <h5 class="divider-title">Filtri</h5>
+                            <div class="table-responsive tbl-horiz">
+                                <table class="table table-striped table-compressed table-font-smaller form-table m-b-10 hide-filters" id="filters-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Filtro</th>
+                                            <th>Data/ora Inizio</th>
+                                            <th>Data/ora Fine</th>
+                                            <th>Volume</th>
+                                            <th>Annullato</th>
+                                            <th>Bianco</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-sm btn-success" name="add-filter-alims" id="add-filter-alims"> <i class="icon-plus"></i> Aggiungi filtro</button>
+                                <button type="button" class="btn btn-sm btn-danger" name="delete-all-filters" id="delete-all-filters"> <i class="icon-close"></i> Svuota tabella</button>
+                                <span id="volume-tot">Volume tot: <strong>0</strong></span>
+                            </div>
+                        </div>
+                        <hr class="m-t-30">
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-info" name="btn-alims-form" id="btn-alims-form"> <i class="ti-save"></i> Inserisci verbale</button>
+                                <button type="button" class="btn btn-inverse" name="cancel-alims-form" id="cancel-alims-form">Annulla</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VOLUMI MULTIPLI -->
+<div class="modal fade" id="multiple-volumes" tabindex="-1" role="dialog" aria-labelledby="multiple-volumes" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body one-tab-modal">
+                <h5 class="text-info">Seleziona il volume interessato</h5>
+                <p>Sono stati trovati diversi volumi acquisiti dallo strumento selezionato nel giorno indicato.<br><strong>Scegliere quale volume adottare:</strong></p>
+                <form class="form-horizontal" id="volumes-form">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" name="select-volume" id="select-volume"><i class="ti-star"></i> Seleziona</button>
+                <button type="button" class="btn btn-link text-danger" data-dismiss="modal"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade modal-result" id="view-formatted-result" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title text-info" id="myLargeModalLabel">Dettaglio JSON</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12" id="jsoneditor-result" style="width: 100%; height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info waves-effect text-left" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

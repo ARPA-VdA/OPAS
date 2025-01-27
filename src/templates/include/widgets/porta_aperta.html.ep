@@ -1,0 +1,45 @@
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/include/widgets/porta_aperta.js'))%>" type="text/javascript"></script>
+
+<div class="card">
+    <div class="card-body table-hp">
+        <h4 class="card-title"><i class="mdi mdi-alarm"></i> Allarme porta aperta</h4>
+        <h6 class="card-subtitle">visualizza gli <code>allarmi porta</code> ricevuti dalle stazioni remote.</h6>
+
+        <div class="row m-b-10">
+            <div class="input-group col-md-12">
+                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                <div class="input-group-append">
+                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 map100" id="map" tabindex="0">
+                <div id="popup" class="ol-popup">
+                    <div id="popup-content"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <%
+        foreach my $row ( @{$options} ) {
+            foreach my $widget ( @{$row} ){
+                if($widget->{'wdg_page_html'} eq '/porta_aperta'){
+
+                    my $dest = $widget->{'gw_dest'};
+                    if( $dest->{'type'} eq 'page' || $dest->{'type'} eq 'external' ){
+    %>
+                    <div class="card-footer">
+                        <span class="show-more">
+                            <a href="<%= $dest->{'link'} %>" class="show-more"><i class="mdi mdi-library-plus"></i> <%= $dest->{'title'} %> &raquo;</a>
+                        </span>
+                    </div>
+    <%
+                    }
+                }
+            }
+        }
+    %>
+</div>

@@ -1,0 +1,101 @@
+% layout 'default';
+% title 'Mapper';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/mapper.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    var stid = '<%= $stid %>';
+</script>
+<!-- Row -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- <div class="row"> -->
+                    <!-- <div class="col-md-6"> -->
+                        <h4 class="card-title">Mapper</h4>
+                        <h6 class="card-subtitle">
+                            Georefenziazione delle stazioni - visualizza il sinottico e l'anagrafica
+                            <!-- <button type="button" class="btn btn-sm float-right btn-danger" data-toggle-second="tooltip" data-placement="top" data-original-title="Visualizza elenco dei codici" data-target="#validation-codes" data-toggle="modal"><i class="mdi mdi-json"></i> Cod. validità</button> -->
+                        </h6>
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs customtab" role="tablist">
+                            <li class="nav-item" id="tab-map"> <a class="nav-link active" data-toggle="tab" href="#map_container" role="tab"><span class="hidden-sm-up"><i class="fas fa-map"></i></span> <span class="hidden-xs-down">Mappa</span></a> </li>
+                            <!-- <li class="nav-item" id="tab-realtime"> <a class="nav-link active" data-toggle="tab" href="#data-realtime" role="tab"><span class="hidden-sm-up"><i class="ti-write"></i></span> <span class="hidden-xs-down">Dati real time</span></a> </li> -->
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane p-20 active" id="map_container" role="tabpanel">
+                                <!-- <div class="row">
+                                    <div class="input-group col-md-6" style="margin-bottom: 20px;">
+                                        <input type="text" class="form-control" placeholder="Scrivi..." aria-label="Scrivi" aria-describedby="basic-addon2" id="input-keyword">
+                                        <div class="input-group-append">
+                                            <button type="submit" class="input-group-text ig-submit" id="search-keyword"><i class="fa fa-search"></i>&nbsp;Cerca</button>
+                                        </div>
+                                    </div>
+                                </div> -->
+
+                                <div class="row m-b-10 row-filter">
+                                    <div class="col-lg-5">
+                                        <select class="custom-select col-12" id="provinces" name="provinces" data-change="stations">
+                                            <option value="-1">Seleziona provincia...</option>
+                                            % my $region = '';
+                                            % foreach my $province (@{$provinces}){
+
+                                                % if ($region eq ''){
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }else{
+                                                    % if ($region eq $province->{'region_id'}){
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }
+                                                % }
+                                                % $region = $province->{'region_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div class=" col-lg-5">
+                                        <select class="custom-select col-12 select2 select2-multiple" multiple="multiple" id="stations" name="stations">
+                                        </select>
+                                    </div>
+                                    <div class=" col-lg-2">
+                                        <button id="update-map" type="button" class="btn btn-info btn-inline" data-toggle="tooltip" data-placement="top" title="Aggiorna mappa">
+                                            <i class="icon-refresh"></i> Aggiorna
+                                        </button>
+                                        <button id="reset-map" type="button" class="btn btn-inverse btn-inline" data-toggle="tooltip" data-placement="top" title="Reset mappa">
+                                            <i class="icon-close"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <h5 id="title-map p-t-10 p-b-20">Legenda delle <strong>reti visibili sulla mappa</strong></h5>
+                                <div id="legend-map">
+                                    <!-- <span class="col-legend">
+                                        <a href="#" data-id="0">
+                                            <i class="mdi mdi-checkbox-blank-circle" style="color:#dc5b09;"></i> Centro Funzionale
+                                        </a>
+                                    </span> -->
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 map100" id="map" tabindex="0">
+                                        <div id="popup" class="ol-popup">
+                                            <div id="popup-content"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- </div> -->
+                <!-- </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CODICI DI VALIDITA' -->
+%= include 'include/common/codes';

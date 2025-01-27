@@ -1,0 +1,314 @@
+% layout 'dataview';
+% title 'ANAGRAFICA - Dataview';
+
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/dataview_station.js'))%>" type="text/javascript"></script>
+<script type="text/javascript">
+        // data from server
+        var tab = '<%= $tab %>';
+        var st_id = '<%= $station->{station_id} %>';
+        // metadata for highcharts initialization
+        var chart_logo  = '<%= $option->{chart_logo} %>';
+        var chart_label = '<%= $option->{chart_label} %>';
+        var main_site = '<%= $option->{main_site} %>';
+
+        var portal_region = 0;
+</script>
+<script>
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        jqXHR.setRequestHeader('X-CSRF-Token', '<%= csrf_token %>');
+    });
+</script>
+<aside id="page-info">
+    <mark>
+        <i class="fa fa-angle-double-left if-open"></i>
+        <i class="fa fa-angle-double-right if-closed"></i>
+    </mark>
+    <section>
+        <h2 class="back-link"><a href="/str_dataview"><i class="icon-arrow-left-circle"></i> Torna a mappa stazioni</a></h2>
+        <h3>
+            Valori disponibili alle<br>
+            % if( scalar @{$param_values} ){
+            <%= @{$param_values}[0]->{'fulldate'} %>
+                % if( $description->{'last_values'}){
+                <a href="" data-toggle="modal" data-target=".modal-info-value"><i class="mdi mdi-help-circle"></i></a>
+                % }
+            % }
+        </h3>
+        <table id="real-time-value" class="table table-striped">
+            % foreach my $param_val (@{$param_values}){
+                <tr>
+                    <th><%= $param_val->{'parameter_name'} %></th>
+                    <td><%= $param_val->{'value'} %></td>
+                </tr>
+            % }
+
+        </table>
+        <h3>Visualizza parametri</h3>
+        <div id="parameters-type">
+            <div class="radio radio-info form-check form-check-inline">
+                <input type="radio" id="inlineRadio1" value="hh" name="radioInline" checked>
+                <label for="inlineRadio1"> Orari</label>
+            </div>
+            <div class="radio radio-info form-check form-check-inline">
+                <input type="radio" id="inlineRadio2" value="dd" name="radioInline">
+                <label for="inlineRadio2"> Giornalieri</label>
+            </div>
+        </div>
+        <h3>Periodo temporale</h3>
+        <div id="set-time-period">
+            <select class="form-control">
+                <option value="1" selected>Ultime 24 ore</option>
+                <option value="3">Ultimi 3 giorni</option>
+                <option value="7">Ultimi 7 giorni</option>
+                <option value="30">Ultimi 30 giorni</option>
+            </select>
+        </div>
+        <h3>Anagrafica stazione</h3>
+        <table id="registry-value" class="table table-striped">
+            <tr>
+                <th>Comune</th>
+                <td><%= $station->{'mu_name'} %> (<%=$station->{'province_code'}%>)</td>
+            </tr>
+            <tr>
+                <th>Località</th>
+                <td><%= $station->{'station_locality'} %></td>
+            </tr>
+            <tr>
+                <th>Quota</th>
+                <td><%= $station->{'station_altitude'} %>&nbsp;m s.l.m.</td>
+            </tr>
+            <tr>
+                <th>Lat. [WGS84]</th>
+                <td><%= $station->{'station_lat_wgs84'} %>&nbsp;°N</td>
+            </tr>
+            <tr>
+                <th>Lon. [WGS84]</th>
+                <td><%= $station->{'station_lon_wgs84'} %>&nbsp;°N</td>
+            </tr>
+        </table>
+        % if ( $description->{'infos'}){
+        <h2 class="more-link"><a href="" data-toggle="modal" data-target=".modal-info-param"><i class="mdi mdi-help-circle"></i> Info grafici e tabelle »</a></h2>
+        % }
+    </section>
+</aside>
+
+<div class="modal fade modal-info-value" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-primary">Informazioni sui valori disponibili </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <%== $description->{'last_values'} %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-info-param" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-primary">Informazioni su grafici e tabelle</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <%== $description->{'infos'} %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="page-content" class="station-page">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row mb-4">
+                    <div class="col-lg-5 title-top">
+                        <h4>staz. selezionata&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<strong class="text-primary"><%= $station->{'station_name'} %></strong></h4>
+                    </div>
+                    <div class="col-lg-7">
+                        <select class="form-control" id="select-station" name="select-station">
+                            <option value="-1">seleziona...</option>
+                            % foreach my $station (@{$stations}){
+                                <option value="<%= $station->{'station_id'} %>"><%= $station->{'station_name'} %> [<%= $station->{'station_network_type_desc'} %>]</option>
+                            % }
+                        </select>
+                    </div>
+                </div>
+                <nav id="station-tabs">
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-chart" role="tab" aria-controls="nav-chart" aria-selected="true"><i class="ti-bar-chart-alt"></i>&nbsp;&nbsp;Grafici</a>
+                        <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-table" role="tab" aria-controls="nav-table" aria-selected="false"><i class="icon-grid"></i>&nbsp;&nbsp;Tabelle</a>
+                        <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-registry" role="tab" aria-controls="nav-registry" aria-selected="false"><i class="icon-directions"></i>&nbsp;&nbsp;Anagrafica</a>
+                        <a class="nav-item nav-link" id="nav-nearest-tab" data-toggle="tab" href="#nav-nearest" role="tab" aria-controls="nav-nearest" aria-selected="false"><i class="icon-map"></i>&nbsp;&nbsp;Nelle vicinanze</a>
+                    </div>
+                </nav>
+                <div class="tab-content" id="station-tab-content">
+
+                    <div id="download-buttons-mobile" class="p-3">
+                        <a href="/str_dataview" class="btn btn-info"><i class="icon-arrow-left-circle"></i>&nbsp;Torna a mappa stazioni</a>
+                    </div>
+
+                    <div class="tab-pane fade active show" id="nav-chart" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <div class="row" id="container">
+
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" role="tabpanel" id="nav-table" aria-labelledby="nav-profile-tab">
+                        <!-- <div class="row">
+                            <div class="col-lg-12" id="download-csv">
+                                <label>Dowload dei dati: </label>
+                                <select class="form-control">
+                                    <option>Seleziona parametro...</option>
+                                    <option>Termometro [°C]</option>
+                                    <option>Igrometro [%]</option>
+                                    <option>Pluviometro [mm]</option>
+                                </select>
+                                <button class="btn btn-primary"><i class="icon-cloud-download"></i> CSV</button>
+                            </div>
+                        </div> -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="col-overflow">
+                                    <table class="table table-striped table-sm table-dataview" id="station-table">
+                                        <!-- <thead>
+                                            <tr>
+                                                <th>Data & ora</th>
+                                                <th>Termometro [°C]</th>
+                                                <th>Igrometro [%]</th>
+                                                <th>Pluviometro [mm]</th>
+                                                <th>Velocità Vento Vett. [m/sec]</th>
+                                                <th>Direzione Vento Vett. [°N]</th>
+                                            </tr>
+                                        </thead> -->
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="nav-registry" role="tabpanel" aria-labelledby="nav-contact-tab">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <a href="<%= $image %>" class="test-popup-link" title="Stazione di: <%= $station->{'station_name'}%> ">
+                                    <img src="<%= $image %>" class="img-fluid">
+                                </a>
+                                <h3>Parametri della stazione</h3>
+                                <!-- <ul>
+                                    % foreach my $param_val (@{$param_values}){
+                                        <li><%= $param_val->{'parameter_name'} %> [<%= $param_val->{'parameter_unit_conv'} %>]</li>
+                                    % }
+                                </ul> -->
+                                <table class="table table-striped table-sm table-dataview">
+                                    <tbody>
+                                    % foreach my $param_val (@{$param_values}){
+                                        <tr>
+                                            <td><%= $param_val->{'parameter_name'} %></td>
+                                            <td><%= $param_val->{'parameter_unit_conv'} %></td>
+                                        </tr>
+                                    % }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <h2>Anagrafica stazione&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<strong><%= $station->{'station_name'} %></strong>
+                                % if(defined $station->{'station_network_type_logo'}){
+                                    <img class="station-logo" src="<%=$station->{'station_network_type_logo'}%>" height="25"></img>
+                                % }
+                                </h2>
+                                <table class="infos">
+                                    <tr>
+                                        <th>Rete:</th>
+                                        <td><%=$station->{'station_network_type_desc'}%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tipologia:</th>
+                                        <td><%=$station->{'station_roaming_type_desc'}%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Località:</th>
+                                        <td><%=$station->{'station_locality'}%></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Comune:</th>
+                                        <td><%=$station->{'mu_name'}%> (<%=$station->{'province_code'}%>)</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Regione:</th>
+                                        <td><%=$station->{'region_name'}%></td>
+                                    </tr>
+                                </table>
+                                <h3>Coordinate geografiche</h3>
+                                <table class="infos">
+                                    <tr>
+                                        <th>Quota:</th>
+                                        <td><%=$station->{'station_altitude'}%>&nbsp;m&nbsp;s.l.m.</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Latitudine WGS84:</th>
+                                        <td><%=$station->{'station_lat_wgs84'}%>&nbsp;°N</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Longitudine WGS84:</th>
+                                        <td><%=$station->{'station_lon_wgs84'}%>&nbsp;°N</td>
+                                    </tr>
+                                </table>
+                                <h3>Dove si trova?</h3>
+                                <div id="map" class="mini-map mini100" tabindex="1"></div>
+                                <h3>Note</h3>
+                                <div>
+                                    <%=$station->{'station_note'}%>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="nav-nearest" role="tabpanel" aria-labelledby="nav-nearest-tab">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <h2>Staz. attuale&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<strong><%= $station->{'station_name'} %></strong>
+                                <h3>Altre stazioni nelle vicinanze</h3>
+                                <ul class="nearest-stations">
+                                </ul>
+                            </div>
+                            <div class="col-lg-7">
+                                <div id="map-near" tabindex="1">
+                                    <div id="popup" class="ol-popup">
+                                        <div id="popup-content"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="download-buttons" class="p-3">
+                        <a href="/str_dataview" class="btn btn-info"><i class="icon-arrow-left-circle"></i>&nbsp;Torna a mappa stazioni</a>
+                        <a href="/str_dataview_download" class="btn btn-primary"><i class="ti-download"></i>&nbsp;Scarica dati stazioni</a>
+                    </div>
+                </div>
+                % my $tm = Time::Moment->now;
+                <footer>
+                    &copy; Copyright <%= $tm->strftime("%Y"); %>  - <%= $option->{'footer'} %> - <a href="<%= $option->{'main_site'} %>" target="_blank"><%= $option->{'main_site_name'} %></a>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+</section>
+

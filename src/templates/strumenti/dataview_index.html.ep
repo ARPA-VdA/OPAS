@@ -1,0 +1,224 @@
+% layout 'dataview';
+% title 'Dataview';
+
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/dataview_index.js'))%>" type="text/javascript"></script>
+<script type="text/javascript">
+    var live_params_length = parseInt('<%= scalar @{$params_live}; %>');
+    var ind_params_length = parseInt('<%= scalar @{$params_ind}; %>');
+    var logged = parseInt('<%= $logged %>');
+    // arriving from server, id visible in page's url
+    var regURL = '<%= $reg %>';
+</script>
+<script>
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        jqXHR.setRequestHeader('X-CSRF-Token', '<%= csrf_token %>');
+    });
+</script>
+<section id="page-content">
+    <div class="container-fluid container-big">
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="map-hover">
+                    <div id="hover-top">
+                        % if( scalar @{$params_live} > 0 ){
+                            <div class="radio radio-stat form-check form-check-inline">
+                                <input type="radio" id="radio_data_live" name="radio_data" value="dati" checked>
+                                <label for="radio_data_live"> Dati live
+                                    % if(defined $description->{'live'} ){
+                                    <a href="" data-toggle="modal" data-target=".modal-info-live"><i class="mdi mdi-help-circle"></i></a>
+                                    % }
+                                </label>
+                            </div>
+                        % }
+                        % if( scalar @{$params_ind} > 0 ){
+                            <div class="radio radio-stat form-check form-check-inline">
+                                <input type="radio" id="radio_data_indicator" name="radio_data" value="indicatori" checked>
+                                <label for="radio_data_indicator"> Indicatori
+                                    % if(defined $description->{'indicator'} ){
+                                    <a href="" data-toggle="modal" data-target=".modal-info-indicator"><i class="mdi mdi-help-circle"></i></a>
+                                    % }
+                                </label>
+                            </div>
+                        % }
+                        <div class="radio radio-stat form-check form-check-inline">
+                            <input type="radio" id="radio_data_stations" name="radio_data" value="stazioni">
+                            <label for="radio_data_stations"> Stazioni</label>
+                        </div>
+                    </div>
+                    <div id="hover-bottom" class="map-hover-param navbar navbar-expand-sm" role="navigation">
+                        <ul class="nav nav-pills navbar-nav">
+                            % my $class = 'active';
+                            % foreach my $param (@{$params_live}){
+                                <li class="nav-item">
+                                    <a class="nav-link <%= $class %>" href="#" data-param="<%= $param->{'parameter_id'} %>" data-aggr="<%= $param->{'label_aggr'} %>">
+                                        <span><%= $param->{'label_big'} %></span>
+                                        <small><%= $param->{'label_little'} %></small>
+                                    </a>
+                                </li>
+
+                            %   $class = '';
+                            % }
+                        </ul>
+                    </div>
+                    <div id="hover-bottom-indicatori" class="map-hover-param">
+                        <ul class="nav nav-pills">
+                            % $class = 'active';
+                            % foreach my $param (@{$params_ind}){
+                                <li class="nav-item">
+                                    <a class="nav-link <%= $class %>" href="#" data-param="<%= $param->{'parameter_id'} %>" data-aggr="<%= $param->{'label_aggr'} %>" data-stat="<%= $param->{'label_stat'} %>">
+                                        <span><%= $param->{'label_big'} %></span>
+                                        <small><%= $param->{'label_little'} %></small>
+                                    </a>
+                                </li>
+                            %   $class = '';
+                            % }
+                        </ul>
+                    </div>
+                    <!-- <div id="station-hover"></div> -->
+                </div>
+                <div class="map-full" id="map">
+                    <div id="popup" class="ol-popup">
+                        <div id="popup-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade modal-info-live" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-primary">Informazioni sui dati live </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <%== $description->{'live'} %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-info-indicator" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-primary">Informazioni sugli indicatori </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <%== $description->{'indicator'} %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<aside id="page-stations">
+    <mark>
+        <i class="fa fa-angle-double-left if-closed"></i>
+        <i class="fa fa-angle-double-right if-open"></i>
+    </mark>
+    <section>
+        <a href="/str_dataview_download" id="go-download"><i class="ti-download"></i> Scarica i dati stazioni &raquo;</a>
+        <ul class="nav nav-tabs" id="tab-top" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="stations-tab" data-toggle="tab" href="#stations" role="tab" aria-controls="stations" aria-selected="true"><i class="ti-home"></i> Stazioni</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="params-tab" data-toggle="tab" href="#params" role="tab" aria-controls="params" aria-selected="false"><i class="ti-bag"></i> Parametri</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="tab-bottom">
+            <div class="tab-pane fade show active" id="stations" role="tabpanel" aria-labelledby="stations-tab">
+                <select class="form-control mb-2" id="select-region" name="select-region">
+                    <option value="-1">regione...</option>
+                    % my $region = '';
+                    % foreach my $province (@{$provinces}){
+                        % if ($region ne $province->{'region_name'}){
+                            % $region = $province->{'region_name'};
+                            <option value="<%= $province->{'region_id'} %>"><%= $province->{'region_name'} %></option>
+                        % }
+                    % }
+                </select>
+                <select class="form-control mb-2" id="select-prov" name="select-prov">
+                    <option value="-1">provincia...</option>
+                    % my $region = '';
+                    % foreach my $province (@{$provinces}){
+
+                        % if ($region eq ''){
+                            <optgroup label="<%= $province->{'region_name'} %>">
+                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                        % }else{
+                            % if ($region eq $province->{'region_name'}){
+                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                            % } else {
+                                </optgroup>
+                                <optgroup label="<%= $province->{'region_name'} %>">
+                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                            % }
+                        % }
+                        % $region = $province->{'region_name'};
+                    % }
+                    </optgroup>
+                </select>
+                <table class="table table-striped table-sm" id="table-stations">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Stazione</th>
+                            <th>Prov.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % foreach my $station (@{$stations}){
+                            <tr data-id="<%= $station->{'station_id'} %>" data-idx="<%= $station->{'layer_order'} %>">
+                                <td><a href="/str_dataview_station/<%= $station->{'station_id'} %>"><%= $station->{'station_id'} %></a></td>
+                                <td><a href="/str_dataview_station/<%= $station->{'station_id'} %>"><%= $station->{'station_name'} %></a></td>
+                                <td><%= $station->{'province_code'} %></td>
+                            </tr>
+                        % }
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="params" role="tabpanel" aria-labelledby="params-tab">
+                <table class="table table-striped table-sm" id="table-parameters" >
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>ID</th>
+                            <th>Parametro</th>
+                            <th>Unità</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- <tr>
+                            <td><a href="#" data-id="1" class="param-view">Termometro</a></td>
+                            <td><a href="#" data-id="1" class="param-view">1</a></td>
+                        </tr> -->
+                        % foreach my $param (@{$params}){
+                            <tr>
+                                <td></td>
+                                <td><%= $param->{'parameter_id'} %></td>
+                                <td><%= $param->{'parameter_name'} %></td>
+                                <td><%= $param->{'parameter_unit_conv'} %></td>
+                            </tr>
+                        % }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </section>
+</aside>

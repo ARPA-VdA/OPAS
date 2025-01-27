@@ -1,0 +1,47 @@
+<h1 id="infoaria---dataset-e2a">INFOARIA - DATASET E2a</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Infoaria&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Dataset E2a&quot;.</p>
+<h3>
+    > Infoaria<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Dataset E2a</span>
+</h3>
+<p>Da questa pagina è possibile selezionare il dataset e l'invio di ogni associazione stazione/parametro.</p>
+<p><img src="/bobo-help/info_dataset_e2a/img/[10]_index.png" alt="10" title="Dataset E2a"></p>
+<ol>
+<li>
+<p>Selezionare una <u>rete</u> (filtro tabella);</p>
+<p><img src="/bobo-help/info_dataset_e2a/img/[11]_selez_reti.png" alt="11" title="Reti"></p>
+</li>
+<li>
+<p>Selezionare una <u>provincia</u> (filtro tabella);</p>
+</li>
+<li>
+<p>Selezionare una <u>stazione</u> (filtro tabella);</p>
+<p><img src="/bobo-help/info_dataset_e2a/img/[12]_stazioni.png" alt="12" title="Stazioni"></p>
+</li>
+<li>
+<p>Selezionare un <u>parametro</u> (filtro tabella);</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/info_dataset_e2a/img/pulsico/si.png" height="50px"></img> / <img src="/bobo-help/info_dataset_e2a/img/pulsico/no.png" height="50px"></img> per modificare in una volta sola TUTTI gli invii delle associazioni presenti nella tabella sottostante;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle associazioni stazione/parametro;</p>
+<p>È possibile selezionare singolarmente quali dati andranno inviati ad ISPRA mediante i pulsanti <img src="/bobo-help/info_dataset_e2a/img/pulsico/si.png" height="50px"></img> / <img src="/bobo-help/info_dataset_e2a/img/pulsico/no.png" height="50px"></img></p>
+<p>Le seguenti configurazioni elencate sono <span style="color:red">OBBLIGATORIE</span>:</p>
+<ul>
+<li>impostare il <strong>codice europeo</strong> della stazione dalla pagina "Infoaria > Dataset D";</li>
+<li>i parametri inviati <strong>devono essere associati ad uno strumento</strong> al fine di generare correttamente il codice identificativo dello SPO necessario ad Infoaria;</li>
+<li>i parametri inviati e le relative stazioni <strong>devono avere impostate le date di attivazione</strong> nella sezione di anagrafica del portale (pagina &quot;Impostazioni rete &gt; Stazioni&quot;) al fine di generare correttamente gli identificativi di Infoaria;</li>
+<li>in futuro, per garantire il corretto funzionamento del sistema, qualora venga dismesso uno strumento presente in una stazione che effettuava l'invio dei dati, <strong>ricordarsi di disattivare anche il relativo invio presente nella tabella</strong>.</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

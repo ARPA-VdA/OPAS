@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it" translate="no">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="notranslate">
+    <meta name="googlebot" content="notranslate">
+
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="OPAS - Open Air System: Bobo web application">
+    <meta name="author" content="Ecometer">
+
+    <!-- icons all browsers -->
+    <link rel="apple-touch-icon" sizes="180x180" href="<%= helperGetFileVersion($portal_favicon.'/apple-touch-icon.png') %>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<%= helperGetFileVersion($portal_favicon.'/favicon-32x32.png') %>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<%= helperGetFileVersion($portal_favicon.'/favicon-16x16.png') %>">
+    <link rel="manifest"  href="<%= helperGetFileVersion($portal_favicon.'/site.webmanifest') %>">
+    <link rel="mask-icon" href="<%= helperGetFileVersion($portal_favicon.'/safari-pinned-tab.svg') %>" color="#5bbad5">
+    <link rel="shortcut icon" href="<%=helperGetFileVersion($portal_favicon.'/favicon.ico')%>">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="<%= helperGetFileVersion($portal_favicon.'/browserconfig.xml') %>">
+    <meta name="theme-color" content="#ffffff">
+
+    <title><%= title %></title>
+
+    <script src="<%=url_for('/node_modules/jquery/jquery-3.2.1.min.js')%>"></script>
+
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="<%=url_for('/node_modules/popper/popper.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/bootstrap/dist/js/bootstrap.min.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/bootstrap/dist/css/bootstrap.min.css')%>" rel="stylesheet" type="text/css">
+
+    <!-- Sweet alert -->
+    <link  href="<%=url_for('/node_modules/sweetalert/sweetalert.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/sweetalert/sweetalert.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/sweetalert/jquery.sweet-alert.custom.js')%>"></script>
+
+    <!-- toast notification -->
+    <!-- https://kamranahmed.info/toast -->
+    <link  href="<%=url_for('/node_modules/toast-master/css/jquery.toast.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/toast-master/js/jquery.toast.js')%>"></script>
+
+    <!-- Moment js -->
+    <script src="<%=url_for('/node_modules/moment/moment-with-locales.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment/moment-timezone-with-data.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/moment-holiday.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/locale/easter.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/locale/italy.js')%>"></script>
+
+    <!-- Datepicker plugin -->
+    <link  href="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.min.css')%>" rel="stylesheet" type="text/css" />
+    <script src="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.it.js')%>"></script>
+
+    <!-- Clockpicker plugin -->
+    <link  href="<%=url_for('/node_modules/clockpicker/dist/jquery-clockpicker.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/clockpicker/dist/jquery-clockpicker.min.js')%>"></script>
+
+    <!-- Daterange picker plugin -->
+    <link  href="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.js')%>"></script>
+
+    <!-- Switchery plugin -->
+    <link  href="<%=url_for('/node_modules/switchery/dist/switchery.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/switchery/dist/switchery.min.js')%>"></script>
+
+    <!-- input mask plugin https://github.com/RobinHerbots/Inputmask -->
+    <link  href="<%=url_for('/node_modules/inputmask/inputmask.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/inputmask/inputmask.js')%>"></script>
+
+    <!-- JSTree plugin 3.3.7-->
+    <!-- https://www.jstree.com/demo/ & https://github.com/vakata/jstree -->
+    <link href="<%=url_for('/node_modules/jstree/themes/default/style.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/jstree/jstree.js')%>"></script>
+
+    <!-- highlight.js https://highlightjs.org/usage/ -->
+    <link rel="stylesheet" href="<%=url_for('/node_modules/highlight/styles/a11y-dark.css')%>">
+    <script src="<%=url_for('/node_modules/highlight/highlight.pack.js')%>"></script>
+
+    <!-- bootstrap datetimepicker -->
+    <script src="<%=url_for('/node_modules/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js')%>"></script>
+    <link href="<%=url_for('/node_modules/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css')%>" rel="stylesheet">
+
+    <!-- Jquery Validate -->
+    <script src="<%=url_for('/node_modules/jquery-validate/jquery.validate.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/jquery-validate/additional-methods.min.js')%>"></script>
+
+    <!-- Jquery color picker http://jscolor.com/examples/ -->
+    <script src="<%=url_for('/node_modules/jscolor.js')%>"></script>
+
+    <!-- Highstock -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/accessibility.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/annotations.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/exporting.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/offline-exporting.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/export-data.js'))%>"></script>
+    <!-- <script src="<%=url_for('/node_modules/highstock/map.js')%>"></script> -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost-canvas.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost.js'))%>"></script>
+
+    <!-- golden layout plugin http://golden-layout.com/ -->
+    <!-- https://github.com/golden-layout/golden-layout -->
+    <script src="<%=url_for('/node_modules/goldenlayout/goldenlayout.min.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/goldenlayout/goldenlayout-base.css')%>" rel="stylesheet">
+    <link  href="<%=url_for('/node_modules/goldenlayout/goldenlayout-dark-theme.css')%>" rel="stylesheet">
+
+    <!-- Tabulator plugin -->
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator.min.css'))%>" rel="stylesheet">
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_bootstrap3.min.css'))%>" rel="stylesheet">
+    <!-- <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_simple.min.css'))%>" rel="stylesheet"> -->
+    <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/tabulator.js'))%>"></script>
+    <!-- <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/jquery_wrapper.js'))%>"></script> -->
+
+    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/css/dataTables.bootstrap4.min.css')%>" rel="stylesheet">
+    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/css/buttons.dataTables.min.css')%>" rel="stylesheet">
+    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/css/select.bootstrap4.min.css')%>" rel="stylesheet">
+
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/js/jquery.dataTables.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/dataTables.buttons.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/buttons.html5.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/buttons.print.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/JSZip-3.10.1/jszip.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/pdfmake-0.2.7/pdfmake.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/pdfmake-0.2.7/vfs_fonts.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/js/dataTables.select.min.js')%>"></script>
+
+    <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/datetime-moment.js')%>"></script>
+
+    <script src="<%=url_for('/node_modules/canvg-v3_0_10.js')%>"></script>
+
+    <!-- Select2 -->
+    <link  href="<%=url_for('/node_modules/select2/dist/css/select2.min.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/select2/dist/js/select2.full.min.js')%>" type="text/javascript"></script>
+
+    <!-- multi-select -->
+    <script src="<%=url_for('/node_modules/multi-select/quicksearch.js')%>"></script>
+    <script src="<%=url_for('/node_modules/multi-select/multi-select.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/multi-select/multi-select.css')%>" rel="stylesheet" />
+
+    <!-- JSTree plugin -->
+    <!-- https://www.jstree.com/demo/ & https://github.com/vakata/jstree -->
+    <link href="<%=url_for('/node_modules/jstree/themes/default/style.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/jstree/jstree.js')%>"></script>
+
+    <script type="text/javascript" src="<%=url_for('/node_modules/html2canvas.min.js')%>"></script>
+
+   <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/global.js'))%>"></script>
+
+    <!-- Font Awesome 6 -->
+    <!-- <script src="https://kit.fontawesome.com/XXXXXXXX.js" crossorigin="anonymous"></script> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- range slider https://rangeslider.js.org/ -->
+    <link  href="<%=url_for('/node_modules/rangeslider/rangeslider.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/rangeslider/rangeslider.js')%>"></script>
+</head>
+
+ <!-- page script -->
+<script type="text/javascript">
+    var app_mode = '<%= $self->app->mode %>';
+
+    // push group-page grants into jquery
+    var insert_grant = parseInt('<%= $user_grants->{user_insert} %>');
+    var update_grant = parseInt('<%= $user_grants->{user_update} %>');
+    var delete_grant = parseInt('<%= $user_grants->{user_delete} %>');
+
+    // info about portal and company name
+    var footer = '<%= $user->{portal_name} %>';
+    var company_web = '<%= $user->{company_web} %>';
+</script>
+
+<body>
+    <!-- main container application -->
+    <div class="container-fluid p-0">
+        <%= content %>
+    </div>
+    <!-- end main container application -->
+
+</body>
+
+</html>
+
+

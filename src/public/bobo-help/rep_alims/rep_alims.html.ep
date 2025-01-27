@@ -1,0 +1,128 @@
+<h1 id="report---alims">REPORT - ALIMS</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Report&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;ALIMS&quot;.</p>
+<h3>
+    > Report<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">ALIMS</span>
+</h3>
+<p>Questa pagina permette di visualizzare i report dei verbali ALIMS presenti sul portale e di inviarne di nuovi.</p>
+<p><img src="/bobo-help/rep_alims/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Tabella dei verbali;</li>
+<li>Scheda Nuovo: inserisci un nuovo verbale (vedi &quot;Inserimento nuovo VERBALE ALIMS&quot;);</li>
+</ul>
+</li>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/rep_alims/img/[31]_calendar_date.png" alt="31" title="Calendario"></p>
+<p>      a. Data d'inizio;<br>
+      b. Data di fine;<br>
+      c. Pulsante <u>Applica</u>;<br>
+      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+      e. Calendario mese precedente;<br>
+      f. Calendario mese corrente.<br></p>
+</li>
+<li>
+<p>Seleziona <u>Provincia</u>;</p>
+</li>
+<li>
+<p>Seleziona <u>Stazione</u>;</p>
+</li>
+<li>
+<p>Seleziona un <u>Pacchetto analitico</u> (è possibile selezionarli tutti scegliendo il valore &quot;Pacchetti analitici: TUTTI&quot;);</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei verbali sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella dei verbali;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p>Visualizza <img src="/bobo-help/rep_alims/img/pulsico/visualizza.png" height="40px"></img> : viene aperta una nuova scheda della pagina dove verrà visualizzato il dettaglio del report tarature selezionato;</p>
+<p><img src="/bobo-help/rep_alims/img/[40]_visualizza_report.png" alt="40" title="Visualizza report"></p>
+</li>
+<li>
+<p><u>Modifica</u> <img src="/bobo-help/rep_alims/img/pulsico/modifica.png" height="40px"></img> : si aprirà la scheda di modifica del report (scheda uguale alla scheda di inserimento di un nuovo report, ma effettuerà la modifica);</p>
+</li>
+<li>
+<p><u>Elimina</u> <img src="/bobo-help/rep_alims/img/pulsico/elimina.png" height="40px"></img> : elimina il report selezionato;</p>
+</li>
+<li>
+<p><u>Scarica PDF</u> <img src="/bobo-help/rep_alims/img/pulsico/pdf.png" height="40px"></img> : verrà scaricato il PDF del report selezionato;</p>
+</li>
+<li>
+<p><u>Re-invia report</u> <img src="/bobo-help/rep_alims/img/pulsico/re-invia.png" height="40px"></img> : cliccando questo pulsante verrà inviato nuovamente il report al webservice;</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-verbale-alims">Inserisci nuovo VERBALE ALIMS</h2>
+<p>Cliccando sulla scheda &quot;Nuovo&quot;, sarà possibile inserire un nuovo verbale compilando i vari campi:</p>
+<p><img src="/bobo-help/rep_alims/img/[50]_nuovo_report.png" alt="50" title="Nuovo report"></p>
+<ol>
+<li>
+<p>Schede della pagina (come sopra);</p>
+</li>
+<li>
+<p>Data e ora del verbale (<span style="color:red">*</span>obbligatorio): verrà visualizzato il seguente form per la selezione della data e dell'ora:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/rep_alims/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<p>      a. Mese precedente;<br>
+      b. Mese successivo;<br>
+      c. Anno precedente;<br>
+      d. Anno successivo;<br>
+      e. Scelta del giorno;<br>
+      f. Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br></p>
+<p>Ora:</p>
+<p><img src="/bobo-help/rep_alims/img/[61]_ora1.png" alt="61" title="Selezione ora">
+<img src="/bobo-help/rep_alims/img/[62]_ora2.png" alt="62" title="Selezione minuti"></p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+</li>
+<li>
+<p>Numero del verbale: verrà generato automaticamente e no sarà possibile modificarlo;</p>
+</li>
+<li>
+<p>Seleziona <u>Provincia</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Stazione</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Strumento</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Argomento</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Seleziona <u>Pacchetti analitici</u> (<span style="color:red">*</span>obbligatorio): possibile scelta multipla;</p>
+</li>
+<li>
+<p>Pulsante <u>Filtro multiplo</u>: attivando questo pulsante verranno sommati i volumi di tutti i filtri che verranno inseriti nella sezione &quot;Filtri&quot;</p>
+<p><img src="/bobo-help/rep_alims/img/[51]_filtro_multiplo_si.png" alt="51" title="Filtro multiplo"></p>
+</li>
+<li>
+<p>Pulsanti <img src="/bobo-help/rep_alims/img/pulsico/aggiungi_filtro.png" height="40px"></img> e <img src="/bobo-help/rep_alims/img/pulsico/svuota_tabella.png" height="40px"></img> : cliccando il pulsante &quot;Aggiungi filtro&quot; sarà possibile inserire molteplici filtri nel verbale che verranno elencati in una tabella:</p>
+<p><img src="/bobo-help/rep_alims/img/[52]_aggiunta_filtro.png" alt="52" title="Aggiungi filtro"></p>
+<p>Attraverso il pulsante <img src="/bobo-help/rep_alims/img/pulsico/filtro.png" height="40px"></img> è possibile acquisire automaticamente il volume del filtro dallo strumento selezionato in precedenza.</p>
+<p>Per eliminare un singolo filtro aggiunto, cliccare il pulsante <img src="/bobo-help/rep_alims/img/pulsico/elimina.png" height="40px"></img>; mentre per eliminare tutti i filtri in una volta sola, cliccare il pulsante &quot;Svuota tabella&quot;: verrà visualizzato il seguente messaggi odi allerta:</p>
+<p><img src="/bobo-help/rep_alims/img/msg_filtri.png" alt="msg" title="Messaggio di allerta eliminazione filtri"></p>
+<p>Cliccare &quot;Si, elimina&quot; per confermare.</p>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci verbale</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci verbale&quot; per effettuare l'inserimento del nuovo verbale, oppure il pulsante 'Annulla' per ritornare alla scheda 'Report';</p>
+</li>
+</ol>

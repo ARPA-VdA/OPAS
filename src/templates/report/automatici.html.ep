@@ -1,0 +1,170 @@
+% layout 'default';
+% title 'Dati - statistiche';
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/automatici.js'))%>" type="text/javascript"></script>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Report automatici</h4>
+                        <h6 class="card-subtitle">Report di analisi di dati inviati automaticamente, le risposte vengono date dal sistema di riferimento.</h6>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#param-list" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-file-export"></i></span> <span class="hidden-xs-down">WS Siral</span></a> </li>
+                            <!-- if user has insert grant -->
+                            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#new" id="new-param" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-file-export"></i></span> <span class="hidden-xs-down" id="inner-new-param">WS Aer Nostrum</span></a> </li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane p-20 active" id="param-list" role="tabpanel">
+                                <h4 class="box-title">Web Service verso SIRAL</h4>
+                                <hr class="m-t-0 m-b-20">
+                                <div class="row m-b-20">
+                                    <div class="input-group col-md-6">
+                                        <input type="text" class="form-control clear-input" id="siral-date" name="siral-date" placeholder="mm/dd/yyyy">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="icon-calender"></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="input-group col-md-2">
+                                        <button id="siral-update" type="button" class="btn btn-info btn-inline" data-toggle="tooltip" data-placement="top" title="Aggiorna dati">
+                                            <i class="icon-refresh"></i> Aggiorna
+                                        </button>
+                                    </div>
+                                </div>
+                                <table id="siral-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Comando</th>
+                                            <th>Codice</th>
+                                            <th>Tipo&nbsp;dati</th>
+                                            <th>Ris. invio</th>
+                                            <th>Ris. elaborazione</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Comando</th>
+                                            <th>Codice</th>
+                                            <th>Tipo&nbsp;dati</th>
+                                            <th>Ris. invio</th>
+                                            <th>Ris. elaborazione</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="tab-pane p-20" id="new" role="tabpanel">
+                                <h4 class="box-title">Web Service verso Aer Nostrum</h4>
+                                <hr class="m-t-0 m-b-20">
+                                <p>Per vedere ed utilizzare la struttura del web service di ARPAL accedi al link <a href="https://opas-liguria.arpal.liguria.it/ws/" target="_blank" class="text-info">opas-liguria.arpal.liguria.it/ws</a></p>
+                                <div class="row m-b-20">
+                                    <div class="input-group col-md-6">
+                                        <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="aer-nostrum-table" class="display responsive table tbl-va-center" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Giorno</th>
+                                                <th class="text-center">00:00</th>
+                                                <th class="text-center">01:00</th>
+                                                <th class="text-center">02:00</th>
+                                                <th class="text-center">03:00</th>
+                                                <th class="text-center">04:00</th>
+                                                <th class="text-center">05:00</th>
+                                                <th class="text-center">06:00</th>
+                                                <th class="text-center">07:00</th>
+                                                <th class="text-center">08:00</th>
+                                                <th class="text-center">09:00</th>
+                                                <th class="text-center">10:00</th>
+                                                <th class="text-center">11:00</th>
+                                                <th class="text-center">12:00</th>
+                                                <th class="text-center">13:00</th>
+                                                <th class="text-center">14:00</th>
+                                                <th class="text-center">15:00</th>
+                                                <th class="text-center">16:00</th>
+                                                <th class="text-center">17:00</th>
+                                                <th class="text-center">18:00</th>
+                                                <th class="text-center">19:00</th>
+                                                <th class="text-center">20:00</th>
+                                                <th class="text-center">21:00</th>
+                                                <th class="text-center">22:00</th>
+                                                <th class="text-center">23:00</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Giorno</th>
+                                                <th class="text-center">00:00</th>
+                                                <th class="text-center">01:00</th>
+                                                <th class="text-center">02:00</th>
+                                                <th class="text-center">03:00</th>
+                                                <th class="text-center">04:00</th>
+                                                <th class="text-center">05:00</th>
+                                                <th class="text-center">06:00</th>
+                                                <th class="text-center">07:00</th>
+                                                <th class="text-center">08:00</th>
+                                                <th class="text-center">09:00</th>
+                                                <th class="text-center">10:00</th>
+                                                <th class="text-center">11:00</th>
+                                                <th class="text-center">12:00</th>
+                                                <th class="text-center">13:00</th>
+                                                <th class="text-center">14:00</th>
+                                                <th class="text-center">15:00</th>
+                                                <th class="text-center">16:00</th>
+                                                <th class="text-center">17:00</th>
+                                                <th class="text-center">18:00</th>
+                                                <th class="text-center">19:00</th>
+                                                <th class="text-center">20:00</th>
+                                                <th class="text-center">21:00</th>
+                                                <th class="text-center">22:00</th>
+                                                <th class="text-center">23:00</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade modal-result" id="view-formatted-result" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title text-info" id="myLargeModalLabel">Dettaglio JSON</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12" id="jsoneditor-result" style="width: 100%; height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info waves-effect text-left" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

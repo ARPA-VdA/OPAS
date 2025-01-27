@@ -1,0 +1,134 @@
+<h1 id="avanzate---validazione">AVANZATE - VALIDAZIONE</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Avanzate&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Validazione&quot;.</p>
+<h3>
+    > Avanzate<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Validazione</span>
+</h3>
+<p>La seguente pagina si suddivide in tre schede principali:</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[01]_schede.png" alt="01"></p>
+<h2 id="scheda-sottogruppi">Scheda Sottogruppi</h2>
+<p>Creazione e modifica dei sottogruppi per la validazione dei dati.</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[10]_home.png" alt="10"></p>
+<ol>
+<li>
+<p>Sottogruppi presenti attualmente sul portale;</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[11]_sottogruppi.png" alt="11"></p>
+<p>Cliccando con il tasto destro del mouse su uno dei sottogruppi elencati, sarà possibile modificarlo oppure eliminarlo.</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[15]_tasto_dx_sottogruppi.png" alt="15"></p>
+<p>Modifica:</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[16]_modifica_sottogruppo.png" alt="16"></p>
+<ol>
+<li>
+<p>Nome del sottogruppo;</p>
+</li>
+<li>
+<p>Pulsante <u>Pubblico</u>: pulsante per rendere visibile a tutti gli utenti del proprio portale il sottogruppo di stazioni; se il pannello sarà pubblico non si dovranno associare i singoli gruppi di utenti;</p>
+<ul>
+<li>
+<p><img src="/bobo-help/str_ava_validazione/img/pulsico/[14]_pubblico-si.png" height="45px" width="70px"></img> --&gt; pubblico</p>
+</li>
+<li>
+<p><img src="/bobo-help/str_ava_validazione/img/pulsico/[13]_pubblico-no.png" height="45px" width="70px"></img> --&gt; privato</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Gruppi associati: selezionare i gruppi da associare che avranno i permessi sul pannello (solo se il pulsante 'Pubblico' è impostato su 'NO');</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[12]_gruppi_associati.png" alt="12"></p>
+</li>
+<li>
+<p>Pulsante <u>Genera sottogruppo</u>: una volta selezionati nome e gruppi associati, cliccando questo pulsante sarà possibile associare stazioni e pannelli dello strumento 'Visualizer' al sottogruppo appena generato;</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[17]_staz_e_pannelli.png" alt="17"></p>
+<p>Per aggiungere una stazione o un pannello, selezionare, facendo doppio click con il mouse, un elemento delle tabelle a sinistra (A-sx e B-sx) e verrà aggiunto nelle tabelle a destra (A-dx e B-dx); qualora si volessero aggiungere o rimuovere tutte le stazioni o tutti i pannelli, cliccare relativamente il pulsante 'Aggiungi tutti' e 'Rimuovi tutti';</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva sottogruppo</u> e <u>Annulla</u>: per rendere effettive le modifiche fatte cliccare 'Salva sottogruppo', oppure 'Annulla' per ritornare alla schermata precedente.</p>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="scheda-anomalie">Scheda Anomalie</h2>
+<p>Gestione degli eventuali dati anomali per parametro.</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[20]_anomalie.png" alt="20"></p>
+<ol>
+<li>
+<p>Pulsante <u>Nuovo</u>:</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[21]_nuovo.png" alt="21"></p>
+<p>      a. Seleziona <u>Reti</u>:</p>
+<p>            <img src="/bobo-help/str_ava_validazione/img/[22]_selez_reti.png" alt="22"></p>
+<p>      b. Seleziona <u>Parametro</u>:</p>
+<p>            <img src="/bobo-help/str_ava_validazione/img/[23]_selez_parametro.png" alt="23"></p>
+<p>            Alla selezione del parametro verrà aggiunta, sotto le etichette dei campi da compilare, l'unità di misura relativa al parametro scelto.</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle anomalie sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella delle anomalie: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Nome del parametro;</li>
+<li>Giorno d'inizio (Julian Day);</li>
+<li>Giorno di fine (Julian Day);</li>
+<li>Minimo del dato sospetto;</li>
+<li>Massimo del dato sospetto;</li>
+<li>Minimo del dato errato;</li>
+<li>Massimo del dato errato;</li>
+<li>Valore scalino sospetto;</li>
+<li>Valore scalino errato;</li>
+<li>Valore persistenza sospetta;</li>
+<li>Valore Persistenza errata;</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="scheda-anomalie-per-stazione">Scheda Anomalie per stazione</h2>
+<p>Gestione degli eventuali dati anomali per parametro di una particolare stazione;</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[30]_anomalie_per_stazione.png" alt="30"></p>
+<ol>
+<li>
+<p>Pulsante <u>Nuovo</u>:</p>
+<p><img src="/bobo-help/str_ava_validazione/img/[30]_nuovo.png" alt="30"></p>
+<p>      a. Seleziona <u>Stazione</u>:</p>
+<p>            <img src="/bobo-help/str_ava_validazione/img/[31]_selez_stazione.png" alt="31"></p>
+<p>      b. Seleziona <u>Parametro</u>:</p>
+<p>            <img src="/bobo-help/str_ava_validazione/img/[23]_selez_parametro.png" alt="23"></p>
+<p>            Alla selezione del parametro verrà aggiunta, sotto le etichette dei campi da compilare, l'unità di misura relativa al parametro scelto.</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle anomalie sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella delle anomalie: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Nome della stazione;</li>
+<li>Nome del parametro;</li>
+<li>Giorno d'inizio (Julian Day);</li>
+<li>Giorno di fine (Julian Day);</li>
+<li>Minimo del dato sospetto;</li>
+<li>Massimo del dato sospetto;</li>
+<li>Minimo del dato errato;</li>
+<li>Massimo del dato errato;</li>
+<li>Valore scalino sospetto;</li>
+<li>Valore scalino errato;</li>
+<li>Valore persistenza sospetta;</li>
+<li>Valore Persistenza errata;</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

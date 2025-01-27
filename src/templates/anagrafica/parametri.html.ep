@@ -1,0 +1,183 @@
+% layout 'default';
+% title 'Impostazioni di rete - Parametri';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/anagrafica/parametri.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Visualizza i Parametri</h4>
+                        <h6 class="card-subtitle">Da questa pagina puoi visualizzare tutti i parametri (attivi e non attivi) della tua rete.</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#param-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Parametri</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-param" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-param">Nuovo</span></a> </li>
+                    % }
+                    <!-- <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#param_view" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-flask"></i></span> <span class="hidden-xs-down">Visualizza</span></a> </li> -->
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="param-list" role="tabpanel">
+                        <div class="row form-group pt-3 show-space-between-med">
+                            <div class="col-6">
+                                <select class="custom-select col-12" id="parameters-type" name="parameters-type" data-placeholder=" Seleziona tipologia..." multiple>
+                                        % foreach my $type (@{$types}){
+                                            <option value="<%= $type->{'pm_type_id'} %>"><%= $type->{'pm_type_desc'} %></option>
+                                        % }
+                                </select>
+                            </div>
+                        </div>
+                        <table id="params-table" class="display responsive table table-hover table-striped" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th>PRID</th>
+                                    <th>Nome</th>
+                                    <th>Unità</th>
+                                    <th>Fattore conv.</th>
+                                    <th>Unità conv.</th>
+                                    <th>Decimali</th>
+                                    <th>Tipo</th>
+                                    <th>Attivo</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th>PRID</th>
+                                    <th>Nome</th>
+                                    <th>Unità</th>
+                                    <th>Fattore conv.</th>
+                                    <th>Unità conv.</th>
+                                    <th>Decimali</th>
+                                    <th>Tipo</th>
+                                    <th>Attivo</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo parametro</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="form-param-new">
+                            <input type="hidden" id="param-id" name="param-id" value="">
+                            <h5 class="divider-title">Generali</h5>
+                            <div class="form-group row">
+                                <label for="param-name" class="col-md-2 col-form-label">Nome <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input class="form-control" type="text" value="" id="param-name" name="param-name" placeholder="Nome...">
+                                </div>
+                                <label for="param-type" class="col-md-2 col-form-label">Tipo <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="param-type" name="param-type">
+                                        <option value="-1">Tipo...</option>
+                                        % foreach my $type (@{$types}){
+                                            <option value="<%= $type->{'pm_type_id'} %>"><%= $type->{'pm_type_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-shortname" class="col-md-2 col-form-label">Nome breve <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input class="form-control" type="text" value="" id="param-shortname" name="param-shortname" placeholder="Nome breve...">
+                                </div>
+                                <label for="param-extra-shortname" class="col-md-2 col-form-label">Nome molto breve</label>
+                                <div class="col-md-4">
+                                    <input class="form-control" type="text" value="" id="param-extra-shortname" name="param-extra-shortname" placeholder="Nome molto breve...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-extra-id" class="col-md-2 col-form-label">ID aggiuntivo</label>
+                                <div class="col-md-4">
+                                    <input class="form-control" type="text" value="" id="param-extra-id" name="param-extra-id" placeholder="ID...">
+                                </div>
+                                <label for="param-active" class="col-md-2 col-form-label">Attivo</label>
+                                <div class="col-md-4">
+                                    <input type="checkbox" checked id="param-active" name="param-active" class="js-switch" data-color="#79a030" />
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Impostazioni</h5>
+                            <div class="form-group row">
+                                <label for="param-unit" class="col-md-2 col-form-label">Unità di misura <span class="text-danger">*</span></label>
+                                <div class="col-md-2">
+                                    <select class="custom-select col-12" id="param-unit" name="param-unit">
+                                        % foreach my $unit (@{$units}){
+                                            <option value="<%= $unit->{'pm_unit_desc'} %>"><%= $unit->{'pm_unit_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="param-dec" class="col-md-2 col-form-label">Decimali <span class="text-danger">*</span></label>
+                                <div class="col-md-2">
+                                    <input class="form-control" type="number" value="0" min="0" id="param-dec" name="param-dec" placeholder="Decimali...">
+                                </div>
+                                <label for="param-unit-conv" class="col-md-2 col-form-label">Unità di conversione <span class="text-danger">*</span></label>
+                                <div class="col-md-2">
+                                    <select class="custom-select col-12" id="param-unit-conv" name="param-unit-conv">
+                                        % foreach my $unit (@{$units}){
+                                            <option value="<%= $unit->{'pm_unit_desc'} %>"><%= $unit->{'pm_unit_desc'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-obj" class="col-md-2 col-form-label">Oggetto JSON <span class="text-danger"></span></label>
+                                <div class="col-md-10" id="jsoneditor" name="param-obj" style="width: 100%; height: 400px;"></div>
+                            </div>
+                            <h5 class="divider-title">Coefficienti di conversione</h5>
+                            <div class="form-group row">
+                                <label for="param-coef" class="col-md-2 col-form-label">Coefficiente di conversione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input class="form-control" type="text" value="1" id="param-coef" name="param-coef" placeholder="Coefficiente (separatore dec. PUNTO)">
+                                </div>
+                            </div> -->
+                            <table class="table responsive table-striped table-compressed-middle table-font-smallerform-table m-b-10 hide-filters tbl-titles width-100 tbl-with-form" id="tbl-coeff">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Coefficente conversione</th>
+                                        <th>Data inizio</th>
+                                        <th>Data fine</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <button class="btn btn-success btn-sm" disabled id="add-row" data-idx="0" type="button" data-original-title="Aggiungi coefficente" data-toggle="tooltip"><i aria-hidden="true" class="fa-solid fa-plus-large"></i> Coefficiente</button>
+                            <h5 class="divider-title">Annotazioni</h5>
+                            <div class="form-group row">
+                                <label for="param-note" class="col-md-2 col-form-label">Note</label>
+                                <div class="col-10">
+                                    <textarea class="form-control" rows="5" id="param-note" name="param-note" placeholder="Note..."></textarea>
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-info" name="save-param" id="save-param"> <i class="ti-save"></i> Salva</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-param" id="cancel-param">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

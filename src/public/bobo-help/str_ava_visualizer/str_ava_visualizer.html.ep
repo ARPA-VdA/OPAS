@@ -1,0 +1,207 @@
+<h1 id="avanzate---visualizer">AVANZATE - VISUALIZER</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Avanzate&quot; posta nel menu principale di sinistra, selezionare l'elemento &quot;Visualizer&quot;.</p>
+<h3>
+    > Avanzate<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Visualizer</span>
+</h3>
+<p>Questa pagina permette la creazione e gestione dei pannelli e delle finestre, presenti all'interno dell'applicativo &quot;Visualizer&quot;.</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[10]_index.png" alt="10" title="Avanzate - Visualizer"></p>
+<ol>
+<li>
+<p>Lista dei gruppi e i relativi pannelli associati;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[20]_lista_gruppi.png" alt="20" title="Lista gruppi e pannelli"></p>
+<p>Cliccando con il tasto destro del mouse su uno dei pannelli della lista si aprirà il seguente specchietto:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[21]_tasto_dx_pannello.png" alt="21" title="Tasto DX su pannello"></p>
+<p>Sarà possibile visualizzare un'anteprima del pannello direttamente sull'applicativo Visualizer:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[22]_anteprima.png" alt="22" title="Anteprima"></p>
+<p>Inoltre, cliccando su &quot;Modifica pannello&quot; verranno caricate le finestre correlate al pannello e sarà possibile apportare le modifiche desiderate:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[23]_modifica_pannello.png" alt="23" title="Modifica pannello"></p>
+<p>Infine, è possibile eliminare il pannello selezionato cliccando su &quot;Elimina pannello&quot;; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[24]_elimina_pannello_1.png" alt="24" title="Elimina pannello 1"></p>
+<p>Cliccare &quot;Si, elimina&quot; per confermare:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[25]_elimina_pannello_2.png" alt="25" title="Elimina pannello 2"></p>
+</li>
+<li>
+<p>Creazione di un nuovo pannello: nome del pannello;</p>
+</li>
+<li>
+<p>Creazione di un nuovo pannello: gruppo di appartenenza;</p>
+</li>
+<li>
+<p>Pulsante &quot;<u>Gestione gruppi</u>&quot;;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[30]_gestione_gruppi.png" alt="30" title="Gestione gruppi"></p>
+<p>      a. Modifica gruppo: i campi sottostanti della sezione &quot;Aggiungi gruppo&quot; verranno compilati con i dati del gruppo che si vuole modificare.</p>
+<p>      b. Elimina gruppo;</p>
+<p>      c. Nome del gruppo;</p>
+<p>      d. Pulsante <u>Pubblico SI/NO</u>: cliccando il pulsante si cambia il suo stato:</p>
+<p>            <img src="/bobo-help/str_ava_visualizer/img/pulsico/[31]_no.png" height="45px" width="75px"></img> = gruppo pubblico (visibile anche a tutti gli utenti del proprio portale)</p>
+<p>            <img src="/bobo-help/str_ava_visualizer/img/pulsico/[32]_si.png" height="45px" width="75px"></img> = gruppo privato (visibile solo agli utenti selezionati al punto e.)</p>
+<p>      e. Utenti associati al gruppo: lista degli utenti che potranno visualizzare il gruppo;</p>
+<p>            N.B.: Se al punto d. è stato selezionato &quot;SI&quot; non sarà possibile selezionare utenti da associare dal momento che il gruppo sarà visualizzabile da tutti gli utenti del portale.</p>
+<p>      f. Pulsante <u>Aggiungi</u>;</p>
+<p>      g. Pulsante <u>Annulla</u>;</p>
+<p>      h. Pulsante <u>Chiudi finestra</u>: chiude la finestra di gestione dei gruppi;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<p>Una volta compilati i campi relativi a nome e gruppi associati, il prossimo passaggio è quello della creazione delle finestre del pannello:</p>
+<ul>
+<li><u>Finestra manuale</u>:</li>
+<li><u>Finestre automatiche</u>:</li>
+<li><u>Elimina finestre</u>:</li>
+</ul>
+</li>
+</ol>
+<h2 id="creazione-delle-finestre">Creazione delle finestre</h2>
+<h3 id="pulsante-finestra-manuale">Pulsante <strong>Finestra manuale</strong></h3>
+<p>Cliccando il pulsante &quot;Finestra manuale&quot; è possibile configurare manualmente le impostazioni generali della finestra e i relativi parametri che si vogliono visualizzare:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[40]_finestra_manuale.png" alt="40" title="Finestra manuale"></p>
+<ol>
+<li>
+<p>Nome finestra;</p>
+</li>
+<li>
+<p>Tipo: tipologia della finestra</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[41]_tipo.png" alt="41" title="Tipo"></p>
+</li>
+<li>
+<p>Aggregazione temporale: selezionare il tipo raggruppamento dei dati tra quelli presenti</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[42]_aggr_tempo.png" alt="42" title="Aggregazione temporale"></p>
+</li>
+<li>
+<p>Percentuale di dati validi: i dati visualizzati dovranno avere ALMENO questa percentuale di validità;</p>
+</li>
+<li>
+<p>Codice di validità: a sinistra è presente il filtro per stabilire il valore dei dati visualizzati rispetto al codice di validità scelto (la scelta è tra minore-uguale (&lt;=), uguale (=) e maggiore-uguale (&gt;=)); a destra l'elenco dei codici di validità disponibili;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[43]_cod_valid.png" alt="43" title="Codici di validità"></p>
+</li>
+<li>
+<p>Giorni visibili (opzionale): selezionare l'intervallo di tempo che verrà visualizzato nella finestra;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[93]_giorni_visibili.png" alt="93" title="Giorni visibili"></p>
+</li>
+<li>
+<p>Linea verde (opzionale): aggiungere un valore per inserire una linea orizzontale di colore verde relativa al valore minimo da visualizzare sul grafico;</p>
+</li>
+<li>
+<p>Linea rossa (opzionale): aggiungere un valore per inserire una linea orizzontale di colore rosso relativa al valore massimo da visualizzare sul grafico;</p>
+</li>
+<li>
+<p>Asse Y min (opzionale): aggiungere il valore minimo del range di visualizzazione dell'asse Y del grafico;</p>
+</li>
+<li>
+<p>Asse Y max (opzionale): aggiungere il valore massimo del range di visualizzazione dell'asse Y del grafico;</p>
+</li>
+<li>
+<p>Pulsanti <u>Aggiungi parametri</u> e <u>Reset parametri</u>: è possibile aggiungere o eliminare (Reset) i parametri dalla finestra:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[44]_agg_parametri.png" alt="44" title="Aggiungi parametri"></p>
+<ol>
+<li>
+<p>Filtro <u>Rete</u>: selezionare la rete su cui filtrare le stazioni;</p>
+</li>
+<li>
+<p>Filtro <u>Provincia</u>: selezionare la provincia su cui filtrare le stazioni;</p>
+</li>
+<li>
+<p><u>Stazioni</u>: una volta impostati i filtri precedenti, selezionare la stazione desiderata;</p>
+</li>
+<li>
+<p>Pulsante <u>Conversione dati SI/NO</u>: cliccando il pulsante si cambia il suo stato:</p>
+</li>
+</ol>
+<p>            <img src="/bobo-help/str_ava_visualizer/img/pulsico/[31]_no.png" height="45px"></img> -&gt; dati grezzi non convertiti;</p>
+<p>            <img src="/bobo-help/str_ava_visualizer/img/pulsico/[32]_si.png" height="45px"></img> -&gt; dati convertiti ad un'altra unità di misura secondo una formula predefinita per parametro;</p>
+<ol start="5">
+<li>
+<p>Seleziona parametri: per selezionare un parametro, fare doppio click su un elemento dall'elenco di sinistra (5a) ed esso verrà &quot;spostato&quot; nella tabella a destra (5c); per selezionare i parametri è anche possibile utilizzare i pulsanti posti al centro (5b):</p>
+<ul>
+<li>&quot;&gt;&gt;&quot; : aggiungi <u>tutti</u> i parametri filtrati nella colonna di sinistra;</li>
+<li>&quot;&gt;&quot; : aggiungi <u>solo</u> il parametro evidenziato con singolo click;</li>
+<li>&quot;&lt;&quot; : rimuovi <u>solo</u> il parametro evidenziato con singolo click;</li>
+<li>&quot;&lt;&lt;&quot; : rimuovi <u>tutti</u> i parametri dalla colonna di destra;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Chiudi finestra</u> (per chiudere la finestra di selezione dei parametri) e <u>Aggiungi parametri</u> (per rendere effettivo l'inserimento dei parametri nella finestra);<br><br></p>
+</li>
+</ol>
+<p>      Una volta selezionati i parametri, sarà possibile configurarne la visualizzazione singolarmente:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[45]_config_parametri.png" alt="45" title="Configurazione parametri"></p>
+<ul>
+<li>
+<p>Nome del parametro (visualizzato su &quot;Visualizer&quot;);</p>
+</li>
+<li>
+<p>Trattamento: funzione applicata ai dati in base all'aggregazione temporale con cui si effettua l'estrazione;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[46]_trattamento.png" alt="46" title="Trattamento"></p>
+</li>
+<li>
+<p>Tipo grafico (valido solo per la tipologia “Grafico”);</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[47]_tipo_grafico.png" alt="47" title="Tipo di grafico"></p>
+</li>
+<li>
+<p>Colore linea (valido solo per la tipologia “Grafico”): inserire il valore esadecimale del colore scrivendolo direttamente, oppure selezionandolo tramite la palette dei colori;</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[48]_colore_linea.png" alt="48" title="Colore linea"></p>
+</li>
+<li>
+<p>Checkbox &quot;<u>Valori minimi</u>&quot; e &quot;<u>Valori massimi</u>&quot;: vengono indicati i valori massimi e minimi, in base a quali checkbox si attivano, nel grafico, sotto forma di linea, o nella tabella. È possibile che questi checkbox NON siano presenti se i valori di minimo e massimo sono identificati da parametri singoli distinti tra di loro.</p>
+</li>
+<li>
+<p>Pulsante &quot;<u>Elimina parametro</u>&quot;: rimuove il parametro dalla configurazione;</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Salva bozza</u>: il pannello non viene salvato, ma viene salvata una sua bozza che rende possibile visualizzare l'anteprima sull'applicativo &quot;Visualizer&quot;; se tutto è andato a buon fine verrà visualizzato il seguente popup in alto a destra sulla pagina:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[49]_salva_bozza.png" alt="49" title="Salva bozza"></p>
+</li>
+<li>
+<p><u>Salva e chiudi</u>: cliccare per rendere effettive le modifiche e salvare il pannello; se tutto è andato a buon fine, verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[50]_salva_e_chiudi.png" alt="50" title="Salva e chiudi"></p>
+</li>
+<li>
+<p><u>Annulla</u>: chiude la modifica del pannello: cliccare su &quot;Si, sono sicuro&quot; per confermare.</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[51]_annulla.png" alt="51" title="Annulla"></p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="pulsante-finestre-automatiche">Pulsante <strong>Finestre automatiche</strong></h3>
+<p>Cliccando il pulsante &quot;Finestre automatiche&quot; il sistema genererà automaticamente, impostando valori di default, le finestre in base alle seguenti informazioni:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[60]_finestre_automatiche.png" alt="60" title="Finestre automatiche"></p>
+<ol>
+<li>
+<p>Rete: selezionare la rete di appartenenza per filtrare le stazioni;</p>
+</li>
+<li>
+<p>Provincia: selezionare la provincia per filtrare le stazioni;</p>
+</li>
+<li>
+<p>Stazioni (obbligatorio): selezionare la stazione da cui estrarre i parametri;</p>
+</li>
+<li>
+<p>Tipologia parametri (obbligatorio): selezionare la tipologia di parametri;</p>
+</li>
+<li>
+<p>Parametri: selezionare i parametri che si vogliono aggiungere;</p>
+<p>N.B. Se lasciato vuoto, verranno create le finestre per ogni parametro appartenente alla/e tipologia/e scelta/e in precedenza.</p>
+<p>Inoltre, qualora alla stazione selezionata siano associati sia il parametro &quot;Temperatura&quot; sia &quot;Temperatura - Fidas&quot;, alla selezione della tipologia &quot;Meteo&quot;, nella lista dei parametri (punto 5) verrà visualizzata solamente la voce &quot;Temperatura&quot;, ma confermando la scelta saranno generate due finestre: una per il parametro &quot;semplice&quot; e una per il &quot;Fidas&quot;.</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[61]_temperature.png" alt="61" title="Temperature"></p>
+</li>
+<li>
+<p>Pulsante <u>Conversione dati SI/NO</u>: cliccando il pulsante si cambia il suo stato:</p>
+<p>      <img src="/bobo-help/str_ava_visualizer/img/pulsico/[31]_no.png" height="45px"></img> = dati grezzi non convertiti;</p>
+<p>      <img src="/bobo-help/str_ava_visualizer/img/pulsico/[32]_si.png" height="45px"></img> = dati convertiti ad un'altra unità di misura secondo una formula predefinita per parametro;</p>
+</li>
+<li>
+<p>Pulsanti <u>Chiudi finestra</u> (per chiudere la finestra di generazione delle finestre) e <u>Aggiungi finestre</u> (per rendere effettiva la generazione delle finestre);</p>
+</li>
+</ol>
+<p>Una volta cliccato il pulsante &quot;Aggiungi finestre&quot;, verranno generate le finestre:</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[61]_finestre_auto_generate.png" alt="61" title="Finestre generate"></p>
+<h3 id="pulsante-elimina-finestre">Pulsante <strong>Elimina finestre</strong></h3>
+<p>Cliccare il pulsante &quot;Elimina finestre&quot; per annullare tutte le modifiche effettuate ed eliminare anche le finestre già presenti nel pannello (qualora lo si stia modificando):</p>
+<p><img src="/bobo-help/str_ava_visualizer/img/[70]_elimina_finestre.png" alt="70" title="Elimina finestre"></p>
+<p>Per confermare l'eliminazione cliccare &quot;Si, elimina&quot;.</p>

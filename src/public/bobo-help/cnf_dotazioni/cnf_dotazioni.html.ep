@@ -1,0 +1,138 @@
+<h1 id="impostazioni-rete---dotazioni">IMPOSTAZIONI RETE - DOTAZIONI</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Impostazioni rete&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Dotazioni&quot;.</p>
+<h3>
+    > Impostazioni rete<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Dotazioni</span>
+</h3>
+<p>Da questa pagina è possibile visualizzare tutte le dotazioni, aggiungerne di nuove oppure posizionarle nelle stazioni appartenenti alla propria rete.</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[10]_index.png" alt="10" title="Dotazioni"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>Dotazioni</u>: elenco delle/degli dotazioni/stanziamenti già presenti;</li>
+<li><u>Dotazione</u>: scheda d'inserimento di una nuova dotazione;</li>
+<li><u>Stanziamento</u>: scheda d'inserimento di un nuovo stanziamento;</li>
+</ul>
+</li>
+<li>
+<p>Interruttore per passare dalla visualizzazione delle dotazioni a quella degli stanziamenti:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_dotazioni/img/pulsico/dotazione.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[100]_dotazioni.png" alt="100" title="Ricerca: Dotazione"></p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_dotazioni/img/pulsico/stanziamento.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[101]_stanziamenti.png" alt="101" title="Ricerca: Stanziamento"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle/degli dotazioni/stanziamenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle dotazioni:</p>
+<ul>
+<li><img src="/bobo-help/cnf_dotazioni/img/pulsico/att.png" height="50px"></img> =&gt; dotazione dismessa/attiva</li>
+<li><img src="/bobo-help/cnf_dotazioni/img/pulsico/disatt.png" height="50px"></img> =&gt; dotazione NON dismessa/attiva</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Visualizza dotazione</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/visualizza.png" height="50px"></img>:</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[40]_visualizza_dettaglio.png" alt="40" title="Visualizza dettaglio"></p>
+</li>
+<li>
+<p><u>Modifica dotazione</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/modifica.png" height="50px"></img>: verrà aperta la scheda per modificare i dati della dotazione selezionata (stessi campi presenti in &quot;Inserisci nuova dotazione&quot;);</p>
+</li>
+<li>
+<p><u>Scarica PDF</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/scarica-pdf.png" height="50px"></img>: verrà effettuato il download del pdf relativo alla dotazione selezionata;</p>
+</li>
+<li>
+<p><u>Modifica location</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/modif_location.png" height="50px"></img>: verrà aperta la scheda per modificare i dati della location selezionata (stessi campi presenti in &quot;Inserisci nuova location&quot;);</p>
+</li>
+<li>
+<p><u>Chiudi location corrente</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/chiudi_location.png" height="50px"></img>: cliccare questo pulsante per chiudere la location della dotazione selezionata; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[50]_chiudi_location.png" alt="50" title="Chiudi location corrente"></p>
+</li>
+<li>
+<p><u>Elimina tutto</u> <img src="/bobo-help/cnf_dotazioni/img/pulsico/elimina.png" height="50px"></img>: cliccare questo pulsante per eliminare la dotazione; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[70]_del_dotazione.png" alt="70" title="Elimina dotazione"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuova-dotazione">Inserisci nuova dotazione</h2>
+<p><img src="/bobo-help/cnf_dotazioni/img/[80]_new_dotazione.png" alt="80" title="Inserisci nuova dotazione"></p>
+<ol>
+<li>
+<p>Arpa ID;</p>
+</li>
+<li>
+<p>Data di <u>Dimissione</u>: verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+</ol>
+</li>
+<li>
+<p><u>Dotazione</u> (<span style="color:red">*</span>obbligatorio): inserire il nome identificativo della dotazione;</p>
+</li>
+<li>
+<p>Interruttore <u>Dotazione attiva/non attiva</u>;</p>
+<ul>
+<li><img src="/bobo-help/cnf_dotazioni/img/pulsico/si.png" height="50px" width="80px"></img> --&gt; Dotazione attiva;</li>
+<li><img src="/bobo-help/cnf_dotazioni/img/pulsico/no.png" height="50px" width="80px"></img> --&gt; Dotazione NON attiva;</li>
+</ul>
+</li>
+<li>
+<p>Selezionare una o più <u>Reti di appartenenza</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Inserire allegati alla dotazione: al click verrà visualizzata la finestra di sistema per scegliere i file;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Interruttore <u>Aggiungi location per la dotazione</u>:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_dotazioni/img/pulsico/off.png" height="50px" width="80px"></img> --&gt; No Location;</p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_dotazioni/img/pulsico/on.png" height="50px" width="80px"></img> --&gt; Aggiungi location;</p>
+<p>Se selezionato &quot;Aggiungi location per la dotazione&quot;, si dovranno inserire i seguenti campi aggiuntivi (per il dettaglio dei campi, vedere &quot;Inserisci nuovo stanziamento&quot;):</p>
+<p><img src="/bobo-help/cnf_dotazioni/img/[81]_add_location_x_dotazione.png" alt="81" title="Inserisci location per la dotazione"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento della nuova dotazione, oppure il pulsante Annulla per ritornare alla scheda &quot;Dotazioni&quot;;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-stanziamento-di-una-dotazione">Inserisci nuovo stanziamento di una dotazione</h2>
+<p><img src="/bobo-help/cnf_dotazioni/img/[90]_new_stanziamento.png" alt="90" title="Inserisci nuovo stanziamento"></p>
+<ol>
+<li>Selezionare la dotazione di cui si vuole effettuare lo stanziamento: nell'elenco saranno presenti le dotazioni create che non sono state ancora stanziate e quelle che non sono più stanziate (di cui si è effettuata la chiusura della location);</li>
+<li>Selezionare la provincia (serve solo da filtro per il campo &quot;Stazione&quot;);</li>
+<li>Selezionare la stazione in base alla provincia scelta in precedenza (se non si è selezionata la provincia verranno elencate tutte le stazione presenti sul portale) (<span style="color:red">*</span>obbligatorio);</li>
+<li>Inserire la data/ora di inizio dello stanziamento (<span style="color:red">*</span>obbligatorio): verrà visualizzato lo stesso form visto in fase di inserimento della dotazione;</li>
+<li>Inserire la data/ora di fine dello stanziamento: questa data/ora NON è obbligatoria e, se il campo viene lasciato vuoto, verrà inserito il valore &quot;infinito&quot; e, di conseguenza, lo stanziamento sarà attivo a tempo indeterminato fino alla chiusura dello stesso da parte dell'utente;</li>
+<li>Eventuali note;</li>
+<li>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento del nuovo stanziamento, oppure il pulsante Annulla per ritornare alla scheda &quot;Elenco&quot;;</li>
+</ol>

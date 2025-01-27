@@ -1,0 +1,69 @@
+<h1 id="divulgazione---messaggistica">MESSAGGISTICA</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Divulgazione&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Messaggistica&quot;.</p>
+<h3>
+    > Divulgazione<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Messaggistica</span>
+</h3>
+<p>Questa pagina permette di inserire e visualizzare dei messaggi da divulgare a differenti destinazioni.</p>
+<p><img src="/bobo-help/div_messaggistica/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Destinazione del messaggio che si vuole inviare: è possibile anche digitare la destinazione per cercarla tra quelle elencate;</p>
+</li>
+<li>
+<p>Scadenza del messaggio: data dopo la quale non sarà più visualizzato il messaggio: verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/div_messaggistica/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);</li>
+</ol>
+</li>
+<li>
+<p>Pulsante <u>Reset scadenza</u>: cliccando questo pulsante verrà resettato il campo relativo alla scadenza del messaggio;</p>
+</li>
+<li>
+<p>Testo del messaggio che si vuole inviare;</p>
+</li>
+<li>
+<p>Pulsanti <u>Invia</u> e <u>Annulla</u>: cliccare il pulsante Invia per effettuare l'invio del nuovo messaggio, oppure il pulsante Annulla per resettare tutti i campi precedentemente compilati;</p>
+</li>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/div_messaggistica/img/[31]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Filtro delle possibili destinazioni dei messaggi;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei dissesti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei messaggi inviati: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Data di invio;</li>
+<li>Destinazione del messaggio;</li>
+<li>Scadenza;</li>
+<li>Nome dell'operatore che ha inviato il messaggio;</li>
+<li>Testo del messaggio;</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

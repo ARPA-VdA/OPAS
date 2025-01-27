@@ -1,0 +1,57 @@
+<h1 id="statistiche---analisi-copertura">STATISTICHE - ANALISI COPERTURA</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Statistiche&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Analisi copertura&quot;.</p>
+<h3>
+    > Statistiche<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Analisi copertura</span>
+</h3>
+<p>Questa pagina permettere di visualizzare la percentuale mensile di ricezione dei dati relativi ai parametri di ogni stazione associata al portale in un determinato anno scelto dall'utente.</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[20]_princ.png" alt="20" title="Copertura dati"></p>
+<ol>
+<li>
+<p>Anno che si vuole visualizzare;</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[21]_anno.png" alt="21" title="Anno"></p>
+</li>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco/ricerca stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[24]_elenco_staz.png" alt="24" title="Elenco stazioni"></p>
+</li>
+</ol>
+<p>Una volta selezionata la stazione, verranno visualizzate due schede: 'Grafici' e 'Tabelle'.</p>
+<h2 id="scheda-grafici">Scheda 'Grafici'</h2>
+<p>In questa scheda viene visualizzata la percentuale di ricezione e validità dei dati ricevuti in formato grafico.</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[25]_grafici.png" alt="25" title="Grafici"></p>
+<p>Attraverso quest'icona <img src="/bobo-help/stat_ana_copertura/img/[210]_logo_menu_graph.png" alt="210" title="Grafici"> è possibile visualizzare a schermo intero il grafico, stamparlo oppure effettuarne il download in formato CSV (verranno scaricati i dati), JPEG (immagine) o PDF (documento).</p>
+<h2 id="scheda-tabelle">Scheda 'Tabelle'</h2>
+<p><img src="/bobo-help/stat_ana_copertura/img/[30]_tab.png" alt="30" title="Tabella"></p>
+<ol>
+<li>
+<p>Legenda dei colori della tabella delle percentuali dei dati;</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[22]_legenda.png" alt="22" title="Legenda"></p>
+</li>
+<li>
+<p>Tabelle ricezione e validità dei dati;</p>
+</li>
+<li>
+<p>Pulsante <u>CSV</u>: è possibile scaricare la tabella e i relativi dati in formato .csv;</p>
+</li>
+</ol>
+<p>Le tabelle saranno formate da 12 righe (una per ogni mese) e tante colonne quanti sono i parametri presenti nella stazione.</p>
+<p>Per ogni singolo parametro verrà visualizzata la percentuale totale di ricezione (tabella 1) e validità (tabella 2) dei dati grezzi ricevuti dalla stazione per ogni mese di un dato anno.</p>
+<p>In particolare:</p>
+<p><img src="/bobo-help/stat_ana_copertura/img/[40]_tab2.png" alt="40" title="Tabella2"></p>
+<ol>
+<li>Colonna <u>Data</u>;</li>
+<li>Colonne dei parametri presenti sulla stazione;</li>
+<li>Singolo Valore;</li>
+</ol>
+<p>Il dato può assumere anche i seguenti valori:</p>
+<ul>
+<li><strong><u>nd</u></strong>: il parametro non è acquisito dalla stazione; ciò implica che non sono presenti dati nel mese di riferimento;</li>
+<li><strong><u>0 (Zero)</u></strong>: il parametro è acquisito dalla stazione, ma la percentuale dei dati presenti nel mese di riferimento è inferiore all'1%;</li>
+</ul>

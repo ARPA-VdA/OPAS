@@ -1,0 +1,50 @@
+<h1 id="dati---diagnostici">DIAGNOSTICI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Diagnostici&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Diagnostici</span>
+</h3>
+<p>Questa pagina permette di visualizzare, in un determinato periodo temporale impostato dall'utente, i valori orari dei diagnostici di una determinata stazione, disponibile tra quelle associate al portale.</p>
+<p><img src="/bobo-help/dat_diagnostici/img/[20]_princ2.png" alt="20" title="Diagnostici"></p>
+<ol>
+<li>
+<p>Periodo temporale;</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/dat_diagnostici/img/[31]_calendar_date.png" alt="31" title="Calendario"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco/ricerca stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/dat_diagnostici/img/[23]_stazioni.png" alt="23" title="Stazioni"></p>
+</li>
+<li>
+<p>Legenda dei colori della tabella delle percentuali dei dati;</p>
+<p><img src="/bobo-help/dat_diagnostici/img/[21]_legenda.png" alt="21" title="Legenda"></p>
+</li>
+</ol>
+<p>Una volta selezionati la stazione e il periodo temporale verrà visualizzata la tabella dei dati.</p>
+<h2 id="tabella-dei-dati-diagnostici">Tabella dei dati diagnostici</h2>
+<p>La tabella sarà formata da 24 righe (una per ogni ora) e tante colonne quanti sono i diagnostici degli strumenti presenti nella stazione. Le colonne sono raggruppate per ogni strumento. Se il periodo temporale selezionato è maggiore di una giornata, sarà possibile visualizzare le giornate successive attraverso la paginazione posta in basso a destra.</p>
+<p>Nel caso in cui la cella del singolo dato sia colorata in rosso, il valore dello stesso è maggiore del massimo preimpostato nel database per quel diagnostico. Allo stesso modo, se la cella del singolo dato è colorata in giallo, il valore dello stesso è minore del minimo. Infine, se la cella non presenta colorazioni, il valore è da considerarsi nella norma.</p>
+<p><img src="/bobo-help/dat_diagnostici/img/[30]_tab_comp.png" alt="30" title="Tabella dati"></p>
+<ol>
+<li>Colonna <u>Data</u>;</li>
+<li>Diagnostici dello strumento;</li>
+<li>Strumenti presenti nella stazione;</li>
+<li>Pulsanti <u>CSV</u> e <u>XLSX</u>: è possibile scaricare la tabella e i relativi dati in formato .csv lo .xlsx;</li>
+<li>Barra di scorrimento: occorre spostarla verso destra per visualizzare tutti gli strumenti presenti nella pagina della tabella;</li>
+<li>È possibile impostare il numero di righe visualizzate tramite il menu a tendina ed esplorare le pagine;</li>
+</ol>

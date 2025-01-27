@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>CSV2GeoJSON</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="Convert CSV file to GeoJSON." />
+  <meta name="keywords" content="csv, geojson, online" />
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <!-- ol3 to show the map -->
+  <link rel="stylesheet" href="https://openlayers.org/en/v6.15.1/css/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/v6.15.1/build/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+
+  <!-- filesaver-js -->
+  <script type="text/javascript" src="https://cdn.rawgit.com/eligrey/FileSaver.js/aa9f4e0e/FileSaver.min.js"></script>
+  <!-- Papaparse -->
+  <script type="text/javascript" src="https://unpkg.com/papaparse@4.6.3/papaparse.min.js"></script>
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <!-- exif2geojson -->
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    body {	
+      max-width: 800px;
+      margin: 0.5em auto;
+      background: #ddc;
+      font-family: 'Open Sans Condensed',Arial,Helvetica,Verdana,sans-serif;
+      color: #775;
+    }
+    h1 {
+      background: #886;
+    }
+    h1 .fa {
+      color: #fff;
+      font-size:1.8em;
+      vertical-align: middle;
+    }
+    .info {
+      padding:1em 2em;
+      background: #fff;
+      border-radius: 6px;
+      clear: both;
+    }
+    .globe {
+      text-align:center;
+      float:left;
+      font-size: 5em;
+      width:40%;
+      line-height: 1em;
+    }
+    .globe .fa {
+      vertical-align: middle;
+      margin:0 5px;
+      color:#664;
+    }
+    .globe .fa-file-excel-o	{
+      font-size: 0.75em;
+    }
+    .globe .fa-arrow-circle-right	{
+      font-size: 0.5em;
+    }
+
+    #dropfile	{
+      font-size:1.2em;
+      width:55%; 
+      float: right;
+      border:3px dashed #997; 
+      padding:1em 3.5em;
+      text-align:center;
+      box-sizing: border-box;
+      margin: .5em 3em 1em -3em;
+      font-weight: bold;
+    }
+    #dropfile.hover{
+      border-color: #664;
+      background: #e6e6d6;
+    }
+
+    #pbar {	
+      display: none; 
+      width:200px; 
+      border:1px solid #664; 
+      margin: 0.5em;
+      float:left;
+    }
+    #pbar > div {	
+      height: 15px; 
+      width: 0; 
+      background: #664;
+    }
+    textarea {
+      width:100%; 
+      height:15em; 
+      box-sizing:border-box;
+      white-space: nowrap;
+      min-width: 100%;
+      max-width: 100%;
+    }
+    .loading {
+      margin:0 0 1em;
+      padding:0.5em;
+      height:1em;
+    }
+    label.radio {
+      display: inline-flex;
+    }
+    #lonlat, #geom {
+      float: left;
+      margin: .3em 1em 1em 0;
+    }
+    #lonlat ~ div,
+    #geom ~ div {
+      opacity: .5;
+      pointer-events: none;
+    }
+    #lonlat:checked ~ .lonlat,
+    #geom:checked ~ .geom {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .info > button {
+      float: right;
+      background: #887;
+      color: #fff;
+      border: 0;
+      margin: 0 2em;
+      font-size: 1.3em;
+      font-weight: bold;
+      padding: 0.25em 1em;
+      display: none;
+      cursor: pointer;
+    }
+    .info > button	i {
+      color:#fff;
+    }
+    #map {
+      display: none;
+      float:none;
+      width: 100%;
+      height: 400px;
+    }
+    .warn {
+      background: #fe0;
+      color: #800;
+      padding: 0 1em;
+    }
+    @media (max-height: 450px) {
+      body {
+        margin: 0 auto;
+      }
+      .globe {
+        font-size: 3em;
+      }
+      #dropfile {
+        margin: 0 3em 0 -3em;
+        padding: .5em;
+      }
+      .info {
+        margin: 0;
+        padding: .3em 2em;
+      }
+      .loading {
+        margin: 0;
+        padding: .1em .5em;
+      }
+    }
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a class="title" href="../../index.html">
+    <h1><i class="fa fa-globe"></i> CSV2GeoJSON</h1>
+  </a>
+
+  <div class="info">
+    Convert CSV (Comma Separated Values) file into GeoJSON.
+  </div>
+  
+  <div class="globe">
+    <i class="fa fa-file-excel-o"></i><i class="fa fa-arrow-circle-right"></i><i class="fa fa-globe"></i>
+  </div>
+
+  <div id="dropfile">
+    Drag & drop CSV file to convert.
+  </div>
+
+  <div class="info">
+
+    <div id="pbar"><div></div></div>
+    <label class="radio">
+      <input id="lonlat" name="geom" type="radio" checked="checked" />
+      <div class="lonlat">
+        <label class='lon'>longitude: <select></select></label>
+        <br/>
+        <label class='lat'>latitude: <select></select></label>
+      </div>
+    </label>
+    <br/>
+    <label class="radio">
+      <input id="geom" name="geom" type="radio" />
+      <div class="geom">
+        <label class='type'>type: <select></select></label>
+        <br/>
+        <label class='geometry'>geometry: <select></select></label>
+      </div>
+    </label>
+
+    <button onclick="download()"><i class="fa fa-download"></i> Download</button>
+    <div class="loading"></div>
+
+    <div id="map"></div>
+
+    <textarea id="result"></textarea>
+  </div>
+
+  <script>
+    var name, result;
+    function getGeoJSON() {
+      var json = {
+        type: 'FeatureCollection',
+        features: []
+      };
+      var point = $("#lonlat").prop("checked");
+      var lon = $('label.lon select').val();
+      var lat = $('label.lat select').val();
+      var type = $('label.type select').val();
+      var geom = $('label.geometry select').val();
+      try {
+        result.data.forEach(function (d) {
+          var f = {
+            type: 'Feature',
+            properties: $.extend({},d)
+          }
+          if (point)  {
+            delete f.properties[lon];
+            delete f.properties[lat];
+            f.geometry = {
+              type: 'Point',
+              coordinates: [ parseFloat(d[lon]), parseFloat(d[lat])]
+            };
+          } else {
+            delete f.properties[type];
+            delete f.properties[geom];
+            f.geometry = {
+              type: d[type],
+              coordinates: JSON.parse(d[geom])
+            };
+          }
+          json.features.push(f);
+        });
+      } catch(e) {}
+      console.log(json)
+      var res = JSON.stringify(json, null, ' ');
+      if (res.length>5000) {
+        $('textarea').html(res.substr(0,5000)+'\n...');
+      } else {
+        $('textarea').html(res);
+      }
+      return res;
+    }
+    function download() {
+      var res = getGeoJSON();
+      var blob = new Blob([res], {type: "text/plain;charset=utf-8"});
+      saveAs(blob, name+".geojson");
+    };
+
+    $(document).on('dragover dragleave', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.type=='dragover') $("#dropfile").addClass('hover');
+      else $("#dropfile").removeClass('hover');
+      return false;
+    });
+
+    function showLonlat()  {
+      if ($('label.lon select').val() && $('label.lat select').val()) {
+        $('button').show();
+        getGeoJSON();
+      }
+      else $('button').hide();
+    }
+    $('#lonlat').on('click', showGeom);
+    $('label.lon select').on('change', showLonlat);
+    $('label.lat select').on('change', showLonlat);
+    
+    function showGeom() {
+      if ($('label.type select').val() && $('label.geometry select').val()) {
+        $('button').show();
+        getGeoJSON();
+      }
+      else $('button').hide();
+    }
+    $('#geom').on('click', showGeom);
+    $('label.type select').on('change', showGeom);
+    $('label.geometry select').on('change', showGeom);
+
+    $(document).on('drop', function (e) {
+      if (e.originalEvent.dataTransfer) {
+        if (e.originalEvent.dataTransfer.files.length) {
+          // Stop the propagation of the event
+          e.preventDefault();
+          e.stopPropagation();
+          $("#dropfile").removeClass('hover');
+          $(".loading").html(" loading...");
+          // Main function to upload
+          var file = e.originalEvent.dataTransfer.files[0];
+          name = file.name.split('.').slice(0, -1).join('.');
+          Papa.parse(file, {
+            header: true,
+            complete: function(results) {
+              result = results;
+              $('label.lon select').html('');
+              $('label.lat select').html('');
+              $('label.type select').html('');
+              $('label.geometry select').html('');
+              results.meta.fields.forEach(function(att, i) {
+                $('<option>').val(att).text(att).prop('selected',/^long?$|longitude/i.test(att)).appendTo($('label.lon select'));
+                $('<option>').val(att).text(att).prop('selected',/^lat$|latitude/i.test(att)).appendTo($('label.lat select'));
+                $('<option>').val(att).text(att).prop('selected',/^type$/i.test(att)).appendTo($('label.type select'));
+                $('<option>').val(att).text(att).prop('selected',/^geom|^coord/i.test(att)).appendTo($('label.geometry select'));
+              });
+              $(".loading").html("");
+              $('label.lon select').change();
+            }
+          });
+        }
+      } else {
+        $(this).css('border', '3px dashed #BBBBBB');
+      } 
+      return false;
+    });
+
+    // The map
+    var map = new ol.Map({
+      target: 'map',
+      view: new ol.View({
+        zoom: 1,
+        center: [270055, 3528229.]
+      }),
+      layers: [new ol.layer.Tile({ source: new ol.source.Stamen({ layer: 'watercolor' }) })]
+    });
+
+    var vector = new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: new ol.style.Style({
+        image: new ol.style.Circle({
+        fill: new ol.style.Fill({ color:"rgba(102, 68, 68, 0.6)" }),
+        radius: 5
+      })})
+    });
+    map.addLayer(vector);
+  </script>
+</body>
+</html>

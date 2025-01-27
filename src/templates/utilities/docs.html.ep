@@ -1,0 +1,41 @@
+% layout 'default';
+% title 'Documentazione';
+
+<!-- Row -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Documentazione</h4>
+                <h6 class="card-subtitle">
+                    Consultare <strong>la seguente documentazione aggiuntiva</strong> per ulteriori approfondimenti.
+                </h6>
+                <hr>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h4 class="text-success"><strong>Dispozioni in materia valanghiva</strong></h4>
+                        <p>
+                            Leggi, normative, DPC e DPCM Regionali e Nazionali.
+                        </p>
+                        <ul class="docs-list">
+                            <li><a href="/bobo-media/clv/legge-valanghe-regionale-34-1988.pdf" target="_blank"><i class="fa-regular fa-file-pdf"></i> Legge regionale n°34/1988 </a></li>
+                            <li><a href="/bobo-media/clv/dpcm_12_agosto_2019_ufficiale.pdf" target="_blank"><i class="fa-regular fa-file-pdf"></i> DIRETTIVA DPCM del 12 agosto 2019 (procedure) </a></li>
+                            <li><a href="/bobo-media/clv/dpc-aineva-doc-d-procedure.pdf" target="_blank"><i class="fa-regular fa-file-pdf"></i> DPC - Aineva (procedure) </a></li>
+                            <li><a href="/bobo-media/clv/dpc-aineva-doc-d-allegati.pdf" target="_blank"><i class="fa-regular fa-file-pdf"></i> DPC - Aineva (allegati) </a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <h4 class="text-success"><strong>Approfondimenti</strong></h4>
+                        <p>
+                            Documentazione per l'approfondimento delle materie neve e valanghe
+                        </p>
+                        <ul class="docs-list">
+                            <li><a href="/bobo-media/clv/stabilita-manto-nevoso.pdf" target="_blank"><i class="fa-regular fa-file-pdf"></i> Valutazione della stabilità del manto nevoso</a></li>
+                            <li><a href="https://bollettini.aineva.it/education/avalanche-sizes" target="_blank"><i class="fa-regular fa-globe-pointer"></i> Dimensioni valanghe (aineva.it)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

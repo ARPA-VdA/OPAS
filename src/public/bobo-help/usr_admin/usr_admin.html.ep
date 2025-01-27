@@ -1,0 +1,287 @@
+<h1 id="menu-utente---admin">MENU UTENTE - ADMIN</h1>
+<p>Per poter accedere a questa pagina, occorre cliccare sul proprio nome visualizzato nel menu principale di sinistra e cliccare sull'elemento &quot;Admin&quot; del menu a tendina.</p>
+<h3>
+    v 'Utente'<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Admin</span>
+</h3>
+<p>In questa sezione, è possibile, qualora si sia in possesso del ruolo di admin, modificare le impostazioni di amministrazione del proprio portale di appartenenza.</p>
+<p>La pagina è suddivisa in due macro sezioni:</p>
+<p><img src="/bobo-help/usr_admin/img/[10]_schede.png" alt="10" title="Schede"></p>
+<h2 id="profilazione-utenze">Profilazione utenze</h2>
+<p>In questa sezione è possibile creare/modificare/gestire i gruppi, creare/modificare/gestire gli utenti e gestire i permessi (INSERT - UPDATE - DELETE) dei contenuti (pagine, stazioni, altro) sul portale, cliccando la relativa scheda.</p>
+<h3 id="gruppi">Gruppi</h3>
+<p><img src="/bobo-help/usr_admin/img/[20]_gruppi.png" alt="20" title="Gruppi"></p>
+<ol>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei gruppi sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella dei gruppi;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Modifica gruppo</u> <img src="/bobo-help/usr_admin/img/pulsico/mod.png" height="50px"></img> :</p>
+<p>Cliccando questo pulsante è possibile modificare i dettagli del gruppo che verranno caricati al punto 6;</p>
+</li>
+<li>
+<p><u>Elimina gruppo</u> <img src="/bobo-help/usr_admin/img/pulsico/elim.png" height="50px"></img> :</p>
+<p>Cliccando questo pulsante è possibile eliminare il gruppo selezionato; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/usr_admin/img/[21]_elimina_gruppo.png" alt="21" title="Elimina gruppo"></p>
+<p>Premere &quot;Si, elimina&quot; per confermare.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+<li>
+<p>Form d'inserimento/modifica del gruppo: utilizzare questa scheda per inserire/modificare un gruppo inserendo il portale di riferimento (<span style="color:red">*</span>obbligatorio), il nome (<span style="color:red">*</span>obbligatorio) e un'eventuale descrizione; cliccare &quot;Salva&quot; per effettuare l'inserimento/la modifica, oppure &quot;Annulla&quot; per ripulire il form.</p>
+</li>
+</ol>
+<h3 id="utenti">Utenti</h3>
+<p><img src="/bobo-help/usr_admin/img/[30]_utenti.png" alt="30" title="Utenti"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Utenti: schermata visualizzata in questo momento;</li>
+<li>Nuovo: inserimento nuovo utente;</li>
+</ul>
+</li>
+<li>
+<p>Selezionare uno dei gruppi per visualizzare gli utenti ad esso associati;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco degli utenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella degli utenti;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Visualizza</u> <img src="/bobo-help/usr_admin/img/pulsico/visual.png" height="50px"></img> :</p>
+<p>Cliccando questo pulsante è possibile visualizzare i dati relativi all'utente selezionato;</p>
+<p><img src="/bobo-help/usr_admin/img/[31]_visual_dettaglio.png" alt="31" title="Visualizza dettaglio"></p>
+</li>
+<li>
+<p><u>Modifica</u> <img src="/bobo-help/usr_admin/img/pulsico/mod.png" height="50px"></img> : verrà aperta la scheda per modificare i dati dell'utente selezionato (stessi campi presenti in &quot;Inserisci nuovo utente&quot;);</p>
+</li>
+<li>
+<p><u>Reset password</u> <img src="/bobo-help/usr_admin/img/pulsico/reset_pwd.png" height="50px"></img> :</p>
+<p>Cliccando questo pulsante è possibile resettare la password dell'utente selezionato reimpostando quella di default del sistema;</p>
+<p><img src="/bobo-help/usr_admin/img/[32]_reset_pwd.png" alt="32" title="Reset password"></p>
+<p>Premere &quot;Si, resetta&quot; per confermare.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h4 id="inserisci-nuovo-utente">Inserisci nuovo utente</h4>
+<p>Attraverso questo modulo è possibile creare un nuovo utente associandolo ad un'azienda e ad un determinato gruppo, e di conseguenza, assegnandogli i permessi relativi a quest'ultimo (INSERT, UPDATE, DELETE).</p>
+<p>I permessi vengono attribuiti in base al gruppo di appartenenza dell'utente, effettuando il &quot;merge&quot; (somma/unione) dei relativi permessi di ogni gruppo a cui l'utente è associato.</p>
+<p>Ad esempio, un utente appartenente ai gruppi &quot;Shared&quot; e &quot;Guest&quot; otterrà tutti i permessi del primo gruppo <u>PIÙ</u> tutti quelli del secondo gruppo.</p>
+<p>Il gruppo &quot;Shared&quot; (assegnato di default), attribuisce agli utenti il permesso di accesso al portale, di visualizzazione della Homepage (sola lettura), dello strumento Mapper (sola lettura) e del Profilo del menù utente.</p>
+<p>Il gruppo &quot;Guest&quot; (utenti esterni non facenti parte di alcun'organizzazione), attribuisce agli utenti associati tutti i permessi di sola lettura alle pagine del portale.</p>
+<p>Inoltre, è importante ricordare che l'utente, che sia esso admin o semplice, <u>NON PUO' CANCELLARE GLI ALTRI UTENTI</u>, soprattutto se essi hanno effettuato operazioni sul portale, poiché ciò andrebbe a <u>CREARE PROBLEMI ALLO STORICO DEL PORTALE</u>.</p>
+<p>Qualora un utente non faccia più parte di una determinata azienda esso <u>NON VA MODIFICATO INSERENDO I DATI DEL NUOVO UTENTE</u>, ma <u>VA NECESSARIAMENTE DISATTIVATO</u>. Successivamente, è possibile creare un nuovo utente.</p>
+<p>Fare MOLTA ATTENZIONE a questo passaggio al fine di <u>EVITARE DI FALSIFICARE LO STORICO</u>.</p>
+<p><img src="/bobo-help/usr_admin/img/[33]_nuovo_utente.png" alt="33" title="Nuovo utente"></p>
+<ol>
+<li>
+<p><u>Nome</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Secondo Nome</u>;</p>
+</li>
+<li>
+<p><u>Cognome</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Ruolo</u>;</p>
+</li>
+<li>
+<p><u>Numero cellulare</u>;</p>
+</li>
+<li>
+<p><u>Numero telefono</u>;</p>
+</li>
+<li>
+<p><u>Email</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Checkbox <u>Utente attivo</u>: in fase di creazione di un utente NON È POSSIBILE disattivare l'utente prima che esso sia stato creato. Sarà possibile disattivarlo solo in fase di modifica.</p>
+</li>
+<li>
+<p><u>Avatar</u>: è possibile inserire la propria immagine del profilo; al click verrà visualizzata la finestra di sistema per scegliere i file;</p>
+</li>
+<li>
+<p>Selezionare il <u>Portale di riferimento</u>: elenco dei portali a cui può essere associato l'utente;</p>
+</li>
+<li>
+<p>Selezionare l'<u>Azienda di appartenenza</u>: elenco di tutte le aziende del proprio portale che si possono associare ad un utente;</p>
+</li>
+<li>
+<p><u>Info azienda</u>: cliccando sul link si aprirà un popup relativo alle informazioni dell'azienda selezionata;</p>
+<p><img src="/bobo-help/usr_admin/img/[35]_info_azienda.png" alt="35" title="Info azienda"></p>
+</li>
+<li>
+<p><u>Associa ai seguenti gruppi</u> (<span style="color:red">*</span>è obbligatorio selezionare almeno <u>1 gruppo</u>) : elenco di tutti i gruppi del proprio portale che si possono associare ad un utente; associando l'utente a più di un gruppo, verrà effettuata la somma dei permessi di ogni gruppo selezionato.</p>
+<p><img src="/bobo-help/usr_admin/img/[34]_piu_gruppi.png" alt="34" title="Piu gruppi"></p>
+</li>
+<li>
+<p><u>Info gruppi</u>: cliccando sul link si aprirà un popup relativo alle informazioni sui gruppi di appartenenza selezionati;</p>
+<p>I permessi visualizzati in questa sezione sono indicati dalle seguenti icone:</p>
+<p><img src="/bobo-help/usr_admin/img/pulsico/permessi.png" alt="permessi" title="Permessi"></p>
+<ul>
+<li>
+<p><u>Menù e permessi</u></p>
+<p><img src="/bobo-help/usr_admin/img/[36]_info_gruppi_menu.png" alt="36" title="Info gruppi: Menu e permessi"></p>
+<p>In base ai gruppi scelti, viene visualizzato l'elenco delle voci di menu disponibili per l'utente sul portale con i relativi permessi.</p>
+</li>
+<li>
+<p><u>Stazioni</u></p>
+<p><img src="/bobo-help/usr_admin/img/[37]_info_gruppi_stazioni.png" alt="37" title="Info gruppi: Stazioni"></p>
+<p>In base ai gruppi scelti, vengono visualizzate tutte le stazioni appartenenti a quel gruppo con i relativi permessi.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Scadenza sessione login</u>: selezionare un periodo durante il quale l'utente rimarrà loggato, anche alla chiusura del browser, e quindi, ad un successivo accesso al portale, non verranno richieste le credenziali all'utente;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u> e <u>Annulla</u> : cliccare il pulsante Salva per effettuare l'inserimento del nuovo utente', oppure il pulsante Annulla per ritornare alla scheda 'Utenti';</p>
+</li>
+</ol>
+<h3 id="pagine">Pagine</h3>
+<p>In questa scheda è possibile selezionare, per ogni gruppo di utenti, quali pagine potranno essere visualizzate.</p>
+<p><img src="/bobo-help/usr_admin/img/[40]_pagine.png" alt="40" title="Pagine"></p>
+<ol>
+<li>Selezione del gruppo;</li>
+</ol>
+<p>Una volta selezionato il gruppo, verrà visualizzata la seguente schermata:</p>
+<p><img src="/bobo-help/usr_admin/img/[41]_permessi_pagine.png" alt="41" title="Permessi pagine"></p>
+<ol>
+<li>
+<p>Informazioni sulla visibilità del gruppo scelto (&quot;Info gruppi&quot;, come sopra);</p>
+</li>
+<li>
+<p>Tabella delle pagine:</p>
+<p>In questa tabella vengono elencate le pagine visualizzabili dagli utenti del gruppo scelto. Ad ogni pagina è possibile attribuire o togliere i permessi di visualizzazione, inserimento, modifica e eliminazione. Il &quot;Visualizza&quot; è il permesso principale: qualora sia impostato su &quot;NO&quot;, automaticamente, il gruppo non potra effettuare inserimenti, modifiche o eliminazioni.</p>
+<ul>
+<li>
+<p><img src="/bobo-help/usr_admin/img/pulsico/no.png" height="50px" width="80px"></img> --&gt; Pulsante NO</p>
+</li>
+<li>
+<p><img src="/bobo-help/usr_admin/img/pulsico/si_tot.png" height="50px" width="80px"></img> --&gt; Pulsante SI (Di colore BLU solo per il permesso &quot;Visualizza&quot;)</p>
+</li>
+<li>
+<p><img src="/bobo-help/usr_admin/img/pulsico/si.png" height="50px" width="80px"></img> --&gt; Pulsante SI (Di colore VERDE per i permessi &quot;Inserisci&quot;, &quot;Modifica&quot; e &quot;Elimina&quot;)</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="stazioni">Stazioni</h3>
+<p>In questa scheda è possibile selezionare, per ogni gruppo di utenti, quali stazioni potranno essere visualizzate.</p>
+<p><img src="/bobo-help/usr_admin/img/[50]_stazioni.png" alt="50" title="Stazioni"></p>
+<ol>
+<li>Selezione del gruppo;</li>
+<li>Selezione della provincia;</li>
+<li>Selezione della rete di appartenenza delle stazioni;</li>
+</ol>
+<p>Una volta compilati i campi, verrà visualizzata la seguente schemata:</p>
+<p><img src="/bobo-help/usr_admin/img/[51]_permessi_stazioni.png" alt="51" title="Permessi stazioni"></p>
+<p>Una volta che verranno visualizzate le stazioni filtrate, sarà possibile impostare i permessi ad ognuna di esse contemporaneamente (1), oppure gestirli per ogni stazione singolarmente (2).</p>
+<h3 id="altro">Altro</h3>
+<p>In questa scheda è possibile impostare, per ogni gruppo di utenti, altri permessi che verranno mostrati nella schermata successiva.</p>
+<p><img src="/bobo-help/usr_admin/img/[60]_altri.png" alt="60" title="Altri"></p>
+<ol>
+<li>Selezione del gruppo;</li>
+</ol>
+<p>E' possibile impostare i permessi per la visualizzazione delle reti, i widget della homepage e dei canali Telegram.</p>
+<p><img src="/bobo-help/usr_admin/img/[61]_altri_permessi.png" alt="61" title="Altri permessi"></p>
+<p>Per i widget della homepage, cliccando sul pulsante <img src="/bobo-help/usr_admin/img/pulsico/mod_dest.png" height="50px"></img> , è possibile modificare la destinazione finale del link di approfondimento per i widget attivi (1):</p>
+<p><img src="/bobo-help/usr_admin/img/[62]_link_approfondimento.png" alt="62" title="Link d'approfondimento"></p>
+<p>Le opzioni sono:</p>
+<ul>
+<li>
+<p>Mantenere il link di default;</p>
+</li>
+<li>
+<p>Selezionare una delle pagine disponibili sul portale e abbinarle un titolo;</p>
+<p><img src="/bobo-help/usr_admin/img/[63]_selez_pagina.png" alt="63" title="Seleziona pagina"></p>
+</li>
+<li>
+<p>Selezionare un link esterno al portale e abbinargli un titolo;</p>
+<p><img src="/bobo-help/usr_admin/img/[64]_selez_link_esterno.png" alt="63" title="Seleziona pagina"></p>
+</li>
+<li>
+<p>Non associare alcun link;</p>
+</li>
+</ul>
+<p>Per effettuare la modifica, cliccare il pulsante &quot;Salva&quot;, oppure cliccare &quot;Annulla&quot; o &quot;Chiudi&quot; per tornare alla schermata successiva.</p>
+<h2 id="impostazioni-generali">Impostazioni generali</h2>
+<p>In questa sezione è possibile modificare le impostazioni generali dei vari applicativi del portale, cliccando la relativa scheda.</p>
+<h3 id="validazione">Validazione</h3>
+<p><img src="/bobo-help/usr_admin/img/[70]_validazione.png" alt="70" title="Validazione"></p>
+<ol>
+<li>
+<p><u>Codici di validazione</u>: in questa sezione è possibile impostare i 4 livelli di validazione modificandone il nominativo e l'attivazione/disattivazione.</p>
+<p>NON è possibile disattivare il 1° e il 4° livello.</p>
+</li>
+<li>
+<p><u>Data conclusione modifica dati</u>: in questa sezione è possibile impostare un blocco delle operazioni di validazione inserendo la data di fine del periodo desiderato (il giorno selezionato è escluso dal blocco);</p>
+<p>Verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/usr_admin/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></li>
+</ol>
+<p>Un riscontro di questa modifica sarà visibile, tramite un messaggio sia in 'Dati &gt; Validazione' sia in 'Dati &gt; Validazione multilivello':</p>
+<ul>
+<li>
+<p>Dati &gt; Validazione</p>
+<p><img src="/bobo-help/usr_admin/img/[61]_validaz.png" alt="61" title="Validazione"></p>
+<p>Inoltre, non sarà possibile effettuare alcuna modifica/validazione ai dati precedenti alla data inserita (giorno selezionato escluso).</p>
+</li>
+<li>
+<p>Dati &gt; Validazione multilivello</p>
+<p><img src="/bobo-help/usr_admin/img/[61]_validaz_multi.png" alt="60" title="Validazione multilivello"></p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Reset validazione finale</u>: tramite l'interruttore <img src="/bobo-help/usr_admin/img/pulsico/si.png" height="50px" width="80px"></img> / <img src="/bobo-help/usr_admin/img/pulsico/no.png" height="50px" width="80px"></img> è possibile impostare il reset dei livelli di validazione applicati ai dati qualora un utente della propria rete di appartenenza effettui delle modifiche dopo la validazione finale.</p>
+</li>
+<li>
+<p><u>Parametri da validare</u> in questa sezione è possibile scegliere quali parametri si visualizzeranno nell'applicativo &quot;Validazione multilivello&quot;, presente nella pagina 'Dati &gt; Validazione multilivello':</p>
+<p><img src="/bobo-help/usr_admin/img/[80]_parametri.png" alt="80" title="Parametri"></p>
+<p>Per selezionare un parametro, fare doppio click su un elemento dall'elenco di sinistra (4a) ed esso verrà &quot;spostato&quot; nella tabella a destra (4c); per selezionare tutti i parametri di una categoria, cliccare una volta sul nome della categoria desiderata; per selezionare i parametri è anche possibile utilizzare i pulsanti posti al centro (4b):</p>
+<ul>
+<li>&quot;&gt;&gt;&quot; : aggiungi <u>tutti</u> i parametri filtrati nella colonna di sinistra;</li>
+<li>&quot;&gt;&quot; : aggiungi <u>solo</u> il parametro evidenziato con singolo click;</li>
+<li>&quot;&lt;&quot; : rimuovi <u>solo</u> il parametro evidenziato con singolo click;</li>
+<li>&quot;&lt;&lt;&quot; : rimuovi <u>tutti</u> i parametri dalla colonna di destra;</li>
+</ul>
+<p>E' possibile effettuare una ricerca dei parametri desiderati attraverso la casella posta in cima agli elenchi.</p>
+<p>Infine, tramite i pulsanti &quot;∧&quot; e &quot;∨&quot; (4d) è possibile modificare l'ordine di visualizzazione dei parametri della tabella di destra.</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva modifiche</u> e <u>Annulla</u> : cliccare il pulsante Salva modifiche per rendere effettive le modifiche impostate, oppure il pulsante Annulla;</p>
+</li>
+</ol>

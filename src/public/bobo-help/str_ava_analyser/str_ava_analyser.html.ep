@@ -1,0 +1,46 @@
+<h1 id="avanzate---analyser">AVANZATE - ANALYSER</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Avanzate&quot; posta nel menu principale di sinistra, selezionare l'elemento &quot;Analyser&quot;.</p>
+<h3>
+    > Avanzate<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Analyser</span>
+</h3>
+<p>Questa pagina permette la creazione e gestione dei gruppi di stazioni da utilizzare nell'albero di destra, presente all'interno dell'applicativo &quot;Analyser&quot;, sotto &quot;Lista delle stazioni&quot;.</p>
+<p><img src="/bobo-help/str_ava_analyser/img/[10]_home.png" alt="10" title="Avanzate - Analyser"></p>
+<ol>
+<li>
+<p><u>Sottogruppi attuali</u>: elenco dei sottogruppi già presenti nel portale:</p>
+<p><img src="/bobo-help/str_ava_analyser/img/[20]_sottogruppi.png" alt="20" title="Sottogruppi attuali"></p>
+<p>Cliccando con il tasto destro del mouse su uno dei sottogruppi in elenco, è possibile scegliere se modificare o eliminare il sottogruppo (per la modifica, verrà compilato il form di aggiunta a destra con i dati del sottogruppo selezionato);</p>
+<p><img src="/bobo-help/str_ava_analyser/img/[21]_tasto_dx_sottogruppi.png" alt="21" title="Tasto DX"></p>
+</li>
+<li>
+<p><u>Nome sottogruppo</u>: nome del sottogruppo che verrà visualizzato in elenco;</p>
+</li>
+<li>
+<p>Pulsante <u>Pubblico</u>: un sottogruppo pubblico verrà visualizzato da tutti gli utenti del proprio portale e, di conseguenza, non sarà necessario associare i gruppi (il campo &quot;Gruppi associati&quot; diventerà grigio e non sarà possibile modificarlo):</p>
+<ul>
+<li>
+<p><img src="/bobo-help/str_ava_analyser/img/pulsico/no.png" height="50px"></img> --&gt; Sottogruppo associato a gruppi specifici</p>
+</li>
+<li>
+<p><img src="/bobo-help/str_ava_analyser/img/pulsico/si.png" height="50px"></img> --&gt; Sottogruppo pubblico</p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Gruppi associati</u>: selezionare uno o più gruppi che avrà/avranno la visibilità del sottogruppo in Analyser.</p>
+<p><img src="/bobo-help/str_ava_analyser/img/[40]_gruppi_associati.png" alt="40" title="Gruppi associati"></p>
+</li>
+<li>
+<p><u>Aggiungi stazioni al sottogruppo</u>: attraverso il form sottostante, è possibile associare/rimuovere le stazioni al gruppo che si sta creando/modificando:</p>
+<p><img src="/bobo-help/str_ava_analyser/img/[30]_aggiungi_stazioni.png" alt="30" title="Aggiungi stazioni al sottogruppo"></p>
+<p>      a. Filtro <u>Reti</u>;</p>
+<p>      b. Filtro <u>Provincia</u>;</p>
+<p>      c. <u>Seleziona stazioni</u> (è possibile filtrare ulteriormente le stazioni visualizzate effettuando una ricerca digitando nel campo presente sopra ai pulsanti &quot;Aggiungi tutti&quot; e &quot;Rimuovi tutti&quot;):</p>
+<p>            Per selezionare una stazione, cliccare un elemento dall'elenco 'sx' ed esso verrà &quot;spostato&quot; nella tabella 'dx';</p>
+<p>            Qualora si volessero aggiungere o rimuovere, in un colpo solo, tutte le stazioni visualizzate in elenco dopo i vari filtri, cliccare relativamente il pulsante &quot;Aggiungi tutti&quot; e &quot;Rimuovi tutti&quot;.</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva sottogruppo</u> (per rendere effettiva la creazione/modifica del sottogruppo) e <u>Annulla</u> (per ripulire il form e scartare tutte le modifiche effettuate);</p>
+</li>
+</ol>

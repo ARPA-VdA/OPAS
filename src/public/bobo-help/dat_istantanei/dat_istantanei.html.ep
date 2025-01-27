@@ -1,0 +1,38 @@
+<h1 id="dati---dati-istantanei">DATI ISTANTANEI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Dati istantanei&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Dati istantanei</span>
+</h3>
+<p>Tramite questa pagina sarà possibile visualizzare, in tempo reale, i dati che arrivano dalle stazioni periferiche della propria rete di appartenenza;</p>
+<p><img src="/bobo-help/dat_istantanei/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Selezionare la rete;</p>
+</li>
+<li>
+<p>Selezionare la provincia;</p>
+</li>
+<li>
+<p>Selezionare la stazione</p>
+<p><img src="/bobo-help/dat_istantanei/img/[22]_stazioni.png" alt="22" title="Seleziona stazione"></p>
+</li>
+</ol>
+<p>Una volta impostati i filtri e scelta la stazione, verrà visualizzata la tabella dei dati istantanei:</p>
+<p><img src="/bobo-help/dat_istantanei/img/[23]_stazione_selez.png" alt="23" title="Filtri impostati"></p>
+<ol>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle stazioni sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Filtro di ricerca nella tabella: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei dati;</p>
+<ul>
+<li><u>Parametri</u> --&gt; <img src="/bobo-help/dat_istantanei/img/pulsico/parametri.png" height="40px"></img></li>
+<li><u>Diagnostici</u> --&gt; <img src="/bobo-help/dat_istantanei/img/pulsico/diagnostici.png" height="40px"></img></li>
+<li><u>Allarmi</u> --&gt; <img src="/bobo-help/dat_istantanei/img/pulsico/allarmi.png" height="40px"></img></li>
+</ul>
+</li>
+</ol>

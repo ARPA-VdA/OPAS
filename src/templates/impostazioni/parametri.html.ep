@@ -1,0 +1,463 @@
+% layout 'default';
+% title 'Anagrafica rete - Parametri';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/impostazioni/parametri.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    // from url
+    var stid = parseInt('<%= $stid %>');
+
+    var measuresCadences = '<%= @{$measures_cadences}[-1]->{total} %>';
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">I parametri delle tue stazioni</h4>
+                <h6 class="card-subtitle">Da questa pagina puoi aggiungere, modificare e visualizzare i parametri appartenenti alle stazioni della tua rete</h6>
+                <div class="row form-group pt-3 show-space-between-med">
+                    <div class="col-lg-4">
+                        <select class="custom-select col-12" id="networks" name="networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class="col-lg-4">
+                        <select class="custom-select col-12" id="provinces" name="provinces">
+                            <option value="-1">Seleziona provincia...</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-4">
+                        <select class="custom-select col-12" id="stations" name="stations">
+                            <option value="-1">Seleziona stazione...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="main-title" id="tobe-selected">Seleziona <strong>una stazione</strong> tramite il menu a tendina qui sopra <strong>per visualizzarne i parametri</strong>... <i class="fa-regular fa-arrow-turn-up"></i> </h3>
+        <h3 class="main-title show-selected m-b-5" id="selected-station">Hai selezionato la stazione di: <strong>Aosta - I Maggio</strong> <small class="font-bold">&rarr; STID 1000</small></h3>
+        <h5 class="show-selected m-b-20"><a class="text-info" id="selected-link" href="#" target="_blank"><i class="fa-regular fa-house-chimney-window text-primary" aria-hidden="true"></i> Vai all'<strong>anagrafica di stazione</strong> &raquo;</a></h5>
+    </div>
+</div>
+
+<div class="row" id="all-params">
+    <div class="col-lg-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs customtab" role="tablist" id="main-list">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#list-tab"  role="tab"><span class="hidden-sm-up"><i class="fa-sharp fa-light fa-list-ul"></i></span> <span class="hidden-xs-down">Lista</span></a> </li>
+                <li class="nav-item" id="hidden-tab"> <a class="nav-link text-info" data-toggle="tab" href="#edit-tab" role="tab"><span class="hidden-sm-up"><i class="fa-light fa-pencil"></i></span> <span class="hidden-xs-down">Modifica</span></a> </li>
+            % if ($user_grants->{user_insert}){
+                <li class="nav-item"> <a class="nav-link font-bold" data-toggle="tab" href="#config-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-gear-complex-code"></i></span> <span class="hidden-xs-down">Configurazione</span></a> </li>
+            % }
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big m-b-25" id="main-tab">
+            <div class="tab-pane active" id="list-tab" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Elenco dei parametri</h4>
+                        <h6 class="card-subtitle">Da questa pagina puoi visualizzare l'elenco di tutti i parametri della tua stazione (attivi e non attivi).</h6>
+                        <hr class="m-t-0 m-b-10">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="col-md-6">
+                                <select class="custom-select col-12 sm2" id="categories" name="categories">
+                                    <option value="-1">Tutte le tipologie</option>
+                                    % foreach my $type (@{$types}){
+                                        <option data-icon="<i class='<%= $type->{'pm_type_icon'} %>'></i>" data-colour="<%= $type->{'pm_type_colour'} %>" value="<%= $type->{'pm_type_id'} %>"><%= $type->{'pm_type_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <table class="table table-striped table-compressed-middle display responsive" id="table-params" width="100%">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>ID</th>
+                                    <th>PRID</th>
+                                    <th>STPRID</th>
+                                    <th>GROUPID</th>
+                                    <th>Nome</th>
+                                    <th>Tipologia</th>
+                                    <th>Cadenza</th>
+                                    <th>Unità</th>
+                                    <th>Formula conv.</th>
+                                    <th>Unità conv.</th>
+                                    <th>Attivo</th>
+                                    <th>Exp. Attivo</th>
+                                    <th>Exp. ID</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th>ID</th>
+                                    <th>PRID</th>
+                                    <th>STPRID</th>
+                                    <th>GROUPID</th>
+                                    <th>Nome</th>
+                                    <th>Tipologia</th>
+                                    <th>Cadenza</th>
+                                    <th>Unità</th>
+                                    <th>Formula conv.</th>
+                                    <th>Unità conv.</th>
+                                    <th>Attivo</th>
+                                    <th>Exp. Attivo</th>
+                                    <th>Exp. ID</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="edit-tab" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="box-title"> Modifica parametro: <strong></strong></h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="param-form">
+                            <h5 class="divider-title"><i class="icon-compass"></i> Generali</h5>
+                            <input type="hidden" class="clear-input" id="param-stprid" name="param-stprid" value="">
+                            <div class="form-group row">
+                                <label for="param-name" class="col-md-2 col-form-label">Nome parametro</label>
+                                <div class="col-md-4">
+                                    <input disabled class="form-control clear-input" type="text" value="" id="param-name" name="param-name" placeholder="Nome parametro...">
+                                </div>
+                                <label for="param-active" class="col-md-2 col-form-label">Parametro attivo</label>
+                                <div class="col-md-4">
+                                    <input type="checkbox" checked id="param-active" name="param-active" class="js-switch" data-color="#79a030" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-prid" class="col-md-2 col-form-label">
+                                    PRID parametro <span class="text-danger">*</span>
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">PRID: id dell'inquinante a cui la serie di dati fa riferimento</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <!-- <input class="form-control clear-input" type="number" value="" id="param-prid" name="param-prid" placeholder="ID parametro..."> -->
+                                    <select class="custom-select col-md-12 clear-select" id="param-prid" name="param-prid" placeholder="ID parametro...">
+                                        <option value="-1">Seleziona...</option>
+                                        % my $type = '';
+                                        % foreach my $param (@{$params}){
+                                            % if ($type eq ''){
+                                                <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                                <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_id'} %> - <%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                            % }else{
+                                                % if ($type eq $param->{'parameter_type_id'}){
+                                                    <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_id'} %> - <%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                                    <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_id'} %> - <%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                                % }
+                                            % }
+                                            % $type = $param->{'parameter_type_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <label for="param-tableid" class="col-md-2 col-form-label">
+                                    ID tabella <span class="text-danger">*</span>
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">TABLEID: id della serie dei dati assegnato in periferia, univoco per la stazione</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="number" value="" id="param-tableid" name="param-tableid" placeholder="ID tabella...">
+                                </div>
+                            </div>
+                             <div class="form-group row">
+                                <label for="param-startup-date" class="col-md-2 col-form-label">Data attivazione <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input" id="param-startup-date" name="param-startup-date" placeholder="DD/MM/YYYY">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="param-dismiss-date" class="col-md-2 col-form-label">Data disattivazione</label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input" id="param-dismiss-date" name="param-dismiss-date" placeholder="DD/MM/YYYY">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-cadence" class="col-md-2 col-form-label">
+                                    Cadenza misurazione <!-- st_info_cadence_fk -->
+                                </label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-md-12 clear-select" id="param-cadence" name="param-cadence">
+                                        <option value="-1">Seleziona...</option>
+                                        % foreach my $cadence (@{$measures_cadences}){
+                                            <option value="<%= $cadence->{'measure_cadence_id'} %>"><%= $cadence->{'measure_cadence_desc'} %></option>
+                                        % }
+                                    </select>
+                                    <span class="font-italic text-primary">&nbsp;Se non specificata, il parametro erediterà la cadenza della stazione</span>
+                                </div>
+                                <label for="param-external-id" class="col-md-2 col-form-label">
+                                    ID esterno parametro
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id parametro esposto dall'API e usato per la mappatura con i sistemi interni di ciascuna ARPA</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="param-external-id" name="param-external-id" placeholder="ID esterno parametro...">
+                                </div>
+
+                            </div>
+                            <div class="form-group row">
+                                <label for="" class="col-md-2 col-form-label">Note</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control clear-input" value="param-note" id="param-note" name="param-note" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <h5 class="divider-title"><i class="fa-light fa-file-import"></i> Varie Import</h5>
+                            <div class="form-group row">
+                                <label for="param-importid" class="col-md-2 col-form-label">Codice web service</label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="param-importid" name="param-importid" placeholder="Codice web service parametro...">
+                                </div>
+                            </div>
+                            <h5 class="divider-title"><i class="fa-light fa-file-export"></i> Varie Export</h5>
+                            <div class="form-group row">
+                                <label for="param-export-active" class="col-md-2 col-form-label">Export attivo</label>
+                                <div class="col-md-10">
+                                    <input type="checkbox" checked id="param-export-active" name="param-export-active" class="js-switch" data-color="#79a030" />
+                                    <br>
+                                </div>
+                            </div>
+                            <!-- Aggiunta campi stpr_export_id1 e stpr_export_id2 -->
+                            <div class="form-group row">
+                                <label for="param-exportid-1" class="col-md-2 col-form-label">
+                                    Export ID 1
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id parametro usato per l'export di file CSV o estensioni personalizzate</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="param-exportid-1" name="param-exportid-1" placeholder="Export ID 1 parametro...">
+                                </div>
+                                <label for="param-exportid-2" class="col-md-2 col-form-label">
+                                    Export ID 2
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id parametro usato per l'export di file CSV o estensioni personalizzate</span></span></span>
+                                    </a>
+                                </label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="param-exportid-2" name="param-exportid-2" placeholder="Export ID 2 parametro...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="param-ws-active" class="col-md-2 col-form-label">Webservice attivo</label>
+                                <div class="col-md-4">
+                                    <input type="checkbox" id="param-ws-active" name="param-ws-active" class="js-switch" data-color="#79a030" /><br>
+                                </div>
+                                <label for="param-ws-id" class="col-md-2 col-form-label">Webservice ID</label>
+                                <div class="col-md-4">
+                                    <input class="form-control clear-input" type="text" value="" id="param-ws-id" name="param-ws-id" placeholder="Webservice identificativo...">
+                                </div>
+                            </div>
+
+                            <hr class="m-t-30">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="param-submit" id="param-submit"> <i class="ti-save"></i> Salva</button>
+                                    <button type="button" class="btn btn-inverse param-cancel" name="param-cancel" id="param-cancel">Annulla</button>
+                                    <button type="button" class="btn btn-circle btn-primary pull-right m-l-5 next-param" id="next-param"><i class="fa-solid fa-chevron-right"></i></button>
+                                    <button type="button" class="btn btn-circle btn-primary pull-right m-l-10 prev-param" id="prev-param"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <h6 class="pull-right title-footer"><strong>Scorri e modifica</strong> altri parametri</h6>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="config-tab" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="box-title">Inserisci nuovi <strong>PARAMETRI</strong> alla tua <strong>STAZIONE</strong></h4>
+                        <form class="form form-medium" id="params-station-form">
+                            <h5 class="divider-title"><i class="icon-info"></i> Iniziali</h5>
+                            <div class="form-group row">
+                                <label for="report-prec-img" class="col-md-1 col-form-label">Carica Json</label>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa-regular fa-arrow-right-to-line"></i></span>
+                                        </div>
+                                        <input type="file" id="station-config" class="form-control" name="station-config" accept=".json">
+                                    </div>
+                                </div>
+                                <div class="col-md-7 nearest-element">
+                                    <button id="load-config" type="button" class="btn btn-warning btn-rounded"><i class="fa-regular fa-arrow-right-to-line"></i> Carica config.</button>
+                                    <div class="config-info">
+                                        <h6 class="m-b-10"><span class="txt-inside">Nome: <strong id="config-file-name" class="text-primary"></strong></span> - <span class="txt-inside">File header: <strong id="config-file-header" class="text-primary"></strong></span></h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="main-object">
+                                <!-- <h5 class="divider-title hide-config m-t-20" id="title-config-params"><i class="fa-light fa-pencil"></i> </h5> -->
+                                <hr class="hr-dashed" />
+                                <h4 class="hide-config m-t-20 text-info" id="title-config-params"><i class="fa-light fa-pencil"></i> </h4>
+                                <div class="form-group row hide-config">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-xl-8 col-lg-7">
+                                                <label class="switch">
+                                                    Sposta&nbsp;&nbsp;
+                                                    <input type="checkbox" class="view-pg clear-field" data-onstyle="warning" data-offstyle="success" data-on="STRUMENTO" data-off="PARAMETRO" data-size="sm" data-style="android" name="move-type" id="move-type">
+                                                </label>
+                                                <div class="legend-txt">
+                                                    <span id="active-param">
+                                                        <i class="fa-regular fa-circle-question text-info"></i> In questa modalità vengono spostati i <strong>singoli parametri</strong>.
+                                                    </span>
+                                                    <span id="active-instr">
+                                                        <i class="fa-regular fa-circle-question text-info"></i> In questa modalità vengono spostati <strong>tutti i parametri acquisiti dallo stesso strumento</strong>.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-4 col-lg-5">
+                                                <a href="#" class="to-fullscreen pull-right m-l-10" data-original-title="Apri questa tabella in fullscreen" data-placement="top" data-toggle="tooltip" data-fs="main-object"><i class="icon-size-fullscreen"></i></a>
+                                                <button type="button" class="btn btn-secondary btn-rounded pull-right m-b-10 m-l-10" data-toggle="modal" data-target="#view-formatted-result"><i class="fa-solid fa-code"></i> JSON config.</button>
+                                                <button type="button" class="btn btn-primary btn-rounded pull-right m-b-5" data-toggle="modal" data-target="#view-formatted-anomalies"><i class="fa-solid fa-triangle-exclamation"></i> Anomalie</button>
+                                            </div>
+                                        </div>
+                                        <div class="table-scroll-vert m-b-15">
+                                            <table class="table table-compressed table-bordered tbl-text" id="table-config-params">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="5" class="text-center tbl-title-big bg-lgt-green" data-toggle="tooltip" data-original-title="Aggiungi alla configurazione attuale i nuovi parametri" width="50%"><i class="fa-regular fa-sparkles"></i> Config. entrante&nbsp;&nbsp;<i class="fa-regular fa-arrow-right"></i></th>
+                                                        <th class="grey-cell text-center"><button type="button" class="btn btn-sm btn-success btn-params add-all-param" data-toggle="tooltip" data-original-title="Inserisci tutti i parametri nella configurazione"><i class="fa-solid fa-chevrons-right"></i></button></th>
+                                                        <th colspan="5" class="text-center tbl-title-big" data-toggle="tooltip" data-original-title="Configurazione attuale - rimane quella definitiva"><i class="fa-regular fa-gear"></i> Attuale configurazione</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="bg-lgt-green">ID</th>
+                                                        <th class="bg-lgt-green">PRID</th>
+                                                        <th class="bg-lgt-green">GROUPID</th>
+                                                        <th class="bg-lgt-green">Nome</th>
+                                                        <th class="bg-lgt-green">Unità</th>
+                                                        <th width="45" class="grey-cell text-center"></th>
+                                                        <th>ID</th>
+                                                        <th>PRID</th>
+                                                        <th>GROUPID</th>
+                                                        <th>Nome</th>
+                                                        <th>Unità</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th class="bg-lgt-green">ID</th>
+                                                        <th class="bg-lgt-green">PRID</th>
+                                                        <th class="bg-lgt-green">GROUPID</th>
+                                                        <th class="bg-lgt-green">Nome</th>
+                                                        <th class="bg-lgt-green">Unità</th>
+                                                        <th width="45" class="grey-cell"></th>
+                                                        <th>ID</th>
+                                                        <th>PRID</th>
+                                                        <th>GROUPID</th>
+                                                        <th>Nome</th>
+                                                        <th>Unità</th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="m-t-20">
+                                <div class="form-group row">
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-info station-config-save" data-close="0" name=""> <i class="fa-solid fa-floppy-disk"></i> Salva</button>
+                                        <button type="submit" class="btn btn-primary station-config-save" data-close="1" name=""> <i class="fa-regular fa-floppy-disk-circle-xmark"></i> Salva e chiudi</button>
+                                        <button type="button" class="btn btn-inverse" name="" id="station-config-cancel">Annulla</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade modal-result" id="view-formatted-result" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title text-info" id="myLargeModalLabel">Dettaglio JSON</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12" id="jsoneditor-result" style="width: 100%; height: 60vh;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info waves-effect text-left" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade modal-result" id="view-formatted-anomalies" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title text-info" id="myLargeModalLabel">Dettaglio anomalie</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body modal-body-fixed">
+                <div class="col-md-12">
+                    <!-- <p id="no-anomalies">Nessuna anomalia riscontrata nella procedura di import del file di configurazone</p> -->
+                    <table class="table table-compressed table-bordered tbl-text" id="table-anomalous-params">
+                        <thead>
+                            <tr>
+                                <th class="bg-lgt-green">ID</th>
+                                <th class="bg-lgt-green">GROUPID</th>
+                                <th class="bg-lgt-green">Nome</th>
+                                <th class="bg-lgt-green">Causa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="bg-lgt-green">ID</th>
+                                <th class="bg-lgt-green">GROUPID</th>
+                                <th class="bg-lgt-green">Nome</th>
+                                <th class="bg-lgt-green">Causa</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info waves-effect text-left" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

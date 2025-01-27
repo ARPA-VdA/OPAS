@@ -1,0 +1,92 @@
+<h1 id="anagrafica---parametri">ANAGRAFICA - PARAMETRI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Anagrafica&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Parametri&quot;.</p>
+<h3>
+    > Anagrafica<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Parametri</span>
+</h3>
+<p>Questa pagina permette di visualizzare tutti i parametri (attivi e non attivi) della propria rete di appartenenza.</p>
+<p><img src="/bobo-help/ang_parametri/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p><u>Schede della pagina</u>: è possibile visualizzare tutti i parametri (scheda 'Parametri' - scheda corrente), oppure aggiungere un nuovo parametro (scheda 'Nuovo' - vedi &quot;Inserisci nuovo parametro&quot;);</p>
+</li>
+<li>
+<p>Filtro della tabella per tipologia si parametro;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei dissesti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei parametri: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>ID;</li>
+<li>Nome;</li>
+<li>Unità di misura;</li>
+<li>Numero di decimali;</li>
+<li>Tipo di parametro;</li>
+<li>Se il parametro è attivo o disattivo: Attivo -&gt; <img src="/bobo-help/ang_parametri/img/[14]_attivo.png" height="40px"></img> | Disattivo -&gt; <img src="/bobo-help/ang_parametri/img/[13]_non_attivo.png" height="40px"></img>;</li>
+<li>Eventuali note;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Visualizza</u> ( <img src="/bobo-help/ang_parametri/img/[11]_puls_visualizza.png" height="40px"></img> ) e <u>Modifica</u> ( <img src="/bobo-help/ang_parametri/img/[12]_puls_modifica.png" height="40px"></img> ) Parametro: vedi &quot;Visualizza parametro&quot; e &quot;Modifica parametro&quot;;</p>
+</li>
+<li>
+<p><u>Esplorazione delle pagine</u>;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-parametro">Inserisci nuovo parametro</h2>
+<p>Cliccando sulla scheda &quot;Nuovo&quot;, sarà possibile inserire un nuovo parametro compilando i vari campi:</p>
+<p><img src="/bobo-help/ang_parametri/img/[20]_nuovo_parametro.png" alt="20" title="Nuovo parametro"></p>
+<ol>
+<li>
+<p><u>Nome</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Tipo</u> di parametro (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Nome breve</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Nome molto breve</u>;</p>
+</li>
+<li>
+<p><u>ID aggiuntivo</u>;</p>
+</li>
+<li>
+<p>Parametro <u>Attivo</u>;</p>
+<p>Attivo -&gt; <img src="/bobo-help/ang_parametri/img/[50]_interr_attivo.png" height="40px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/ang_parametri/img/[51]_interr_disattivo.png" height="40px"></img></p>
+</li>
+<li>
+<p><u>Unità di misura</u> (<span style="color:red">*</span>obbligatorio): è possibile anche digitare l'unità desiderata per cercarla nell'elenco;</p>
+<p><img src="/bobo-help/ang_parametri/img/[22]_unita.png" alt="22" title="Unità"></p>
+</li>
+<li>
+<p><u>Decimali</u>: numero di decimali visualizzati (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Coefficiente di conversione</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Unità di conversione</u> (medesimo elenco del campo 'Unità di misura') (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Oggetto JSON</u>: oggetto json contenente le informazioni aggiuntive riguardanti il parametro</p>
+</li>
+<li>
+<p><u>Note</u>;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u> e <u>Annulla</u>: cliccare il pulsante Salva per effettuare l'inserimento del nuovo parametro, oppure il pulsante Annulla per ritornare alla scheda 'Parametri';</p>
+</li>
+</ol>
+<h2 id="visualizza-parametro">Visualizza parametro</h2>
+<p>Cliccando il pulsante &quot;Visualizza&quot; relativo ad uno dei parametri della tabella, verrà aperta una nuova scheda dove si potrà visualizzare il parametro selezionato nel dettaglio. Inoltre, è possibile accedere alla sezione di modifica del parametro cliccando sul pulsante 'Modifica' posto in basso a sinistra (punto 1. - vedi &quot;Modifica parametro&quot;)</p>
+<p><img src="/bobo-help/ang_parametri/img/[30]_visualizza_parametro.png" alt="30" title="Visualizza parametro"></p>
+<h2 id="modifica-parametro">Modifica parametro</h2>
+<p>Cliccando il pulsante &quot;Modifica&quot; relativo ad uno dei parametri della tabella, verrà aperta una nuova scheda dove si potrà modificare il parametro selezionato (vedi 'Inserisci nuovo parametro').</p>

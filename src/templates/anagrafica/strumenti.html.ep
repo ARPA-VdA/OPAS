@@ -1,0 +1,111 @@
+% layout 'default';
+% title 'Anagrafica strumenti';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/anagrafica/strumenti.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#type" role="tab">Tipologie strumenti</a> </li>
+            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#operations" role="tab">Operazioni strumenti</a> </li>
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4 img-all-view" id="main-tab">
+
+            <div class="tab-pane p-20 active" id="type" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success"><strong>Tipologie strumenti</strong> della tua rete</h4>
+                        <h6 class="card-subtitle">Anagrafica totale della strumentazione presente nella tua rete</h6>
+                        <hr class="hr-dotted m-t-0" />
+                        <table id="instruments-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Metodo acquisizione</th>
+                                    <th>Detection limit</th>
+                                    <th>Unità misura DL</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- instruments from server: loop through all elements and dynamically build table's rows -->
+                                % foreach my $info (@{$infos}){
+                                    <tr>
+                                        <td><%= $info->{'instr_type_id'} %></td>
+                                        <td class="tbl-title"><%= $info->{'instr_type_fullname'} %></td>
+                                        <td><%= $info->{'category_name'} %></td>
+                                        <td><%= $info->{'method'} %></td>
+                                        <td><%= $info->{'detection_limit'} %></td>
+                                        <td><%= $info->{'detection_limit_unit_id'} %></td>
+                                        <td></td>
+                                    </tr>
+                                % }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Metodo acquisizione</th>
+                                    <th>Detection limit</th>
+                                    <th>Unità misura DL</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane p-20" id="operations" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success"><strong>Operazioni sugli strumenti</strong> della tua rete</h4>
+                        <h6 class="card-subtitle">Seleziona la tipologia di strumento di cui vuoi visualizzare le operazioni</h6>
+                        <hr class="hr-dotted m-t-15" />
+                        <div class="row m-b-10">
+                            <div class="col-lg-6">
+                                <select class="custom-select col-12" id="instr-type" name="instr-type">
+                                    <option value="-1">Seleziona strumento...</option>
+                                    % foreach my $info (@{$infos}){
+                                        <option value="<%= $info->{'instr_type_id'} %>"><%= $info->{'instr_type_fullname'} %> [<%= $info->{'category_name'} %>]</option>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <h6 class="little-title" id="tobe-selected">&nbsp;<strong>Seleziona uno strumento</strong> per vedere le <strong>operazioni</strong>&nbsp;&nbsp;<i class="fa-regular fa-arrow-turn-up" aria-hidden="true"></i> </h6>
+                        <div id="hide-tbl">
+                            <table id="operations-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Operazione</th>
+                                        <th>Categoria</th>
+                                        <th>Frequenza</th>
+                                        <th>Etichetta</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Operazione</th>
+                                        <th>Categoria</th>
+                                        <th>Frequenza</th>
+                                        <th>Etichetta</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

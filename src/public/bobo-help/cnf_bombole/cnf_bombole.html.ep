@@ -1,0 +1,169 @@
+<h1 id="impostazioni-rete---bombole">IMPOSTAZIONI RETE - BOMBOLE</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Impostazioni rete&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Bombole&quot;.</p>
+<h3>
+    > Impostazioni rete<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Bombole</span>
+</h3>
+<p>Da questa pagina è possibile visualizzare tutte le bombole, aggiungerne di nuove oppure posizionarle nelle stazioni appartenenti alla propria rete.</p>
+<p><img src="/bobo-help/cnf_bombole/img/[10]_index.png" alt="10" title="Bombole"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>Elenco</u>: elenco delle/degli bombole/stanziamenti già presenti;</li>
+<li><u>Bombola</u>: scheda d'inserimento di una nuova bombola;</li>
+<li><u>Stanziamento</u>: scheda d'inserimento di un nuovo stanziamento;</li>
+</ul>
+</li>
+<li>
+<p>Interruttore per passare dalla visualizzazione delle bombole a quella degli stanziamenti:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_bombole/img/pulsico/bombola.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_bombole/img/[100]_bombole.png" alt="100" title="Ricerca: Bombola"></p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_bombole/img/pulsico/stanziamento.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_bombole/img/[101]_stanziamenti.png" alt="101" title="Ricerca: Stanziamento"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Periodo temporale;</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/cnf_bombole/img/[31]_calendar_date.png" alt="31" title="Calendario"></p>
+<p>      a. Data d'inizio;<br>
+      b. Data di fine;<br>
+      c. Pulsante <u>Applica</u>;<br>
+      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+      e. Calendario mese precedente;<br>
+      f. Calendario mese corrente.<br></p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle/degli bombole/stanziamenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle bombole:</p>
+<ul>
+<li><img src="/bobo-help/cnf_bombole/img/pulsico/att.png" height="50px"></img> =&gt; bombola esaurita/attiva</li>
+<li><img src="/bobo-help/cnf_bombole/img/pulsico/disatt.png" height="50px"></img> =&gt; bombola NON esaurita/attiva</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Visualizza bombola</u> <img src="/bobo-help/cnf_bombole/img/pulsico/visualizza.png" height="50px"></img>:</p>
+<p><img src="/bobo-help/cnf_bombole/img/[40]_visualizza_dettaglio.png" alt="40" title="Visualizza dettaglio"></p>
+</li>
+<li>
+<p><u>Modifica bombola</u> <img src="/bobo-help/cnf_bombole/img/pulsico/modifica.png" height="50px"></img>: verrà aperta la scheda per modificare i dati della bombola selezionata (stessi campi presenti in &quot;Inserisci nuova bombola&quot;);</p>
+</li>
+<li>
+<p><u>Modifica location</u> <img src="/bobo-help/cnf_bombole/img/pulsico/modif_location.png" height="50px"></img>: verrà aperta la scheda per modificare i dati della location selezionata (stessi campi presenti in &quot;Inserisci nuova location&quot;);</p>
+</li>
+<li>
+<p><u>Chiudi location corrente</u> <img src="/bobo-help/cnf_bombole/img/pulsico/chiudi_location.png" height="50px"></img>: cliccare questo pulsante per chiudere la location della bombola selezionata; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_bombole/img/[50]_chiudi_location.png" alt="50" title="Chiudi location corrente"></p>
+</li>
+<li>
+<p><u>Elimina tutto</u> <img src="/bobo-help/cnf_bombole/img/pulsico/elimina.png" height="50px"></img>: cliccare questo pulsante per eliminare la bombola; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_bombole/img/[70]_del_bombola.png" alt="70" title="Elimina bombola"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuova-bombola">Inserisci nuova bombola</h2>
+<p><img src="/bobo-help/cnf_bombole/img/[80]_new_bombola.png" alt="80" title="Inserisci nuova bombola"></p>
+<ol>
+<li>
+<p>Arpa ID;</p>
+</li>
+<li>
+<p>Nome;</p>
+</li>
+<li>
+<p>Data/ora di <u>Produzione</u> (<span style="color:red">*</span>obbligatorio): verrà visualizzato il seguente form per la selezione della data e dell'ora:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/cnf_bombole/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></li>
+</ol>
+<p>Ora:</p>
+<p><img src="/bobo-help/cnf_bombole/img/[61]_ora1.png" alt="61" title="Selezione ora">
+<img src="/bobo-help/cnf_bombole/img/[62]_ora2.png" alt="62" title="Selezione minuti"></p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+</li>
+<li>
+<p>Data/ora di <u>Scadenza</u> (<span style="color:red">*</span>obbligatorio): verrà visualizzato lo stesso form visto al punto 3;</p>
+</li>
+<li>
+<p><u>Categoria</u> (<span style="color:red">*</span>obbligatorio): al cambio della categoria verranno visualizzati uno o più campi da compilare con i valori della bombola che si sta inserendo;</p>
+</li>
+<li>
+<p><u>Miscela</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Casella <u>Bombola di zero</u>;</p>
+</li>
+<li>
+<p>Interruttore <u>Bombola attiva/non attiva</u>;</p>
+<ul>
+<li><img src="/bobo-help/cnf_bombole/img/pulsico/si.png" height="50px" width="80px"></img> --&gt; Bombola attiva;</li>
+<li><img src="/bobo-help/cnf_bombole/img/pulsico/no.png" height="50px" width="80px"></img> --&gt; Bombola NON attiva;</li>
+</ul>
+</li>
+<li>
+<p>Caselle da spuntare per aggiungere ulteriori dettagli alla bombola: in particolare l'opzione &quot;Stanziata in tutte le stazioni&quot;, se selezionata, renderà impossibile aggiungere una location tramite l'interruttore del punto 13 poiché, essendo la bombola &quot;stanziata in tutte le stazioni&quot; della rete non ci sarebbero ulteriori location da aggiungere;</p>
+</li>
+<li>
+<p>Selezionare una o più <u>Reti di appartenenza</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Inserire allegati alla bombola: al click verrà visualizzata la finestra di sistema per scegliere i file;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Interruttore <u>Aggiungi location per la bombola</u>:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_bombole/img/pulsico/off.png" height="50px" width="80px"></img> --&gt; No Location;</p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_bombole/img/pulsico/on.png" height="50px" width="80px"></img> --&gt; Aggiungi location;</p>
+<p>Se selezionato &quot;Aggiungi location per la bombola&quot;, si dovranno inserire i seguenti campi aggiuntivi (per il dettaglio dei campi, vedere &quot;Inserisci nuovo stanziamento&quot;):</p>
+<p><img src="/bobo-help/cnf_bombole/img/[81]_add_location_x_bombola.png" alt="81" title="Inserisci location per la bombola"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento della nuova bombola, oppure il pulsante Annulla per ritornare alla scheda &quot;Elenco&quot;;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-stanziamento-di-una-bombola">Inserisci nuovo stanziamento di una bombola</h2>
+<p><img src="/bobo-help/cnf_bombole/img/[90]_new_stanziamento.png" alt="90" title="Inserisci nuovo stanziamento"></p>
+<ol>
+<li>Selezionare la bombola di cui si vuole effettuare lo stanziamento: nell'elenco saranno presenti le bombole create che non sono state ancora stanziate e quelle che non sono più stanziate (di cui si è effettuata la chiusura della location);</li>
+<li>Selezionare la provincia (serve solo da filtro per il campo &quot;Stazione&quot;);</li>
+<li>Selezionare la stazione in base alla provincia scelta in precedenza (se non si è selezionata la provincia verranno elencate tutte le stazione presenti sul portale) (<span style="color:red">*</span>obbligatorio);</li>
+<li>Inserire la data/ora di inizio dello stanziamento (<span style="color:red">*</span>obbligatorio): verrà visualizzato lo stesso form visto in fase di inserimento della bombola;</li>
+<li>Inserire la data/ora di fine dello stanziamento: questa data/ora NON è obbligatoria e, se il campo viene lasciato vuoto, verrà inserito il valore &quot;infinito&quot; e, di conseguenza, lo stanziamento sarà attivo a tempo indeterminato fino alla chiusura dello stesso da parte dell'utente;</li>
+<li>Eventuali note;</li>
+<li>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento del nuovo stanziamento, oppure il pulsante Annulla per ritornare alla scheda &quot;Elenco&quot;;</li>
+</ol>

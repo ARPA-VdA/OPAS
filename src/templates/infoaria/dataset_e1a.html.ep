@@ -1,0 +1,271 @@
+% layout 'default';
+% title 'Dataset E1a';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/infoaria/dataset_e1a.js'))%>" type="text/javascript"></script>
+
+
+<div class="row">
+    <div class="col-md-12">
+
+                <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report" role="tab">Invio dataset E1A</a> </li>
+            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#resume" role="tab">Riassunto parametri attivi</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4" id="main-tab">
+
+            <div class="tab-pane p-20 active" id="report" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-12" id="to-send">
+                                <h4 class="card-title">Dataset <strong>E1A</strong></h4>
+                                <h6 class="card-subtitle"><strong>Parametri per stazione</strong> che vengono inviati ad ISPRA annualmente</h6>
+
+                                <div class="last-reporting">
+                                    <h4 class="box-title">Lista dei <strong>dataset E1A</strong> creati per l'anno <strong class="selected-year"></strong></h4>
+                                    <hr class="m-t-0 m-b-10">
+                                    <ul class="docs-list docs-multiline clearfix m-b-0">
+                                    </ul>
+                                </div>
+
+                                <h4 class="box-title text-primary m-t-30">Crea un <strong>nuovo Dataset E1A</strong> da inviare ad ISPRA</h4>
+                                <hr class="m-t-0 m-b-0 hr-timeline">
+                                <ul class="timeline timeline-as-wizard">
+                                    <li class="timeline-inverted">
+                                        <div class="timeline-badge success"><i class="fa-solid fa-1"></i></div>
+                                        <div class="timeline-panel">
+                                            <div class="timeline-heading">
+                                                <h4 class="timeline-title text-info"><strong>STEP 1.</strong> Configura ANNO e REGIONE</h4>
+                                                <p><small class="text-muted"><i class="fa-sharp fa-regular fa-circle-info"></i> Aggiungi l'anno di cui vuoi configurare l'E1A e la regione di riferimento</small>. </p>
+                                            </div>
+                                            <div class="timeline-body">
+                                                <div class="m-b-10 row row-filter">
+                                                    <div class="col-sm-6 col-md-4 col-lg-3 m-b-10 input-group">
+                                                        <input id="years" class="form-control input-daterange-datepicker" type="text" data-date-format="yyyy"  name="daterange" value="" />
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 col-md-4 col-lg-3 m-b-10">
+                                                        <select class="form-control mb-2" id="regions" name="regions">
+                                                            <option value="-1">Seleziona regione...</option>
+                                                            % my $region = '';
+                                                            % foreach my $province (@{$provinces}){
+
+                                                                % if ($region eq ''){
+                                                                    <option value="<%= $province->{'region_id'} %>"><%= $province->{'region_name'} %></option>
+                                                                % }else{
+                                                                    % if ($region ne $province->{'region_id'}){
+                                                                        <option value="<%= $province->{'region_id'} %>"><%= $province->{'region_name'} %></option>
+                                                                    % }
+                                                                % }
+                                                                % $region = $province->{'region_id'};
+                                                            % }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="timeline-inverted">
+                                        <div class="timeline-badge success"><i class="fa-solid fa-2"></i></div>
+                                        <div class="timeline-panel">
+                                            <div class="timeline-heading">
+                                                <h4 class="timeline-title text-info"><strong>STEP 2.</strong> Aggiungi le associazioni STAZIONE/PARAMETRO da aggiungere all'E1A</h4>
+                                                <p><small class="text-muted"><i class="fa-sharp fa-regular fa-circle-info"></i> Selezionando <strong>"SI" su un'associazione stazione/parametro</strong> lo includi nell'elenco dei dati che verranno <strong>inviati ad ISPRA nell'anno che hai richiesto</strong>.</small> </p>
+                                            </div>
+                                            <div class="timeline-body">
+
+                                                <div class="m-b-10 row row-filter">
+                                                    <div class="col-sm-6 col-lg-3 m-b-10">
+                                                        <select class="custom-select col-12" id="networks" name="networks">
+                                                            <option value="-1">Seleziona rete...</option>
+                                                            % foreach my $net (@{$networks}){
+                                                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                                            % }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-6 col-lg-3 m-b-10">
+                                                        <select class="custom-select col-12" id="provinces" name="provinces">
+                                                            <option value="-1">Seleziona provincia...</option>
+                                                            % $region = '';
+                                                            % foreach my $province (@{$provinces}){
+
+                                                                % if ($region eq ''){
+                                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                                % }else{
+                                                                    % if ($region eq $province->{'region_id'}){
+                                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                                    % } else {
+                                                                        </optgroup>
+                                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                                    % }
+                                                                % }
+                                                                % $region = $province->{'region_id'};
+                                                            % }
+                                                            </optgroup>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-6 col-lg-3 m-b-10">
+                                                        <select class="custom-select col-12" id="stations" name="stations">
+                                                            <option value="-1">Seleziona stazione...</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-6 col-lg-3 m-b-10">
+                                                        <select class="custom-select col-12" id="parameters" name="parameters">
+                                                            <option value="-1">Seleziona parametro...</option>
+                                                            % foreach my $pollutant (@{$pollutants}){
+                                                                <option value="<%= $pollutant->{'param_id'} %>"><%= $pollutant->{'pollutant_id'} %> - <%= $pollutant->{'param_name'} %></option>
+                                                            % }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div id="container-all-chk" class="row">
+                                                    <div class="col-md-12">
+                                                        <p class="p-r-20 p-t-0 m-b-0">
+                                                            Invio di <strong>tutte le stazioni/parametri</strong> visualizzati in tabella:&nbsp;&nbsp;<input type="checkbox" class="all-param" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android" />
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <table id="table-switch-params" class="table table-striped table-hover bt-switch">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-right">Stazione / Parametro</th>
+                                                            <th>Invio</th>
+                                                            <th class="text-right">Stazione / Parametro</th>
+                                                            <th>Invio</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th class="text-right">Stazione / Parametro</th>
+                                                            <th>Invio</th>
+                                                            <th class="text-right">Stazione / Parametro</th>
+                                                            <th>Invio</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="timeline-inverted">
+                                        <div class="timeline-badge danger"><i class="fa-solid fa-3"></i></div>
+                                        <div class="timeline-panel">
+                                            <div class="timeline-heading">
+                                                <h4 class="timeline-title text-info"><strong>STEP 3.</strong> Crea il CSV &raquo; Anno selezionato: <strong class="selected-year strong-lighter"></strong> - Regione: <strong id="selected-region" class="strong-lighter"></strong></h4>
+                                                <p><small class="text-muted"><i class="fa-sharp fa-regular fa-circle-info"></i> Cliccando sul pulsante qui sotto, verrà creato il CSV dell'E1A con i dati che hai precedentemente selezionato nella precedente configurazione.</small> </p>
+                                            </div>
+                                            <div class="timeline-body">
+                                                <button type="button" class="btn btn-success btn-lg btn-rounded" id="create-csv-e1a"><i class="fa-solid fa-file-spreadsheet"></i> ANTEPRIMA CSV <small>revisiona i dati</small></button>
+                                                <button type="button" class="btn btn-primary btn-lg btn-rounded" id="send-csv-e1a"><i class="fa-solid fa-file-excel"></i> CREA CSV UFFICIALE <small>e carica su FTP</small></button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane p-20" id="resume" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success">Vista riassuntiva <strong>parametri attivi</strong></h4>
+                        <h6 class="card-subtitle">Nella seguente tabella vengono <strong>visualizzati tutti i parametri attivi</strong> che vengono inviati per il report E1A</h6>
+                        <hr class="m-t-0 m-b-20">
+
+                        <div class="m-b-10 row row-filter">
+                            <div class="col-lg-2 m-b-10 input-group">
+                                <input id="view-years" class="form-control input-daterange-datepicker" type="text" data-date-format="yyyy"  name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <select class="custom-select col-12" id="view-networks" name="view-networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="view-provinces" name="view-provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="view-stations" name="view-stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2">
+                                <button id="view-update" type="button" class="btn btn-info btn-inline" data-toggle="tooltip" data-placement="top" title="" data-original-title="Aggiorna visualizzazione">
+                                    <i class="icon-refresh"></i> Aggiorna
+                                </button>
+                            </div>
+                        </div>
+                        <table id="list-table" class="display responsive table table-hover table-striped tbl-va-center tbl-str-left" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Nome SPO</th>
+                                    <th>EU Code</th>
+                                    <th>Stazione</th>
+                                    <th>ID inquinante</th>
+                                    <th>Parametro</th>
+                                    <th>Attivaz. parametro in staz.</th>
+                                    <th>Tipo strumento</th>
+                                    <th>Metodo</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Nome SPO</th>
+                                    <th>EU Code</th>
+                                    <th>Stazione</th>
+                                    <th>ID inquinante</th>
+                                    <th>Parametro</th>
+                                    <th>Attivaz. parametro in staz.</th>
+                                    <th>Tipo strumento</th>
+                                    <th>Metodo</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

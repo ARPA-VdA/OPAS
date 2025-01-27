@@ -1,0 +1,16 @@
+<li class="col-lg-4 project-bobo">
+
+
+    <!-- TESTO OPAS ISPRA -->
+
+    <h4 class="m-b-20">La Piattaforma OPen Air System</h4>
+    <p>OPAS è un applicativo finalizzato alla gestione di serie di dati temporali, quali dati meteo, idrometrici, chimici ecc.<br>
+    Il cloud è in hosting presso ISPRA che ne garantisce la gestione e manutenzione.</p>
+    Dettagli tecnici della piattaforma:
+    <ul>
+        <li>Server linux con database PostgreSQL + PostGIS</li>
+        <li>Server linux con http e webservice Nginx</li>
+        <li>Framework webapp Mojolicious</li>
+    </ul>
+
+</li>

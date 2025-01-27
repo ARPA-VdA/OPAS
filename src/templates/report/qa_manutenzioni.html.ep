@@ -1,0 +1,257 @@
+% layout 'default';
+% title 'QA - report manutenzioni';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/qa_manutenzioni.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    // arriving from server, id visible in page's url
+    var rpid = '<%= $rpid %>';
+</script>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza i report MANUTENZIONI inseriti</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo report che vuoi visualizzare</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Report</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="report-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-3">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class=" col-md-3">
+                                <select class="custom-select col-12" id="networks" name="networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class=" col-md-3">
+                                <select class="custom-select col-12" id="provinces" name="provinces" data-change="stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                </select>
+                            </div>
+                            <div class=" col-md-3">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table id="report-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Rete</th>
+                                    <th>Stazione</th>
+                                    <th>Note</th>
+                                    <th>Op.Strum.</th>
+                                    <th>Op.Dot.</th>
+                                    <th>Tatatura</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Rete</th>
+                                    <th>Stazione</th>
+                                    <th>Note</th>
+                                    <th>Op.Strum.</th>
+                                    <th>Op.Dot.</th>
+                                    <th>Taratura</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuova MANUTENZIONE</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="maintenance-form" name="maintenance-form">
+                            <input type="hidden" id="maintenance-id" name="maintenance-id" value="">
+                            <div class="form-group row">
+                                <label for="maintenance-datetime" class="col-md-2 col-form-label">Data e ora <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control" id="maintenance-datetime" name="maintenance-datetime" placeholder="mm/dd/yyyy hh:mm">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="maintenance-prov" class="col-md-2 col-form-label">Provincia</label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="maintenance-prov" name="maintenance-prov" data-change="maintenance-stat">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % my $region = '';
+                                        % foreach my $province (@{$provinces}){
+
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="maintenance-stat" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="maintenance-stat" name="maintenance-stat">
+                                        <option value="-1">Seleziona stazione...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form form-medium" id="maintenance-operations-form" name="maintenance-operations-form">
+                            <div id="">
+                                <h5 class="divider-title">Aggiungi operazioni <strong>sugli strumenti</strong></h5>
+                                <div class="form-group row">
+                                    <label for="maintenance-instrument" class="col-md-2 col-form-label">Strumento</label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select col-12" id="maintenance-instrument" name="maintenance-instrument">
+                                            <option value="-1">Seleziona strumento...</option>
+                                        </select>
+                                    </div>
+                                    <label for="maintenance-operation" class="col-md-2 col-form-label">Operazione</label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select col-12" id="maintenance-operation" name="maintenance-operation[]" multiple>
+                                            <option value="-1">Seleziona operazione...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-10 offset-md-2">
+                                        <button type="submit" class="btn btn-sm btn-success" name="add-operations" id="add-operations"> <i class="icon-plus"></i> Aggiungi</button>
+                                    </div>
+                                </div>
+                                <div id="oprs-insert">
+                                    <h5 class="divider-title">Operazioni <strong>su strumenti</strong> già inserite</h5>
+                                    <div class="table-responsive tbl-horiz">
+                                        <table class="table table-striped table-compressed table-font-smaller form-table m-b-10" id="operations-table">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Strumento</th>
+                                                    <th>Operazione</th>
+                                                    <th>Taratura</th>
+                                                    <th>Scad. filtri</th>
+                                                    <th>Note</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="btn btn-sm btn-danger m-b-10" name="delete-operations" id="delete-operations"> <i class="icon-close"></i> Svuota tabella</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form form-medium" id="maintenance-miscellanies-form" name="maintenance-miscellanies-form">
+                            <div id="">
+                                <h5 class="divider-title">Aggiungi operazioni <strong>sulle dotazioni</strong></h5>
+                                <div class="form-group row">
+                                    <label for="maintenance-miscellany" class="col-md-2 col-form-label">Dotazione</label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select col-12" id="maintenance-miscellany" name="maintenance-miscellany">
+                                            <option value="-1">Seleziona dotazione...</option>
+                                        </select>
+                                    </div>
+                                    <label for="maintenance-operation-mi" class="col-md-2 col-form-label">Operazione</label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select col-12" id="maintenance-operation-mi" name="maintenance-operation-mi[]" multiple>
+                                            <option value="-1">Seleziona operazione...</option>
+                                            % foreach my $op (@{$operations}){
+                                                <option value="<%= $op->{'mi_op_id'} %>"><%= $op->{'mi_op_desc'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-10 offset-md-2">
+                                        <button type="submit" class="btn btn-sm btn-success" name="add-operations-mi" id="add-operations-mi"> <i class="icon-plus"></i> Aggiungi</button>
+                                    </div>
+                                </div>
+                                <div id="oprs-insert-mi">
+                                    <h5 class="divider-title">Operazioni <strong>su dotazioni</strong> già inserite</h5>
+                                    <div class="table-responsive tbl-horiz">
+                                        <table class="table table-striped table-compressed table-font-smaller form-table m-b-10" id="operations-mi-table">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Dotazione</th>
+                                                    <th>Operazione</th>
+                                                    <th>Note</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-12">
+                                            <button type="button" class="btn btn-sm btn-danger m-b-10" name="delete-operations-mi" id="delete-operations-mi"> <i class="icon-close"></i> Svuota tabella</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form form-medium" id="maintenance-closure-form" name="maintenance-closure-form">
+                            <h5 class="divider-title">Annotazioni finali</h5>
+                            <div class="form-group row">
+                                <label for="maintenance-note" class="col-md-2 col-form-label">Note generali</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" rows="6" id="maintenance-note" name="maintenance-note"></textarea>
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="save-report" id="save-report"> <i class="ti-save"></i> Inserisci report</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-report" id="cancel-report">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

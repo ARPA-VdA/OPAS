@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it" translate="no">
+    <head>
+        <meta charset="UTF-8">
+        <title><%= title %></title>
+        <meta name="robots" content="notranslate">
+        <meta name="googlebot" content="notranslate">
+
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="OPAS - Open Air System: Bobo web application">
+        <meta name="author" content="Ecometer">
+
+        <!-- icons all browsers -->
+        <link rel="apple-touch-icon" sizes="180x180" href="/bobo-icons/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/bobo-icons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/bobo-icons/favicon-16x16.png">
+        <link rel="manifest"  href="/bobo-icons/site.webmanifest">
+        <link rel="mask-icon" href="/bobo-icons/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="/bobo-icons/favicon.ico">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="msapplication-config" content="/bobo-icons/browserconfig.xml">
+        <meta name="theme-color" content="#ffffff">
+
+        <script src="<%=url_for('/node_modules/jquery/jquery-3.2.1.min.js')%>"></script>
+        <script src="<%=url_for('/node_modules/popper/popper.min.js')%>"></script>
+
+        <!-- bootstrap plugin -->
+        <script src="<%=url_for('/node_modules/bootstrap/dist/js/bootstrap.min.js')%>"></script>
+        <link rel="stylesheet" href="<%=url_for('/node_modules/bootstrap/dist/css/bootstrap.min.css')%>" />
+
+        <!-- Font Awesome 6 -->
+        <!-- <script src="https://kit.fontawesome.com/XXXXXXXX.js" crossorigin="anonymous"></script> -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+        <!-- moment js -->
+        <script src="<%=url_for('/node_modules/moment/moment-with-locales.js')%>"></script>
+        <script src="<%=url_for('/node_modules/moment/moment-timezone-with-data.js')%>"></script>
+        <script src="<%=url_for('/node_modules/moment-holiday-master/moment-holiday.js')%>"></script>
+        <script src="<%=url_for('/node_modules/moment-holiday-master/locale/easter.js')%>"></script>
+        <script src="<%=url_for('/node_modules/moment-holiday-master/locale/italy.js')%>"></script>
+
+        <!-- Openlayer plugin -->
+        <link  href="<%=url_for('/node_modules/openlayers/v8.2.0-dist/ol.css')%>" rel="stylesheet">
+        <script src="<%=url_for('/node_modules/openlayers/v8.2.0-dist/ol.js')%>"></script>
+        <link href="<%=url_for(helperGetFileVersion('/node_modules/openlayers-ext/dist/ol-ext.css'))%>" rel="stylesheet">
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/openlayers-ext/dist/ol-ext.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/proj4/dist/proj4.js'))%>"></script>
+
+        <script src="<%=url_for('/node_modules/shp2geojson/lib/jszip.js')%>"></script>
+        <script src="<%=url_for('/node_modules/shp2geojson/lib/jszip-utils.js')%>"></script>
+
+        <script src="<%=url_for('/node_modules/shp2geojson/preprocess.js')%>"></script>
+        <script src="<%=url_for('/node_modules/shp2geojson/preview.js')%>"></script>
+
+        <!-- Tabulator plugin -->
+        <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator.min.css'))%>" rel="stylesheet">
+        <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_simple.min.css'))%>" rel="stylesheet">
+        <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/tabulator.js'))%>"></script>
+
+        <link href="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/css/dataTables.bootstrap4.min.css')%>" rel="stylesheet">
+        <link href="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/css/select.bootstrap4.min.css')%>" rel="stylesheet">
+
+        <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/js/jquery.dataTables.min.js')%>"></script>
+        <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/js/dataTables.bootstrap4.min.js')%>"></script>
+        <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/js/dataTables.select.min.js')%>"></script>
+        <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/datetime-moment.js')%>"></script>
+        <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/novalue.js')%>"></script>
+
+        <!-- validation js -->
+        <script src="<%=url_for('/node_modules/jquery-validate/jquery.validate.js')%>"></script>
+        <script src="<%=url_for('/node_modules/jquery-validate/additional-methods.js')%>"></script>
+
+        <!-- daterangepicker plugin http://www.daterangepicker.com/ -->
+        <script src="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.js')%>"></script>
+        <link  href="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.css')%>" rel="stylesheet" />
+
+        <!-- duallistbox plugin https://www.jqueryscript.net/demo/Responsive-jQuery-Dual-Select-Boxes-For-Bootstrap-Bootstrap-Dual-Listbox/ -->
+        <script src="<%=url_for('/node_modules/bootstrap-duallistbox/jquery.bootstrap-duallistbox.js')%>"></script>
+        <link  href="<%=url_for('/node_modules/bootstrap-duallistbox/bootstrap-duallistbox.css')%>" rel="stylesheet" />
+
+        <!-- Sweet alert -->
+        <link  href="<%=url_for('/node_modules/sweetalert/sweetalert.css')%>" rel="stylesheet" type="text/css">
+        <script src="<%=url_for('/node_modules/sweetalert/sweetalert.min.js')%>"></script>
+        <script src="<%=url_for('/node_modules/sweetalert/jquery.sweet-alert.custom.js')%>"></script>
+
+        <!-- gallery plugin -->
+        <script src="<%=url_for('/node_modules/magnific-popup/dist/jquery.magnific-popup.min.js')%>"></script>
+        <link  href="<%=url_for('/node_modules/magnific-popup/dist/magnific-popup.css')%>" rel="stylesheet" />
+
+        <!-- highstock charts plugin -->
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/accessibility.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/exporting.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/offline-exporting.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/export-data.js'))%>"></script>
+
+        <!-- Select2 -->
+        <link  href="<%=url_for('/node_modules/select2/dist/css/select2.min.css')%>" rel="stylesheet" type="text/css">
+        <script src="<%=url_for('/node_modules/select2/dist/js/select2.full.min.js')%>" type="text/javascript"></script>
+
+        <!-- jquery file download -->
+        <script type="text/javascript" src="<%= url_for('/node_modules/filedownload/jquery.fileDownload.js')%>"></script>
+
+        <!-- jQuery ui - needed by fileDownload -->
+        <script src="<%=url_for('/node_modules/jqueryui/jquery-ui.min.js')%>"></script>
+        <link href="<%=url_for('/node_modules/jqueryui/jquery-ui.min.css')%>" rel="stylesheet" />
+
+        <!-- multi-select -->
+        <script src="<%=url_for('/node_modules/multi-select/quicksearch.js')%>"></script>
+        <script src="<%=url_for('/node_modules/multi-select/multi-select.js')%>"></script>
+        <link  href="<%=url_for('/node_modules/multi-select/multi-select.css')%>" rel="stylesheet" />
+
+        <!-- toast notification -->
+        <!-- https://kamranahmed.info/toast -->
+        <link  href="<%=url_for('/node_modules/toast-master/css/jquery.toast.css')%>" rel="stylesheet" type="text/css">
+        <script src="<%=url_for('/node_modules/toast-master/js/jquery.toast.js')%>"></script>
+
+        <!-- dataview own files -->
+        <link href="<%=url_for(helperGetFileVersion('/bobo-css/dataview_style.css'))%>" rel="stylesheet" />
+        <link href="<%=url_for(helperGetFileVersion('/bobo-css/dataview_color.css'))%>" rel="stylesheet" />
+
+        <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/global.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/storage.js'))%>"></script>
+        <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/openlayerFunctions.js'))%>"></script>
+
+        <script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/dataview_notifier.js'))%>"></script>
+    </head>
+
+    <!-- page script -->
+    <script type="text/javascript">
+        // tell the user if you are in development or production mode
+        var app_mode = '<%= $self->app->mode %>';
+    </script>
+    <!--  end page script -->
+
+    <body>
+        <!-- preloader - appear when contents are loading -->
+        <div id="dataview-preloader"><h3>elaborazione in corso...</h3></div>
+
+        <!-- main app container -->
+        <div id="main-wrapper">
+            <!-- main header -->
+            <header id="top-bar">
+                <nav class="navbar navbar-expand-sm bg-dark">
+
+                    <!-- main entity logo -->
+                    <a href="/str_dataview" id="main-logo"><img src="<%= $option->{'big_logo'} %>"></a>
+
+                    <!-- 2 lines content -->
+                    <div id="double-row-bar">
+
+                        <!-- row with logo and description -->
+                        <div id="top-double">
+                            <!-- second entity logo -->
+                            <span><img src="<%= $option->{'little_logo'} %>" /></span>
+
+                            <!-- description of the application -->
+                            <h1><%= $option->{'desc'} %></h1>
+                        </div>
+                        <!-- row with logo and description -->
+
+                        <!-- row with info and back link -->
+                        <div id="bottom-double">
+                            <!-- title explain wath you see -->
+                            <h2><strong></strong></h2>
+
+                            <!-- if defined, show the link to go back to main site -->
+                            % if (defined $option->{'link_url'}){
+                            <a href="<%= $option->{'link_url'} %>" target="_blank"><i class="icon-logout"></i> <%= $option->{'link_name'} %></a>
+                            % }
+                            <!-- end if defined, show the link to go back to main site -->
+
+                        </div>
+                        <!-- end row with info and back link -->
+
+                    </div>
+                    <!-- end 2 lines content -->
+
+                </nav>
+            </header>
+            <!-- end main header -->
+
+            <!-- content pages -->
+            <div id="main-content">
+                <%= content %>
+            </div>
+            <!-- end content pages -->
+
+        </div>
+        <!-- end main app container -->
+    </body>
+</html>

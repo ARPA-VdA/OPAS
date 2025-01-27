@@ -1,0 +1,56 @@
+<h1 id="menu-utente---impostazioni">MENU UTENTE - IMPOSTAZIONI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sul proprio username posto sopra il menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Impostazioni&quot;.</p>
+<h3>
+    v 'Utente'<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Impostazioni</span>
+</h3>
+<h2 id="scheda-homepage">Scheda 'Homepage'</h2>
+<p>In questa scheda è possibile selezionare quanti e quali widget visualizzare nella propria homepage.</p>
+<p><img src="/bobo-help/usr_options/img/[10]_home.png" alt="01"></p>
+<ol>
+<li>
+<p>Elenco dei widget disponibili;</p>
+<p>Passando sopra ad uno con il mouse è possibile visualizzare una piccola anteprima e qualche informazione aggiuntiva:</p>
+<p><img src="/bobo-help/usr_options/img/[11]_opzioni_widget.png" alt="11"></p>
+<p>Trascinando un widget dall'elenco ad una delle celle abilitate è possibile visualizzarlo nella propria homepage;</p>
+<p><img src="/bobo-help/usr_options/img/[23]_aggiunta_widget.png" alt="30"></p>
+</li>
+<li>
+<p>Celle dei widget:</p>
+<p><img src="/bobo-help/usr_options/img/[12]_pannelli.png" alt="12"></p>
+<p>Si hanno a disposizione 3 righe ed in ogni riga si possono inserire al massimo 3 widget.</p>
+<p>Per abilitare una cella ed aggiungere il widget che si interessa visualizzare nella propria homepage, cliccare su una delle celle disabilitate; verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/usr_options/img/[22]_abilita_sezione.png" alt="22"></p>
+<p>Cliccare il pulsante 'Abilita' per confermare;</p>
+<p>Per disabilitare una cella e rimuovere il widget dalla propria homepage, cliccare sul pulsante <img src="/bobo-help/usr_options/img/[26]_puls_disabilita.png" height="30px" width="30px"></img> presente su una delle celle abilitate; verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/usr_options/img/[20]_disabilita_sezione.png" alt="20"></p>
+<p>Cliccare il pulsante 'Disabilita' per confermare;</p>
+<p>Per rimuovere un widget da una cella, lasciando quest'ultima abilitata, cliccare sul pulsante <img src="/bobo-help/usr_options/img/[27]_puls_rimuovi_widget.png" height="80px" width="35px"></img> presente sul widget associato ad una cella; verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/usr_options/img/[25]_elimina_widget.png" alt="31"></p>
+<p>Cliccare il pulsante 'Elimina' per confermare;</p>
+<h3 id="uattenzioneu"><u>ATTENZIONE!</u></h3>
+<p>Prestare attenzione all'ordine con cui si abilitano, disabilitano e occupano le celle dei widget: occorre seguire sempre un ordine logico, ovvero dall'alto verso il basso e da sinistra a destra; ad esempio non sarà consentito aggiungere o rimuovere un widget ad una cella se quella precedente sulla stessa riga (a sinistra) rimane vuota; qualora non si seguisse l'ordine logico sopra descritto, verranno visualizzati i seguenti messaggi:</p>
+<p>Aggiunta:</p>
+<p><img src="/bobo-help/usr_options/img/[24]_azione_non_consentita_aggiungere.png" alt="30"></p>
+<p>Eliminazione:</p>
+<p><img src="/bobo-help/usr_options/img/[24]_azione_non_consentita_togliere.png" alt="31"></p>
+</li>
+<li>
+<p>Pulsanti <u>Salva disposizione homepage</u> e <u>Annulla modifiche</u>: cliccare il pulsante 'Salva disposizione homepage' per rendere effettive le modifiche sulla propria homepage, oppure il pulsante 'Annulla modifiche' per resettare la visualizzazione della griglia dei widget e non salvare le modifiche.</p>
+<p><img src="/bobo-help/usr_options/img/[30]_success.png" alt="31"></p>
+</li>
+</ol>
+<h2 id="scheda-icone-rapide">Scheda 'Icone rapide'</h2>
+<p>In questa scheda è possibile personalizzare il menu di icone ad accesso rapido, presente in basso a sinistra nel menù principale, inserendo i link alle pagine che si usano di più.</p>
+<p><img src="/bobo-help/usr_options/img/[40]_no_icone_rapide.png" alt="40" title="Scheda Icone rapide"></p>
+<p>       a. Anteprima delle icone rapide scelte;<br>
+       b. Pulsante di attivazione del menù;</p>
+<p>Una volta attivato il menù, sarà possibile selezionare 4 pagine dal proprio portale a cui assegnare un pulsante di link rapido:</p>
+<p><img src="/bobo-help/usr_options/img/[41]_icone_rapide.png" alt="41" title="Icone rapide"></p>
+<p>Una volta selezionata una pagina, verrà visualizzata l'icona nella zona dell'anteprima:</p>
+<p><img src="/bobo-help/usr_options/img/[42]_icona_scelta.png" alt="42" title="Icona scelta"></p>
+<p>Vanno selezionate TUTTE E QUATTRO LE ICONE DISPONIBILI.</p>
+<p>Una volta selezionate le 4 icone, cliccare sul pulsante 'Salva' per confermare le scelte; verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/usr_options/img/[43]_msg_successo.png" alt="43" title="Messaggio di successo"></p>
+<p>Cliccare 'Ricarica' per rendere effettive le modifiche, ricaricare la pagina e visualizzare i pulsanti:</p>
+<p><img src="/bobo-help/usr_options/img/[44]_icone_sul_menu.png" alt="44" title="Icone sul menu"></p>

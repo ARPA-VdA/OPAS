@@ -1,0 +1,204 @@
+% layout 'default';
+% title 'Statistiche - Analisi validazione';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/statistiche/validazione.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#tab-single" role="tab">Analisi singola staz.</a></li>
+            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tab-globe" role="tab">Analisi globale</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4 img-all-view" id="main-tab">
+
+            <!-- Singola stazione -->
+            <div class="tab-pane p-20 active" id="tab-single" role="tabpanel">
+                <h4 class="box-title text-info">Statistiche di validazione da operatore per <strong>singola Stazione</strong></h4>
+                <hr class="m-t-0 m-b-20">
+                <p>Visualizza le statistiche relative ai codici di validazione/invalidazione per stazione in un determinato periodo temporale.</p>
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-6 m-b-10 input-group">
+                        <input class="form-control input-daterange-datepicker" type="text" name="daterange" id="show-stats-date" name="show-stats-date" placeholder="mm/dd/yyyy - mm/dd/yyyy" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6 m-b-10">
+                        <select class="custom-select col-12" id="show-stats-networks" name="show-stats-networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6 m-b-10">
+                        <select class="custom-select col-12" id="show-stats-provinces" name="show-stats-provinces">
+                            <option value="-1">Seleziona provincia...</option>
+                            % my $region = '';
+                            % foreach my $province (@{$provinces}){
+                                % if ($region eq ''){
+                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                % } else {
+                                    % if ($region eq $province->{'region_id'}){
+                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                    % } else {
+                                        </optgroup>
+                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                    % }
+                                % }
+                                % $region = $province->{'region_id'};
+                            % }
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 m-b-10 stat-buttons">
+                        <select class="custom-select col-12" id="show-stats-stations" name="show-stats-stations">
+                            <option value="-1">Seleziona stazione...</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6 m-b-10">
+                        <a id="download-station" href="#" class="btn btn-sm btn-rounded btn-success"><i class="fa-solid fa-download"></i> CSV stazione</a>
+                    </div>
+                </div>
+                <div id="tab-staz-data">
+                    <h5 class="subtitle-tabbing text-info">Hai selezionato: <strong>Porta San Felice (BO)</strong></h5>
+                    <div class="table-scroll tbl-scroll-modal m-t-5">
+                        <table cellspacing="0" id="dynamic-staz-table">
+                            <thead>
+                                <tr class="text-center">
+                                    <th></th>
+                                    <th colspan="2">Generali</th>
+                                    <th colspan="12" class="tbl-bg-head">Invalidi</th>
+                                    <th colspan="8">Validi</th>
+                                </tr>
+                                <tr class="text-vertical txt-little">
+                                    <th></th>
+                                    <th>Dati attesi</th>
+                                    <th>Dati mancanti</th>
+                                    <th class="tbl-bg-head">Non valido per cause esterne</th>
+                                    <th class="tbl-bg-head">OPAS-DL - Valore inferiore al min impostato</th>
+                                    <th class="tbl-bg-head">Non valido ticket</th>
+                                    <th class="tbl-bg-head">Non valido operatore/non valido generico</th>
+                                    <th class="tbl-bg-head">Non valido manutentore</th>
+                                    <th class="tbl-bg-head">OPAS-DL - Errore strumentale</th>
+                                    <th class="tbl-bg-head">OPAS-DL - Zero/Span High/Low</th>
+                                    <th class="tbl-bg-head">OPAS-DL - Minore -DL</th>
+                                    <th class="tbl-bg-head">OPAS-DL - Numero letture insufficiente</th>
+                                    <th class="tbl-bg-head">Non valido per validazione automatica</th>
+                                    <th class="tbl-bg-head">Sospetto per validazione automatica</th>
+                                    <th class="tbl-bg-head">TOTALE INVALIDI</th>
+                                    <th>Valido</th>
+                                    <th>Ricostruito</th>
+                                    <th>OPAS-DL - Taratura</th>
+                                    <th>OPAS-DL - Compreso tra -DL e DL, sostituito con DL/2</th>
+                                    <th>Dato invalido per sistema e valido da operatore</th>
+                                    <th>Dato invalidato precedentemente, rivalidato</th>
+                                    <th>Dato importato da campo</th>
+                                    <th>TOTALE VALIDI</th>
+                                </tr>
+                                <tr class="text-center">
+                                    <th>Param.</th>
+                                    <th>ALL</th>
+                                    <th>NULL</th>
+                                    <th class="tbl-bg-head">-1024</th>
+                                    <th class="tbl-bg-head">-512</th>
+                                    <th class="tbl-bg-head">-256</th>
+                                    <th class="tbl-bg-head">-128</th>
+                                    <th class="tbl-bg-head">-64</th>
+                                    <th class="tbl-bg-head">-32</th>
+                                    <th class="tbl-bg-head">-16</th>
+                                    <th class="tbl-bg-head">-8</th>
+                                    <th class="tbl-bg-head">-4</th>
+                                    <th class="tbl-bg-head">-2</th>
+                                    <th class="tbl-bg-head">-1</th>
+                                    <th class="tbl-bg-head">TOT</th>
+                                    <th>0</th>
+                                    <th>1</th>
+                                    <th>2</th>
+                                    <th>4</th>
+                                    <th>8</th>
+                                    <th>16</th>
+                                    <th>32</th>
+                                    <th>TOT</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                            </tbody>
+                            <tfoot>
+                                <tr class="text-center">
+                                    <th>Param.</th>
+                                    <th>ALL</th>
+                                    <th>NULL</th>
+                                    <th class="tbl-bg-head">-1024</th>
+                                    <th class="tbl-bg-head">-512</th>
+                                    <th class="tbl-bg-head">-256</th>
+                                    <th class="tbl-bg-head">-128</th>
+                                    <th class="tbl-bg-head">-64</th>
+                                    <th class="tbl-bg-head">-32</th>
+                                    <th class="tbl-bg-head">-16</th>
+                                    <th class="tbl-bg-head">-8</th>
+                                    <th class="tbl-bg-head">-4</th>
+                                    <th class="tbl-bg-head">-2</th>
+                                    <th class="tbl-bg-head">-1</th>
+                                    <th class="tbl-bg-head">TOT</th>
+                                    <th>0</th>
+                                    <th>1</th>
+                                    <th>2</th>
+                                    <th>4</th>
+                                    <th>8</th>
+                                    <th>16</th>
+                                    <th>32</th>
+                                    <th>TOT</th>
+                                </tr>
+                                <tr class="text-center">
+                                    <th></th>
+                                    <th colspan="2">Generali</th>
+                                    <th colspan="12" class="tbl-bg-head">Invalidi</th>
+                                    <th colspan="8">Validi</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Globale -->
+            <div class="tab-pane p-20" id="tab-globe" role="tabpanel">
+                <h4 class="box-title text-success">Statistiche di validazione da operatore</h4>
+                <hr class="m-t-0 m-b-20">
+                
+                <div class="last-reporting">
+                    <h4 class="text-info m-b-0">Genera <strong>CSV di tutte le stazioni</strong></h4>
+                    <div class="row">
+                        <div class="col-md-5 m-t-10 input-group">
+                            <input class="form-control input-daterange-datepicker" type="text" id="show-stats-date-all" name="show-stats-date-all" placeholder="mm/dd/yyyy - mm/dd/yyyy" />
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 m-t-10">
+                            <select class="custom-select col-12" id="show-stats-networks-all" name="show-stats-networks-all">
+                                <option value="-1">Seleziona rete...</option>
+                                % foreach my $net (@{$networks}){
+                                    <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                % }
+                            </select>
+                        </div>
+                        <div class="col-md-3 m-t-10">
+                            <a id="download-all-stations" href="#" class="btn btn-md btn-primary"><i class="fa-solid fa-arrows-retweet"></i> GENERA</a>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="m-b-10 m-t-10 " />
+
+                <div class="downloads-container m-t-10 m-b-10"></div>
+
+            </div>
+        </div>
+    </div>
+</div>

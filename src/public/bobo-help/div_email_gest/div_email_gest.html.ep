@@ -1,0 +1,106 @@
+<h1 id="divulgazione---gestione-email">GESTIONE EMAIL</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Divulgazione&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Gestione email&quot;.</p>
+<h3>
+    > Divulgazione<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Gestione email</span>
+</h3>
+<p>Sono presenti le seguenti schede:</p>
+<p><img src="/bobo-help/div_email_gest/img/[10]_schede.png" alt="10" title="Schede"></p>
+<h2 id="mailing-lists">Mailing lists</h2>
+<p>Da questa pagina è possibile visualizzare e gestire le mailing list della propria rete, aggiungendo e modificando gruppi a seconda delle necessità.</p>
+<p><img src="/bobo-help/div_email_gest/img/[20]_mailing_lists.png" alt="20" title="Mailing lists"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Mailing lists;</li>
+<li>Email esterne;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle mailing list sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle mailing lists;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Visualizza</u> <img src="/bobo-help/div_email_gest/img/pulsico/visualizza.png" height="50px"></img>: verrà aperta la scheda della mailing list selezionata:</p>
+<p><img src="/bobo-help/div_email_gest/img/[21]_visualizza_dettaglio.png" alt="22" title="Visualizza dettaglio"></p>
+</li>
+<li>
+<p><u>Modifica</u> <img src="/bobo-help/div_email_gest/img/pulsico/modifica.png" height="50px"></img>: verrà aperta la scheda per modificare i dati della mailing list selezionata (stessi campi presenti in &quot;Inserisci nuova mailing list&quot;);</p>
+</li>
+<li>
+<p><u>Elimina</u> <img src="/bobo-help/div_email_gest/img/pulsico/elimina.png" height="50px"></img>: cliccare questo pulsante per eliminare la mailing list selezionata; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/div_email_gest/img/[22]_del_lista.png" alt="23" title="Elimina dotazione"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h3 id="inserisci-nuova-mailing-list">Inserisci nuova mailing list</h3>
+<p><img src="/bobo-help/div_email_gest/img/[23]_nuova_lista.png" alt="21" title="Inserisci nuova mailing list"></p>
+<ol>
+<li>
+<p><u>Nome</u> (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p><u>Azienda</u>;</p>
+</li>
+<li>
+<p><u>Descrizione</u>;</p>
+</li>
+<li>
+<p><u>Aggiungi mail degli utenti alla lista</u>: attraverso questo form è possibile associare/rimuovere le mail alla lista che si sta creando/modificando:</p>
+<p><img src="/bobo-help/div_email_gest/img/[24]_aggiungi_mail.png" alt="22" title="Aggiungi mail"></p>
+<p>È possibile filtrare ulteriormente le mail visualizzate effettuando una ricerca digitando nel campo presente sopra ai due elenchi degli utenti.</p>
+<p>Per aggiungere un utente, fare doppio click su un elemento dall'elenco 'sx' ed esso verrà &quot;spostato&quot; nella tabella 'dx'.</p>
+<p>Per rimuovere un utente, fare doppio click su un elemento dall'elenco 'dx' ed esso verrà &quot;fatto tornare&quot; nella tabella 'sx'.</p>
+<p>Qualora si volessero aggiungere/rimuovere, in un colpo solo, tutti gli utenti nella/dalla lista, cliccare reciprocamente il pulsante &quot;&gt;&gt;&quot; o &quot;&lt;&lt;&quot;.</p>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> (per rendere effettiva la creazione/modifica della mailing list) e <u>Annulla</u> (per ripulire il form, scartare tutte le modifiche inserite/effettuate e tornare all'elenco delle mailing lists);</p>
+</li>
+</ol>
+<h2 id="email-esterne">Email esterne</h2>
+<p>Da questa pagina è possibile visualizzare e gestire le email esterne al proprio portale, in modo che possano ricevere le email da parte degli utenti oppure essere inserite in una mailing list.</p>
+<p><img src="/bobo-help/div_email_gest/img/[30]_email_esterne.png" alt="30" title="Email esterne"></p>
+<ol>
+<li>
+<p>Form di inserimento di una nuova mail: l'unico campo obbligatorio è quello della email; inoltre, bisogna fare attenzione che la mail che si sta inserendo non corrisponda a quella di un utente già registrato sul portale.</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle email esterne sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella delle email esterne;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Modifica</u> <img src="/bobo-help/div_email_gest/img/pulsico/modifica.png" height="50px"></img>: verrà compilato il form soprastante con le informazioni dell'utente selezionato; una volta effettuate le modifiche (eccetto l'indirizzo email) cliccare il pulsante &quot;Invia&quot; pre salvarle, oppure &quot;Annulla&quot; per ripulire il form;</p>
+</li>
+<li>
+<p><u>Elimina</u> <img src="/bobo-help/div_email_gest/img/pulsico/elimina.png" height="50px"></img>: cliccare questo pulsante per la mail esterna selezionata; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/div_email_gest/img/[31]_del_email.png" alt="31" title="Elimina mail utente"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

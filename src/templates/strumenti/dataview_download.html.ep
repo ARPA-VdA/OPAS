@@ -1,0 +1,169 @@
+% layout 'dataview';
+% title 'DOWNLOAD - Dataview';
+
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/dataview_download.js'))%>" type="text/javascript"></script>
+<script>
+    $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        jqXHR.setRequestHeader('X-CSRF-Token', '<%= csrf_token %>');
+    });
+</script>
+<section id="page-content">
+    <div class="container-fluid go-wrap-little">
+        <div class="row">
+            <div class="col-xl-9 col-lg-12">
+                <div class="data-content" id="data-download">
+                    <form id="download-form" class="download-form">
+                        <div class="row">
+                            <div class="col-sm-12" id="download-form-left">
+                                <h2>Seleziona dati dalle stazioni</h2>
+
+                                <div class="form-group row" id="choise-start">
+                                    <label for="" class="col-sm-5 col-form-label"><strong>*</strong>&nbsp;Da che cosa vuoi partire?</label>
+                                    <div class="col-sm-7">
+                                        <button class="btn-down" data-type="station"><i class="mdi mdi-home-variant"></i> Stazioni</button>
+                                        <button class="btn-down" data-type="parameter"><i class="mdi mdi-treasure-chest"></i> Parametri</button>
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="download-time">
+                                    <label for="dw-date" class="col-lg-2 col-sm-4 col-form-label"><strong>*</strong> Intervallo date</label>
+                                    <div class="col-lg-5 col-sm-8">
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <input type="text" class="form-control to-disable" id="dw-date" name="dw-date" placeholder="Selezionare intervallo date">
+                                            <div class="input-group-append">
+                                                <i class="icon-calendar input-group-text"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label for="dw-temp" class="col-lg-2 col-form-label col-sm-4"><strong>*</strong>&nbsp;Passo temporale</label>
+                                    <div class="col-lg-3 col-sm-8">
+                                        <select class="form-control to-disable" id="dw-temp" name="dw-temp">
+                                            <option value="-1">seleziona...</option>
+                                            <option value="1">Orario (GMT)</option>
+                                            <option value="2">Giornaliero</option>
+                                            <!-- @TODO da creare view lato db -->
+                                            <!-- <option value="3">Mensile</option>
+                                            <option value="4">Annuale</option> -->
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="select-data">
+                                    <div class="form-group row" id="new-plugin">
+                                        <div class="col-lg-6 col-param">
+                                            <div class="multiselect" data-id="param">
+                                                <select multiple="multiple" id="duallistbox_param" name="duallistbox_param[]">
+                                                </select>
+                                            </div>
+                                            <label for="duallistbox_param[]"><strong>*</strong>&nbsp;parametri disponibili</label>
+                                        </div>
+                                        <div class="col-lg-6 col-stat">
+                                            <div class="multiselect" data-id="stat">
+                                                <select multiple="multiple" id="duallistbox_stat" name="duallistbox_stat[]">
+                                                </select>
+                                            </div>
+                                            <label for="duallistbox_stat[]"><strong>*</strong>&nbsp;stazioni disponibli</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 col-param">
+                                            <h4>Hai selezionato i seguenti parametri <span></span>:</h4>
+                                            <ul id="list-param">
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-6 col-stat">
+                                            <h4>Hai selezionato le seguenti stazioni <span></span>:</h4>
+                                            <ul id="list-stat">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4" id="download-form-right">
+                                <h2>Inserisci dati personali</h2>
+                                %= csrf_field
+                                <div class="form-group row">
+                                    <label for="dw-name" class="col-lg-3 col-form-label" id="doc-uff-name">Nome</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control to-disable" id="dw-name"  name="dw-name" value="<%= $user->{'user_name'} %>">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="dw-surname" class="col-lg-3 col-form-label" id="doc-uff-surname">Cognome</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control to-disable" id="dw-surname" name="dw-surname" placeholder="" value="<%= $user->{'user_surname'} %>">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="dw-email" class="col-lg-3 col-form-label">Email</label>
+                                    <div class="col-lg-9">
+                                        <input type="email" class="form-control to-disable" id="dw-email" name="dw-email" value="<%= $user->{'user_email'} %>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="row" id="download-buttons">
+                        <div class="col-sm-6">
+                            <label><strong>*</strong> Compila tutti i campi obbligatori per poter scaricare i dati.</label>
+                        </div>
+                        <div class="col-sm-6 text-right">
+                            <a href="/str_dataview" class="btn btn-info"><i class="icon-arrow-left-circle"></i>&nbsp;Torna a mappa stazioni</a>
+                            <button type="button" class="btn btn-primary to-disable" id="dw-submit"><i class="icon-cloud-download"></i>&nbsp;Scarica dati</button>
+                        </div>
+                    </div>
+                </div>
+                % my $tm = Time::Moment->now;
+            </div>
+            <div class="col-xl-3 col-lg-12">
+                <div class="data-content" id="user-downloads">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h2>I tuoi download</h2>
+                            <h5 class="text-primary">Scarico dati che hai richiesto nel corso della giornata odierna</h5>
+                            <div class="downloads-container">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <footer>
+                    &copy; Copyright <%= $tm->strftime("%Y"); %> - <%= $option->{'footer'} %> - <a href="<%= $option->{'main_site'} %>" target="_blank"><%= $option->{'main_site_name'} %></a>
+                </footer>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="station-info" tabindex="-1" role="dialog" aria-labelledby="station-info" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><strong></strong> - elenco parametri</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-sm" id="station-info-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Parametro</th>
+                            <th scope="col">Disponibile dal</th>
+                            <th scope="col">Fino al</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">&times; chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>

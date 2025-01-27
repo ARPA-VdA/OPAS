@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!--
+  Copyright (c) 2017-2018 Jean-Marc VIGLINO,
+  released under CeCILL-B (french BSD like) licence: http://www.cecill.info/
+-->
+  <title>ol-ext: GridBin source</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="ol.source.GridBin is a convenient way for aggregating data into a coarser representation for display." />
+  <meta name="keywords" content="ol, layer, bin, grid, cluster, binning, heatmap" />
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <!-- filesaver-js -->
+	<script type="text/javascript" src="https://cdn.rawgit.com/eligrey/FileSaver.js/aa9f4e0e/FileSaver.min.js"></script>
+
+  <!-- Proj4 -->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.14/proj4.js"></script>
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    #map {
+      width: 600px;
+      height: 400px;
+    }
+    .fullscreen #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .fullscreen .options {
+      position: fixed;
+      top: 0;
+      right: 0;
+    }
+    .fullscreen .info:last-child, 
+    .fullscreen #legend {
+      display: none;
+    }
+    .waiting {
+      opacity: .5;
+    }
+    .waiting:before {
+      content: "Calculating...";
+      background: #fff;
+      padding: 1em;
+      font-size: 2em;
+      top: 30%;
+      left: 50%;
+      position: fixed;
+      transform: translate(-50%,-30%);
+      z-index: 999;
+      box-shadow: 1px 1px 2px 2px;
+    }
+    .fa-arrows-alt {
+      float: right;
+      cursor: pointer;
+    }
+    button {
+      font-size: 1em;
+      color: #fff;
+      background: #369;
+      border: 0;
+      padding: .2em 1em;
+    }
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a href="../../index.html">
+    <h1>ol-ext: GridBin source</h1>
+  </a>
+
+  <div class="info">
+    Grid binning is a convenient way for aggregating data into a coarser representation for display. 
+  </div>
+
+  <!-- Map DIV -->
+  <div id="map"></div>
+
+  <div class="options">
+        <i class="fa fa-arrows-alt"  title="fullscreen" onclick="$('body').toggleClass('fullscreen'); map.updateSize();"></i>
+        <h2>Options:</h2>
+    <ul>
+      <li>
+        Projection:
+				<select id="proj" onchange="setProjection(this.value)">
+          <option value="4326">WGS 84 (EPSG:4326)</option>
+          <option value="3857">Google mercator EPSG:3857</option>
+          <option value="2154">Lambert-93 (France) EPSG:2154</option>
+          <option value="3035">ETRS89 / LAEA Europe EPSG:3035</option>
+          <option value="27700">British National Grid (EPSG:27700)</option>
+          <option value="23032">ED50 / UTM zone 32N (EPSG:23032)</option>
+          <option value="2163">US National Atlas Equal Area (EPSG:2163)</option>
+        </select>
+      </li>
+      <li>
+        Size: <input id="size" type="number" min=".1" value="1" onchange="reset();" /> units
+      </li>
+    
+      <li>
+          <div class="info">
+              <input id="showsource" type="checkbox" onchange="layerSource.setVisible($(this).prop('checked')); modify.setActive($(this).prop('checked'));" /><label for="showsource">
+                  Display source features and move them around to see what happens to the bin!
+              </label>
+          </div>
+      </li>
+    
+      <li>
+        <button onclick='save()'><i class="fa fa-download"></i> download result</button>
+      </li>
+    </ul>
+    <div class="info">Selection: <span>0</span> feature(s)</div>
+    <div class="info">
+      <i class="fa fa-upload"></i> Drag'n'drop .geojson to calculate on your data!
+      <br/>
+      <label>
+        <input id="add" type="checkbox" />
+        add features when dropped
+      </label>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  // Define proj4 projection
+  proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+  proj4.defs("EPSG:3035","+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs");
+  proj4.defs("EPSG:27700","+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +datum=OSGB36 +units=m +no_defs");
+  proj4.defs('EPSG:23032', '+proj=utm +zone=32 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs');
+  proj4.defs('EPSG:2163', '+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs');
+
+  // Define projection extent
+  if (ol.proj.proj4 && ol.proj.proj4.register) ol.proj.proj4.register(proj4);
+
+  // The map
+  var map = new ol.Map({
+    target: 'map',
+    view: new ol.View({
+      zoom: 4,
+      center: [166326, 5992663]
+    }),
+    layers: [ new ol.layer.Tile({ source: new ol.source.OSM() })]
+  });
+
+  var select  = new ol.interaction.Select();
+  map.addInteraction(select);
+  select.on('select', function(e){
+    if (e.selected.length){
+      var f = e.selected[0].get('features');
+      if (f) $(".options .info span").text(e.selected[0].get('features').length);
+      else $(".options .info span").text("0");
+    }
+    else $(".options .info span").text("0");
+  });
+
+  // Create a set of features on seed points
+  function addFeatures(nb){
+    var ssize = 20;		// seed size
+    var ext = map.getView().calculateExtent();
+    var dx = ext[2]-ext[0];
+    var dy = ext[3]-ext[1];
+    var dl = Math.min(dx,dy);
+    var features=[];
+    for (var i=0; i<nb/ssize; ++i){
+      var seed = [ext[0]+dx*Math.random(), ext[1]+dy*Math.random()]
+      for (var j=0; j<ssize; j++){
+        var f = new ol.Feature(new ol.geom.Point([
+          seed[0] + dl/10*Math.random(),
+          seed[1] + dl/10*Math.random()
+        ]));
+        features.push(f);
+      }
+    }
+    source.clear(true);
+    source.addFeatures(features);
+    reset();
+  }
+
+  // Vector source
+  var source = new ol.source.Vector();
+  // Interaction to move the source features
+  var modify = new ol.interaction.Modify({ source: source });
+  modify.setActive(false);
+  map.addInteraction(modify);
+  var layerSource = new ol.layer.Vector({ source: source, visible:false })
+  map.addLayer(layerSource);
+
+  // Style function 
+  var min, max;
+  var styleFn = function(f,res){
+    var color;
+    if (f.get('features').length > min+2*(max-min)/3) color = [136, 0, 0, .5];
+    else if (f.get('features').length > min + (max-min)/3) color = [255, 165, 0, .5];
+    else color = [0, 136, 0, .5];
+    return [ new ol.style.Style({ fill: new ol.style.Fill({  color: color }) }) ];
+  };
+  // The rid layer
+  var grid = new ol.layer.Vector({ 
+    style: styleFn, 
+    source: new ol.source.GridBin({ 
+      source: source
+    })
+  })
+  map.addLayer(grid);
+
+  // Add feature on drop
+  var dd = new ol.interaction.DropFile();
+  map.addInteraction (dd);
+  dd.on('loadstart', function () { $('body').addClass('waiting'); });
+  dd.on('loadend', function () { $('body').removeClass('waiting'); });
+	dd.on ('addfeatures', function(event) {
+    var f = event.features;
+    if (!$("#add").prop('checked')) source.clear(true);
+    source.addFeatures(f);
+  });
+
+  // Create Bin
+  function calcMinMax() {
+    max = 0;
+    min = Infinity;
+    grid.getSource().getFeatures().forEach(function (f) {
+      var nb = f.get('features').length;
+      if (nb>max) max = nb;
+      if (nb<min) min = nb;
+    });
+  }
+  function reset() {
+    grid.getSource().setSize(Number($('#size').val()));
+    calcMinMax();
+  };
+  // add 1000 features
+  addFeatures(1000);
+
+  function setProjection(p) {
+    var ex = map.getView().calculateExtent()
+    var p1 = map.getView().getCenter();
+    var p2 = [p[0],p[1]+1];
+    var p01 = ol.proj.transform (p1, map.getView().getProjection(), grid.getSource().get('gridProjection'));
+    var p02 = ol.proj.transform (p2, map.getView().getProjection(), grid.getSource().get('gridProjection'));
+    grid.getSource().set('gridProjection', 'EPSG:'+p);
+    var p11 = ol.proj.transform (p1, map.getView().getProjection(), grid.getSource().get('gridProjection'));
+    var p12 = ol.proj.transform (p2, map.getView().getProjection(), grid.getSource().get('gridProjection'));
+    var d = $('#size').val() * ol.coordinate.dist2d(p11,p12) / ol.coordinate.dist2d(p01,p02);
+    $('#size').val(Math.max(.5, Math.round(d)));
+    //grid.getSource().setGridProjection('EPSG:'+p);
+    //calcMinMax();
+    reset();
+  }
+
+  // Save
+  function save (point) {
+    var format = new ol.format.GeoJSON();
+    var features = grid.getSource().getGridFeatures();
+    if (point) {
+      features.forEach(function (f) {
+        var g = f.getGeometry().getInteriorPoint();
+        f.setGeometry(g);
+      });
+    }
+		var data = format.writeFeatures(features, {
+			dataProjection: 'EPSG:4326',
+			featureProjection: map.getView().getProjection()
+    });
+		var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+		saveAs(blob, "grid.geojson");
+  }
+
+  /*
+  grid.getSource().setFlatAttributesFn(function (bin, features) {
+  });
+  */
+
+</script>
+
+</body>
+</html>

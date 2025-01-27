@@ -1,0 +1,1440 @@
+% layout 'default';
+% title 'QA - report tarature';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/qa_tarature.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    // arriving from server, id visible in page's url
+    var rpid = '<%= $rpid %>';
+</script>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza i report TARATURE inseriti</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo report che vuoi visualizzare</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Report</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+               </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="report-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-3">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class=" col-md-2">
+                                <select class="custom-select col-12" id="networks" name="networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class=" col-md-2">
+                                <select class="custom-select col-12" id="provinces" name="provinces" data-change="stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                </select>
+                            </div>
+                            <div class=" col-md-3">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class=" col-md-2">
+                                <select class="custom-select col-12" id="str-categories" name="str-categories">
+                                    <option value="-1">Tutti gli strumenti</option>
+                                    % foreach my $category (@{$categories}){
+                                        <option value="<%= $category->{'category_id'} %>"><%= $category->{'category_name'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <table id="report-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Rete</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Zero</th>
+                                    <th class="bobo-nowrap">Zero T.</th>
+                                    <th>Span</th>
+                                    <th class="bobo-nowrap">Span T.</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Operatore</th>
+                                    <th>Rete</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Zero</th>
+                                    <th class="bobo-nowrap">Zero T.</th>
+                                    <th>Span</th>
+                                    <th class="bobo-nowrap">Span T.</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuova TARATURA</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="form-calib" name="form-calib">
+                            <input type="hidden" id="report-caid" name="report-caid" value="">
+                            <!-- parte iniziale -->
+                            <!-- <div class="alert alert-danger alert-rounded"> <i class="icon-flag"></i> Parte iniziale = per tutti
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                            </div> -->
+                            <div class="form-group row">
+                                <label for="datetime-calib" class="col-md-2 col-form-label">Data e ora <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control" id="datetime-calib" name="datetime-calib" placeholder="mm/dd/yyyy hh:mm">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="prov-calib" class="col-md-2 col-form-label">Provincia</label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="prov-calib" name="prov-calib" data-change="station-calib">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % my $region = '';
+                                        % foreach my $province (@{$provinces}){
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="station-calib" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="station-calib" name="station-calib">
+                                        <option value="-1">Seleziona...</option>
+                                    </select>
+                                </div>
+                                <label for="instrument-calib" class="col-md-2 col-form-label">Strumento <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="instrument-calib" name="instrument-calib">
+                                        <option value="-1">Seleziona strumento...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="reason-calib" class="col-md-2 col-form-label">Motivo <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select col-12" id="reason-calib" name="reason-calib">
+                                        <option value="-1">Seleziona motivo...</option>
+                                        % foreach my $reason (@{$reasons}){
+                                            <option value="<%= $reason->{'reason_id'} %>"><%= $reason->{'reason_name'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <div class="col-md-6" id="row-multi" data-id="">
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-4 col-form-label"></label>
+                                        <div class="col-md-8">
+                                            <input type="checkbox" class="js-switch" data-color="#79a030" id="flag-multi" name="flag-multi" />
+                                            Taratura multipla
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form form-medium" id="form-calib-obj" name="form-calib-obj">
+                            <!-- SO2 -->
+                            <div id="so2" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> SO2
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group row">
+                                    <label for="find-zero-so2" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-zero-so2" name="find-zero-so2" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-so2" name="mod-zero-so2">
+                                            <label class="custom-control-label" for="mod-zero-so2">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="tank-zero-so2" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-md-12" id="tank-zero-so2" name="tank-zero-so2">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-zero-so2" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-md-12" id="method-zero-so2" name="method-zero-so2">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-so2" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-span-so2" name="tank-span-so2">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-so2" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-md-12" id="method-span-so2" name="method-span-so2">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row single-calibration" id="so2-single">
+                                    <label for="read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-span-so2" name="read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="theory-span-so2" name="theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-so2" name="mod-span-so2">
+                                            <label class="custom-control-label" for="mod-span-so2">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="so2-multi" class="multiple-calibration">
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L1</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l1-read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-read-span-so2" name="l1-read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l1-theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-theory-span-so2" name="l1-theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L2</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l2-read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-read-span-so2" name="l2-read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l2-theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-theory-span-so2" name="l2-theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L3</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l3-read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-read-span-so2" name="l3-read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l3-theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-theory-span-so2" name="l3-theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L4</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l4-read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-read-span-so2" name="l4-read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l4-theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-theory-span-so2" name="l4-theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L5</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l5-read-span-so2" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-read-span-so2" name="l5-read-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l5-theory-span-so2" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-theory-span-so2" name="l5-theory-span-so2" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NOx NO NO2 -->
+                            <div id="noxnono2" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> NOx NO NO2
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group form-labels row disappear-med">
+                                    <label for="nox-zero-noxnono2" class="col-md-3 offset-md-2 col-form-label">NOx</label>
+                                    <label for="no-zero-noxnono2" class="col-md-4 col-form-label">NO</label>
+                                    <label for="no2-zero-noxnono2" class="col-md-3 col-form-label">NO2</label>
+                                </div>
+                                <div class="form-group row show-space-med">
+                                    <label for="" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="nox-zero-noxnono2" name="nox-zero-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="no-zero-noxnono2" name="no-zero-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="no2-zero-noxnono2" name="no2-zero-noxnono2" placeholder="NO2 - Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-noxnono2" name="mod-zero-noxnono2">
+                                            <label class="custom-control-label" for="mod-zero-noxnono2">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                    <label for="method-zero-noxnono2" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-noxnono2" name="method-zero-noxnono2">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-noxnono2" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-span-noxnono2" name="tank-span-noxnono2">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-noxnono2" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-span-noxnono2" name="method-span-noxnono2">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="single-calibration" id="noxnono2-single">
+                                    <div class="form-group form-labels row disappear-med">
+                                        <label for="" class="col-md-3 offset-md-2 col-form-label">NOx</label>
+                                        <label for="" class="col-md-4 col-form-label">NO</label>
+                                        <label for="" class="col-md-3 col-form-label">NO2</label>
+                                    </div>
+                                    <div class="form-group row show-space-med">
+                                        <label for="" class="col-md-2 col-form-label">Span letto</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-nox-span-noxnono2" name="read-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="read-no-span-noxnono2" name="read-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-no2-span-noxnono2" name="read-no2-span-noxnono2" placeholder="NO2 - Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row show-space-med">
+                                        <label for="" class="col-md-2 col-form-label">Span teorico</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-nox-span-noxnono2" name="theory-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="theory-no-span-noxnono2" name="theory-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-no2-span-noxnono2" name="theory-no2-span-noxnono2" placeholder="NO2 - Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-noxnono2" name="mod-span-noxnono2">
+                                            <label class="custom-control-label" for="mod-span-noxnono2">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="noxnono2-multi" class="multiple-calibration">
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L1</div>
+                                        <div class="multi-label-values">
+                                            <div class="form-group form-labels row disappear-med">
+                                                <label for="" class="col-md-4 offset-md-3 col-form-label">NOx</label>
+                                                <label for="" class="col-md-5 col-form-label">NO</label>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span letto</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l1-read-nox-span-noxnono2" name="l1-read-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l1-read-no-span-noxnono2" name="l1-read-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span teorico</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l1-theory-nox-span-noxnono2" name="l1-theory-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l1-theory-no-span-noxnono2" name="l1-theory-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L2</div>
+                                        <div class="multi-label-values">
+                                            <div class="form-group form-labels row disappear-med">
+                                                <label for="" class="col-md-4 offset-md-3 col-form-label">NOx</label>
+                                                <label for="" class="col-md-5 col-form-label">NO</label>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span letto</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l2-read-nox-span-noxnono2" name="l2-read-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l2-read-no-span-noxnono2" name="l2-read-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span teorico</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l2-theory-nox-span-noxnono2" name="l2-theory-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l2-theory-no-span-noxnono2" name="l2-theory-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L3</div>
+                                        <div class="multi-label-values">
+                                            <div class="form-group form-labels row disappear-med">
+                                                <label for="" class="col-md-4 offset-md-3 col-form-label">NOx</label>
+                                                <label for="" class="col-md-5 col-form-label">NO</label>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span letto</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l3-read-nox-span-noxnono2" name="l3-read-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l3-read-no-span-noxnono2" name="l3-read-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span teorico</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l3-theory-nox-span-noxnono2" name="l3-theory-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l3-theory-no-span-noxnono2" name="l3-theory-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L4</div>
+                                        <div class="multi-label-values">
+                                            <div class="form-group form-labels row disappear-med">
+                                                <label for="" class="col-md-4 offset-md-3 col-form-label">NOx</label>
+                                                <label for="" class="col-md-5 col-form-label">NO</label>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span letto</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l4-read-nox-span-noxnono2" name="l4-read-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l4-read-no-span-noxnono2" name="l4-read-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="" class="col-md-3 col-form-label">Span teorico</label>
+                                                <div class="col-md-4">
+                                                    <input class="form-control" type="text" value="" id="l4-theory-nox-span-noxnono2" name="l4-theory-nox-span-noxnono2" placeholder="NOX - Sep. decimale: PUNTO">
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <input class="form-control" type="text" value="" id="l4-theory-no-span-noxnono2" name="l4-theory-no-span-noxnono2" placeholder="NO - Sep. decimale: PUNTO">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- CO -->
+                            <div id="co" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> CO
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group row">
+                                    <label for="find-zero-co" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-zero-co" name="find-zero-co" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="method-zero-co" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-co" name="method-zero-co">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-co" name="mod-zero-co">
+                                            <label class="custom-control-label" for="mod-zero-co">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-co" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-md-12" id="tank-span-co" name="tank-span-co">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-co" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-md-12" id="method-span-co" name="method-span-co">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row single-calibration" id="co-single">
+                                    <label for="read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-span-co" name="read-span-co" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="theory-span-co" name="theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-co" name="mod-span-co">
+                                            <label class="custom-control-label" for="mod-span-co">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="co-multi" class="multiple-calibration">
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L1</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l1-read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-read-span-co" name="l1-read-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l1-theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-theory-span-co" name="l1-theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L2</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l2-read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-read-span-co" name="l2-read-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l2-theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-theory-span-co" name="l2-theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L3</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l3-read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-read-span-co" name="l3-read-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l3-theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-theory-span-co" name="l3-theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L4</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l4-read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-read-span-co" name="l4-read-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l4-theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-theory-span-co" name="l4-theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L5</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l5-read-span-co" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-read-span-co" name="l5-read-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l5-theory-span-co" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-theory-span-co" name="l5-theory-span-co" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- O3 -->
+                            <div id="o3" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> O3
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group row">
+                                    <label for="find-zero-o3" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-zero-o3" name="find-zero-o3" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="method-zero-o3" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-o3" name="method-zero-o3">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-o3" name="mod-zero-o3">
+                                            <label class="custom-control-label" for="mod-zero-o3">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="calib-span-o3" class="col-md-2 col-form-label">Calibratore</label>
+                                    <div class="col-md-4">
+                                        <select class="custom-select col-12" id="calib-span-o3" name="calib-span-o3">
+                                            <option value="-1">Seleziona...</option>
+                                            % foreach my $calibrator (@{$calibrators}){
+                                                <option value="<%= $calibrator->{'instr_id'} %>"><%= $calibrator->{'instr_fullname'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                    <label for="method-span-o3" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-span-o3" name="method-span-o3">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row single-calibration" id="o3-single">
+                                    <label for="read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-span-o3" name="read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="theory-span-o3" name="theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-o3" name="mod-span-o3">
+                                            <label class="custom-control-label" for="mod-span-o3">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="o3-multi" class="multiple-calibration">
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> 100</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l1-read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-read-span-o3" name="l1-read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l1-theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-theory-span-o3" name="l1-theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> 200</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l2-read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-read-span-o3" name="l2-read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l2-theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-theory-span-o3" name="l2-theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> 300</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l3-read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-read-span-o3" name="l3-read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l3-theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-theory-span-o3" name="l3-theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> 400</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l4-read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-read-span-o3" name="l4-read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l4-theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-theory-span-o3" name="l4-theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> 500</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l5-read-span-o3" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-read-span-o3" name="l5-read-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l5-theory-span-o3" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-theory-span-o3" name="l5-theory-span-o3" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- BTX -->
+                            <div id="btx" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> BTX
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group form-labels row disappear-med">
+                                    <label for="find-ben-zero-btx" class="col-md-3 offset-md-2 col-form-label">Benzene</label>
+                                    <label for="find-tol-zero-btx" class="col-md-4 col-form-label">Toluene</label>
+                                    <label for="find-xil-zero-btx" class="col-md-3 col-form-label">Xilene</label>
+                                </div>
+                                <div class="form-group row show-space-med">
+                                    <label for="" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="find-ben-zero-btx" name="find-ben-zero-btx" placeholder="BEN - Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-tol-zero-btx" name="find-tol-zero-btx" placeholder="TOL - Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="find-xil-zero-btx" name="find-xil-zero-btx" placeholder="XIL - Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-btx" name="mod-zero-btx">
+                                            <label class="custom-control-label" for="mod-zero-btx">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="tank-zero-btx" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-zero-btx" name="tank-zero-btx">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-zero-btx" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-btx" name="method-zero-btx">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-btx" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-span-btx" name="tank-span-btx">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-btx" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-span-btx" name="method-span-btx">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="single-calibration" id="btx-single">
+                                    <div class="form-group form-labels row disappear-med">
+                                        <label for="" class="col-md-3 offset-md-2 col-form-label">Benzene</label>
+                                        <label for="" class="col-md-4 col-form-label">Toluene</label>
+                                        <label for="" class="col-md-3 col-form-label">Xilene</label>
+                                    </div>
+                                    <div class="form-group row show-space-med">
+                                        <label for="" class="col-md-2 col-form-label">Span letto</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-ben-span-btx" name="read-ben-span-btx" placeholder="BEN - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="read-tol-span-btx" name="read-tol-span-btx" placeholder="TOL - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-xil-span-btx" name="read-xil-span-btx" placeholder="XIL - Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row show-space-med">
+                                        <label for="" class="col-md-2 col-form-label">Span teorico</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-ben-span-btx" name="theory-ben-span-btx" placeholder="BEN - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="theory-tol-span-btx" name="theory-tol-span-btx" placeholder="TOL - Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-xil-span-btx" name="theory-xil-span-btx" placeholder="XIL - Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-btx" name="mod-span-btx">
+                                            <label class="custom-control-label" for="mod-span-btx">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="btx-multi" class="multiple-calibration">
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L1</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l1-read-span-btx" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-read-span-btx" name="l1-read-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l1-theory-span-btx" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l1-theory-span-btx" name="l1-theory-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L2</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l2-read-span-btx" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-read-span-btx" name="l2-read-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l2-theory-span-btx" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l2-theory-span-btx" name="l2-theory-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L3</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l3-read-span-btx" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-read-span-btx" name="l3-read-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l3-theory-span-btx" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l3-theory-span-btx" name="l3-theory-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L4</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l4-read-span-btx" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-read-span-btx" name="l4-read-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l4-theory-span-btx" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l4-theory-span-btx" name="l4-theory-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-multi-label">
+                                        <div class="multi-label-tag"><i class="icon-arrow-right-circle"></i> L5</div>
+                                        <div class="form-group row multi-label-values">
+                                            <label for="l5-read-span-btx" class="col-md-2 col-form-label">Span letto</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-read-span-btx" name="l5-read-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                            <label for="l5-theory-span-btx" class="col-md-2 col-form-label">Span teorico</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" type="text" value="" id="l5-theory-span-btx" name="l5-theory-span-btx" placeholder="Sep. decimale: PUNTO">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Campionatori, SM200 - Skypost - Teom - MCZ -->
+                            <div id="sampler" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> Campionatori, SM200 - Skypost - Teom - MCZ
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Flussi</h5>
+                                <div class="form-group row">
+                                    <label for="read-flow-sampler" class="col-md-2 col-form-label">Flusso letto</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-flow-sampler" name="read-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="reference-flow-sampler" class="col-md-2 col-form-label">Flusso riferimento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="reference-flow-sampler" name="reference-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="temp-instr-flow-sampler" class="col-md-2 col-form-label">Temp. Strumento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="temp-instr-flow-sampler" name="temp-instr-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="press-instr-flow-sampler" class="col-md-2 col-form-label">Press. Strumento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="press-instr-flow-sampler" name="press-instr-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="temp-flow-sampler" class="col-md-2 col-form-label">Temp. Ambiente</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="temp-flow-sampler" name="temp-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="press-flow-sampler" class="col-md-2 col-form-label">Pressione</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="press-flow-sampler" name="press-flow-sampler" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-flow-sampler" name="mod-flow-sampler">
+                                            <label class="custom-control-label" for="mod-flow-sampler">Flusso calibrato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CH4 -->
+                            <div id="ch4" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> CH4
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group form-labels row">
+                                    <label for="find-zero-ch4" class="col-md-3 offset-md-2 col-form-label">CH4</label>
+                                    <label for="find-zero-tnmhc" class="col-md-3 offset-md-3 col-form-label">TNMHC</label>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="find-zero-ch4" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-zero-ch4" name="find-zero-ch4" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="find-zero-tnmhc" class="col-md-2 col-form-label"></label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="find-zero-tnmhc" name="find-zero-tnmhc" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-ch4" name="mod-zero-ch4">
+                                            <label class="custom-control-label" for="mod-zero-ch4">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                    <label for="method-zero-ch4" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-ch4" name="method-zero-ch4">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-ch4" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-span-ch4" name="tank-span-ch4">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-ch4" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-span-ch4" name="method-span-ch4">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="single-calibration" id="ch4-single">
+                                    <div class="form-group form-labels row">
+                                        <label for="" class="col-md-3 offset-md-2 col-form-label">CH4</label>
+                                        <label for="" class="col-md-3 offset-md-3 col-form-label">TNMHC</label>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Span letto</label>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="read-span-ch4" name="read-span-ch4" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <label for="read-span-tnmhc" class="col-md-2 col-form-label"></label>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="read-span-tnmhc" name="read-span-tnmhc" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Span teorico</label>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="theory-span-ch4" name="theory-span-ch4" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <label for="theory-span-tnmhc" class="col-md-2 col-form-label"></label>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="theory-span-tnmhc" name="theory-span-tnmhc" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-ch4" name="mod-span-ch4">
+                                            <label class="custom-control-label" for="mod-span-ch4">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Aerosol -->
+                            <div id="aerosol" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> Aerosol
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+                                <h5 class="divider-title">Canale</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-aerosol" class="col-md-2 col-form-label">Riferimento</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-md-12" id="tank-span-aerosol" name="tank-span-aerosol">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-aerosol" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-span-aerosol" name="method-span-aerosol">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Bombola</option>
+                                            <option value="1">Diluitore</option>
+                                            <option value="2">Calibratore</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="read-span-aerosol" class="col-md-2 col-form-label">Canale misurato</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-span-aerosol" name="read-span-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="theory-span-aerosol" class="col-md-2 col-form-label">Canale riferimento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="theory-span-aerosol" name="theory-span-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-aerosol" name="mod-span-aerosol">
+                                            <label class="custom-control-label" for="mod-span-aerosol">Canale calibrato</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Flussi</h5>
+                                <div class="form-group row">
+                                    <label for="read-flow-aerosol" class="col-md-2 col-form-label">Flusso letto</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="read-flow-aerosol" name="read-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="reference-flow-aerosol" class="col-md-2 col-form-label">Flusso riferimento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="reference-flow-aerosol" name="reference-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="temp-instr-flow-aerosol" class="col-md-2 col-form-label">Temp. Strumento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="temp-instr-flow-aerosol" name="temp-instr-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="press-instr-flow-aerosol" class="col-md-2 col-form-label">Press. Strumento</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="press-instr-flow-aerosol" name="press-instr-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="temp-flow-aerosol" class="col-md-2 col-form-label">Temp. Ambiente</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="temp-flow-aerosol" name="temp-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <label for="press-flow-aerosol" class="col-md-2 col-form-label">Pressione</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="press-flow-aerosol" name="press-flow-aerosol" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-flow-aerosol" name="mod-flow-aerosol">
+                                            <label class="custom-control-label" for="mod-flow-aerosol">Flusso calibrato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Biogas -->
+                            <div id="biogas" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> O2 CH4 CO2
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Zero</h5>
+                                <div class="form-group form-labels row">
+                                    <label for="o2-zero-biogas" class="col-md-3 offset-md-2 col-form-label">O2</label>
+                                    <label for="ch4-zero-biogas" class="col-md-4 col-form-label">CH4</label>
+                                    <label for="co2-zero-biogas" class="col-md-3 col-form-label">CO2</label>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="" class="col-md-2 col-form-label">Zero trovato</label>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="o2-zero-biogas" name="o2-zero-biogas" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input class="form-control" type="text" value="" id="ch4-zero-biogas" name="ch4-zero-biogas" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input class="form-control" type="text" value="" id="co2-zero-biogas" name="co2-zero-biogas" placeholder="Sep. decimale: PUNTO">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-zero-biogas" name="mod-zero-biogas">
+                                            <label class="custom-control-label" for="mod-zero-biogas">Zero modificato</label>
+                                        </div>
+                                    </div>
+                                    <label for="method-zero-biogas" class="col-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-zero-biogas" name="method-zero-biogas">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h5 class="divider-title">Span</h5>
+                                <div class="form-group row">
+                                    <label for="tank-span-biogas" class="col-md-2 col-form-label">Bombola</label>
+                                    <div class="col-md-4">
+                                        <select class="tanks custom-select col-12" id="tank-span-biogas" name="tank-span-biogas">
+                                            <option value="-1">Seleziona bombola...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-span-biogas" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-md-12" id="method-span-biogas" name="method-span-biogas">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="single-calibration" id="biogas-single">
+                                    <div class="form-group form-labels row">
+                                        <label for="" class="col-md-3 offset-md-2 col-form-label">O2</label>
+                                        <label for="" class="col-md-4 col-form-label">CH4</label>
+                                        <label for="" class="col-md-3 col-form-label">CO2</label>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Span letto</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-o2-span-biogas" name="read-o2-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="read-ch4-span-biogas" name="read-ch4-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="read-co2-span-biogas" name="read-co2-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Span teorico</label>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-o2-span-biogas" name="theory-o2-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input class="form-control" type="text" value="" id="theory-ch4-span-biogas" name="theory-ch4-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input class="form-control" type="text" value="" id="theory-co2-span-biogas" name="theory-co2-span-biogas" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-span-biogas" name="mod-span-biogas">
+                                            <label class="custom-control-label" for="mod-span-biogas">Span modificato</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sonde -->
+                            <div id="probe" class="hide-fields-instrument">
+                                <!-- <div class="alert alert-info alert-rounded"> <i class="icon-magic-wand"></i> Temperatura Conducibilità Ph Redox
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </div> -->
+
+                                <h5 class="divider-title">Sonda</h5>
+                                <div class="form-group row">
+                                    <label for="solution-probe" class="col-md-2 col-form-label">Soluzione</label>
+                                    <div class="col-md-4">
+                                        <select class="solutions custom-select col-md-12" id="solution-probe" name="solution-probe">
+                                            <option value="-1">Seleziona soluzione...</option>
+                                        </select>
+                                    </div>
+                                    <label for="method-probe" class="col-md-2 col-form-label">Metodo</label>
+                                    <div class="col-md-4">
+                                        <select class="methods custom-select col-12" id="method-probe" name="method-probe">
+                                            <option value="-1">Seleziona metodo...</option>
+                                            <option value="0">Carbone</option>
+                                            <option value="1">Zero</option>
+                                            <option value="2">Scubber</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="single-calibration" id="probe-single">
+                                    <div class="form-group form-labels row">
+                                        <label for="read-temp-probe" class="col-md-2 offset-md-2 col-form-label">Temperatura</label>
+                                        <label for="read-cond-probe" class="col-md-2 col-form-label">Conducibilità</label>
+                                        <label for="read-ph-probe" class="col-md-2 col-form-label">Ph</label>
+                                        <label for="read-redox-probe" class="col-md-2 col-form-label">Redox</label>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Valore letto</label>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="read-temp-probe" name="read-temp-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="read-cond-probe" name="read-cond-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="read-ph-probe" name="read-ph-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="read-redox-probe" name="read-redox-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="" class="col-md-2 col-form-label">Valore teorico</label>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="theory-temp-probe" name="theory-temp-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="theory-cond-probe" name="theory-cond-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="theory-ph-probe" name="theory-ph-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" type="text" value="" id="theory-redox-probe" name="theory-redox-probe" placeholder="Sep. decimale: PUNTO">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-4 offset-md-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="mod-probe" name="mod-probe">
+                                            <label class="custom-control-label" for="mod-probe">Taratura</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <form class="form form-medium" id="form-calib-close" name="form-calib-close">
+                            <!-- parte finale -->
+                            <!-- <div class="alert alert-danger alert-rounded"> <i class="icon-flag"></i> Parte finale = per tutti
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                            </div> -->
+                            <h5 class="divider-title" >Allegati</h5>
+                            <div class="row report-gallery-big m-b-10">
+                                <div class="col-md-10 offset-md-2" id="att-container">
+
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="report-add-attach" class="col-md-2 col-form-label">Aggiungi allegati</label>
+                                <div class="col-md-10">
+                                    <div id="report-add-attach" class="dropzone"></div>
+                                    <!-- <input type="file" id="fileupload" name="fileupload" /> -->
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Annotazioni</h5>
+                            <div class="form-group row">
+                                <label for="notes-calib" class="col-md-2 col-form-label">Note</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" rows="6" id="notes-calib" name="notes-calib"></textarea>
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="save-calib" id="save-calib"> <i class="ti-save"></i> Inserisci report</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-calib" id="cancel-calib">Annulla</button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

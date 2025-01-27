@@ -1,0 +1,29 @@
+---
+# app secrets
+secrets:
+  - f847df32b52d3dba04f0af78f0369f84
+  # </dev/urandom base64 | head -c 32
+
+# app log
+log:
+  level: trace # fatal: 2, error: 3, warn: 4, info: 5, debug: 6, trace: 7
+  filename: ~
+
+# ws info
+ws:
+  message: "OPAS ISPRAMBIENTE - MojoJS Web Service"
+  version: "0.0.1"
+
+# jwt token
+jwt:
+  access:
+    secret: secret1
+    tokenLife: 900
+  refresh:
+    secret: secret2
+    tokenLife: 86400
+
+# postgresql connection
+pg: postgresql://user:pass@host:port/db
+# Use standard PostgreSQL connection URIs
+# const pg = new Pg('postgres://user:password@localhost:5432/database');

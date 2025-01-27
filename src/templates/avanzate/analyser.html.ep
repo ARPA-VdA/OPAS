@@ -1,0 +1,131 @@
+% layout 'default';
+% title 'Impostazioni avanzate di Analyser';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/avanzate/analyser.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Creazione <strong>sottogruppi di Analyser</strong></h4>
+                        <h6 class="card-subtitle">Pagina per la <strong>creazione dei gruppi di stazioni da utilizzare nell'albero di destra di Analyser</strong> sotto "lista delle stazioni".</h6>
+                        <div class="row" id="settings-main">
+                            <div id="settings-tree" class="col-lg-3">
+                                <h5 class="divider-title">Sottogruppi attuali</h5>
+                                <div class="row">
+                                    <div class="col-lg-12" id="subgroup-search">
+                                        <input type="text" id="input-search" value="" class="form-control">
+                                    </div>
+                                    <div class="col-lg-12" id="group-json" >
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="settings-form" class="col-lg-9">
+                                <h5 class="divider-title">Aggiungi sottogruppo di stazioni</h5>
+                                <form id="subgroup-config" name="subgroup-config" class="form">
+
+                                    <input type="hidden" class="form-control clear-field" id="subgroup-fill" name="subgroup-fill">
+                                    <input type="hidden" class="form-control clear-field" id="subgroup-id" name="subgroup-id">
+
+                                    <div class="form-group row">
+                                        <label for="subgroup-name" class="col-sm-2 col-form-label">Nome sottogruppo</label>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control clear-field" id="subgroup-name" name="subgroup-name" placeholder="Nome sottogruppo...">
+                                        </div>
+                                        <label for="subgroup-public" class="col-sm-2 col-form-label">Pubblico</label>
+                                        <div class="col-sm-2">
+                                            <label class="switch">
+                                                <input type="checkbox" class="view-pg clear-field" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android" name="subgroup-public" id="subgroup-public">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="subgroup-groups" class="col-sm-2 col-form-label">Gruppi associati</label>
+                                        <div class="col-sm-6">
+                                            <select class="custom-select col-12 select2-multiple clear-field" id="subgroup-groups" name="subgroup-groups" multiple="multiple" data-placeholder="Seleziona..." style="width: 100%">
+                                                % foreach my $portal_group (@{$portal_groups_list}){
+                                                    <option value="<%=$portal_group->{'gr_id'} %>"><%=$portal_group->{'gr_name'} %></option>
+                                                % }
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="form-info text-info"><i class="ti-info-alt"></i> Il sottogruppo pubblico verrà visualizzato da tutti gli utenti del tuo portale. Non sarà necessario associare i gruppi</span>
+                                        </div>
+                                    </div>
+                                    <h5 class="divider-title">Aggiungi stazioni al sottogruppo</h5>
+                                    <div class="form-group row">
+                                        <label for="networks" class="col-sm-2 col-form-label">Reti</label>
+                                        <div class="col-sm-4">
+                                            <select class="custom-select col-12 select2-multiple clear-field" id="networks" name="networks" multiple="multiple" data-placeholder="Seleziona rete..." style="width: 100%">
+                                                % foreach my $network (@{$networks}){
+                                                    <option value="<%=$network->{'st_network_id'} %>"><%=$network->{'st_network_name'} %></option>
+                                                % }
+                                            </select>
+                                        </div>
+                                        <label for="provinces" class="col-sm-2 col-form-label">Provincia</label>
+                                        <div class="col-sm-4">
+                                            <select class="custom-select col-12" id="provinces" name="provinces">
+                                                <option value="-1">Seleziona provincia...</option>
+                                                % my $region = '';
+                                                % foreach my $province (@{$provinces}){
+                                                    % if ($region eq ''){
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }else{
+                                                        % if ($region eq $province->{'region_id'}){
+                                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                        % } else {
+                                                            </optgroup>
+                                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                        % }
+                                                    % }
+                                                    % $region = $province->{'region_id'};
+                                                % }
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" id="edit-params">
+                                        <label for="subgroup-stat[]" class="col-sm-2 col-form-label">Seleziona stazioni</label>
+                                        <!-- <div class="col-sm-10 col-stat"> -->
+                                        <div class="col-sm-4">
+                                            <select name="from[]" id="multiselect" class="form-control multi-style" size="15" multiple="multiple">
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-2 m-t-45">
+                                            <button type="button" id="multiselect_rightAll" class="btn btn-block"><i class="fa fa-angle-double-right"></i></button>
+                                            <button type="button" id="multiselect_rightSelected" class="btn btn-block"><i class="fa fa-angle-right"></i></button>
+                                            <button type="button" id="multiselect_leftSelected" class="btn btn-block"><i class="fa fa-angle-left"></i></button>
+                                            <button type="button" id="multiselect_leftAll" class="btn btn-block"><i class="fa fa-angle-double-left"></i></button>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <select name="subgroup-stat[]" id="subgroup-stat" class="form-control multi-style" size="15" multiple="multiple"></select>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <button type="button" id="multiselect_move_up" class="btn btn-block"><i class="fa fa-angle-up"></i></button>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <button type="button" id="multiselect_move_down" class="btn btn-block"><i class="fa fa-angle-down"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr class="m-t-20">
+                                    <div id="subgroup-save" class="saving-page">
+                                        <button type="submit" class="btn btn-info" name="subgroup-add" id="subgroup-add"> <i class="icon-magic-wand"></i> Salva sottogruppo</button>
+                                        <button type="button" class="btn btn-inverse" name="subgroup-cancel" id="subgroup-cancel">Annulla</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

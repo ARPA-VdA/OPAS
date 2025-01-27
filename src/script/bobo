@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+BEGIN { unshift @INC, "$FindBin::Bin/../lib" }
+use Mojolicious::Commands;
+
+# application global env settings
+# https://github.com/kraih/mojo/wiki/%25ENV
+$ENV{MOJO_MODE} = 'production'; # development | production
+$ENV{MOJO_APP_NAME} = 'Progetto OPAS'; # app name NOT USED SO FAR
+$ENV{MOJO_MAX_MESSAGE_SIZE} = 2 * 1024 * 1024 * 1024; # 2 GB
+
+# Start command line interface for application
+Mojolicious::Commands->start_app('Bobo');

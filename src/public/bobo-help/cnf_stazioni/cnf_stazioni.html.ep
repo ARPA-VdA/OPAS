@@ -1,0 +1,277 @@
+<h1 id="impostazioni-rete---stazioni">IMPOSTAZIONI RETE - STAZIONI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Impostazioni rete&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Stazioni&quot;.</p>
+<h3>
+    > Impostazioni rete<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Stazioni</span>
+</h3>
+<p>Questa pagina permette di visualizzare le informazioni di anagrafica delle stazioni e dei relativi parametri.</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+<p><img src="img/[21]_selez_reti.png" alt="21" title="Seleziona rete"></p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[23]_stazioni.png" alt="23" title="Seleziona stazioni"></p>
+</li>
+<li>
+<p>Filtro relativo allo stato delle stazioni;</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[25]_stati.png" alt="25" title="Seleziona stato"></p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle stazioni sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Filtro di ricerca nella tabella: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella delle stazioni;</p>
+</li>
+<li>
+<p>Pulsante <u>Visualizza e/o modifica</u>: cliccando il pulsante <img src="/bobo-help/cnf_stazioni/img/pulsico/visual_modif.png" height="40px"></img> è possibile accedere alla sezione di visualizzazione e/o modifica della stazione selezionata;</p>
+</li>
+<li>
+<p>Icone di stato della stazione:</p>
+<ul>
+<li><img src="/bobo-help/cnf_stazioni/img/pulsico/attiva.png" height="55px"></img> --&gt; Stazione <u>ATTIVA</u></li>
+<li><img src="/bobo-help/cnf_stazioni/img/pulsico/non_attiva.png" height="55px"></img> --&gt; Stazione <u>NON ATTIVA</u></li>
+<li><img src="/bobo-help/cnf_stazioni/img/pulsico/sospesa.png" height="55px"></img> --&gt; Stazione <u>SOSPESA</u> (attiva, ma esclusa dagli script di sistema)</li>
+</ul>
+</li>
+<li>
+<p>Icona <u>Sinottico di Mapper</u>: cliccare questo pulsante per aprire un tab che rimanda allo strumento &quot;Mapper&quot; e ai dati della stazione selezionata;</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<p><img src="/bobo-help/cnf_stazioni/img/[11]_schede.png" alt="11" title="Pulsante Elimina"></p>
+<h2 id="sezione-visualizza-eo-modifica">Sezione Visualizza e/o modifica</h2>
+<p>Questa sezione è organizzata in tre schede principali:</p>
+<ul>
+<li><u>Lista</u> (vedi sopra);</li>
+<li><u>Visualizza</u> (vedi &quot;Stazioni - Visualizza&quot;);</li>
+<li><u>Modifica</u> (vedi &quot;Stazioni - Modifica&quot;);</li>
+</ul>
+<h3 id="stazioni---visualizza">Stazioni - Visualizza</h3>
+<p>Nella scheda &quot;Visualizza&quot;, è possibile visualizzare le informazioni, generali e avanzate, della stazione selezionata e i relativi parametri.</p>
+<h4 id="visualizza---generali">Visualizza - Generali</h4>
+<p><img src="/bobo-help/cnf_stazioni/img/[20]_visual_generali.png" alt="20" title="Visualizza - Generali"></p>
+<ol>
+<li>Foto della stazione;</li>
+<li>Informazioni generali;</li>
+<li>Informazioni geografiche;</li>
+<li>Ulteriori informazioni;</li>
+<li>Mappa geografica con pin relativo alla locazione della stazione;</li>
+</ol>
+<h4 id="visualizza---avanzate">Visualizza - Avanzate</h4>
+<p>In questa sezione verranno visualizzate maggiori informazioni riguardanti la stazione;</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[21]_visual_avanzate.png" alt="21" title="Visualizza - Avanzate"></p>
+<h4 id="visualizza---parametri">Visualizza - Parametri</h4>
+<p>In questa sezione verranno visualizzate le informazioni relative ai parametri presenti nella stazione;</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[22]_visual_parametri.png" alt="22" title="Visualizza - Parametri"></p>
+<p>      a. <img src="/bobo-help/cnf_stazioni/img/pulsico/coll_info.png"></img> -&gt; cliccando su questo collegamento verrà aperto un popup contenente informazioni aggiuntive riguardo il singolo parametro scelto;</p>
+<h3 id="stazioni---modifica">Stazioni - Modifica</h3>
+<p>Nella scheda &quot;Modifica&quot;, è possibile modificare le informazioni generali della stazione selezionata e i relativi parametri.</p>
+<h4 id="modifica---generali">Modifica - Generali</h4>
+<p><img src="/bobo-help/cnf_stazioni/img/[30]_modifica_generali.png" alt="30" title="Modifica - Generali"></p>
+<ol>
+<li>
+<p>Nome della stazione (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Stazione <u>Attiva</u>;</p>
+<p>Attiva -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="40px" width="65px"></img></p>
+<p>Disattiva -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="40px" width="65px"></img></p>
+</li>
+<li>
+<p>Data di inizio acquisizione dei dati (<span style="color:red">*</span>obbligatorio): verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);</li>
+</ol>
+</li>
+<li>
+<p>Stazione <u>Sospesa</u>;</p>
+<p>Sospesa -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="40px" width="65px"></img></p>
+<p>Non sospesa -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="40px" width="65px"></img></p>
+</li>
+<li>
+<p>Data di fine acquisizione dei dati: generalmente non impostata e non modificabile (campo di colore grigio) fino a quando il pulsante 'Stazione Attiva' è impostato su 'Attiva'; verrà visualizzato il form per la selezione della data visto in precedenza;</p>
+</li>
+<li>
+<p>Tabella: nome della tabella nel database (non modificabile);</p>
+</li>
+<li>
+<p>ID della stazione (non modificabile);</p>
+</li>
+<li>
+<p>ID esterno stazione;</p>
+</li>
+<li>
+<p>Regione di appartenenza;</p>
+</li>
+<li>
+<p>Provincia di appartenenza;</p>
+</li>
+<li>
+<p>Comune di appartenenza (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Località;</p>
+</li>
+<li>
+<p>Eventuale comunità montana di appartenenza;</p>
+</li>
+<li>
+<p>Zona di appartenenza;</p>
+</li>
+<li>
+<p>Bacino di appartenenza;</p>
+</li>
+<li>
+<p>Rete di appartenenza (<span style="color:red">*</span>obbligatorio) ;</p>
+</li>
+<li>
+<p>Modalità di accesso;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Coordinata Nord in formato ED50;</p>
+</li>
+<li>
+<p>Coordinata Est in formato ED50;</p>
+</li>
+<li>
+<p>Coordinata Latitudine in formato WGS84 (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Coordinata Longitudine in formato WGS84 (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Quota;</p>
+</li>
+<li>
+<p>Mappa geografica con pin relativo alla locazione della stazione: cliccando un punto della mappa il pin verrà spostato nella zona del click e verranno aggiornate automaticamente i campi delle coordinate geografiche;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u> e <u>Annulla</u>: cliccare il pulsante Salva per effettuare la modifica dei dati della stazione, oppure il pulsante Annulla per ritornare alla scheda 'Generali';</p>
+</li>
+</ol>
+<h4 id="modifica---avanzate">Modifica - Avanzate</h4>
+<p><img src="/bobo-help/cnf_stazioni/img/[30-2]_modifica_avanzate.png" alt="30-2" title="Modifica - Avanzate"></p>
+<ol>
+<li>
+<p>Nome breve (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Nome intero;</p>
+</li>
+<li>
+<p>Tipo di stazione (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Giacenza sul territorio (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Tipo misurazione;</p>
+</li>
+<li>
+<p>Cadenza misurazione;</p>
+</li>
+<li>
+<p>Codice nazionale;</p>
+</li>
+<li>
+<p>Real-time attivo: visualizzazione dei dati istantanei nello strumento &quot;Mapper&quot; e nella pagina &quot;Dati &gt; Istantanei&quot;:</p>
+<p>Attivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>Stazione pubblica:</p>
+<p>Pubblica -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Non pubblica -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>Export attivo:</p>
+<p>Attivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>Export ID;</p>
+</li>
+<li>
+<p>Webservice attivo:</p>
+<p>Attivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>Nome per webservice;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u> e <u>Annulla</u>: cliccare il pulsante Salva per effettuare la modifica del parametro, oppure il pulsante Annulla per ritornare alla scheda 'Parametri';</p>
+</li>
+</ol>
+<h4 id="modifica---parametri">Modifica - Parametri</h4>
+<p>In questa sezione è possibile modificare e eliminare i vari parametri presenti sulla stazione:</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[31]_modifica_parametri.png" alt="31" title="Modifica - Parametri"></p>
+<p>      a. Pulsanti <u>Modifica</u> ( <img src="/bobo-help/cnf_stazioni/img/pulsico/puls_modifica.png" height="50px"></img> )  e <u>Elimina</u> ( <img src="/bobo-help/cnf_stazioni/img/pulsico/puls_elimina.png" height="50px"></img> ) parametro;</p>
+<h5 id="modifica-parametro">Modifica parametro</h5>
+<p>Cliccando il pulsante 'Modifica' verrà visualizzato una finestra dove sarà possibile apportare le modifiche al parametro selezionato:</p>
+<p><img src="/bobo-help/cnf_stazioni/img/[40]_modifica_parametro.png" alt="40" title="Modifica parametro"></p>
+<ol>
+<li>
+<p>Nome del parametro (non modificabile);</p>
+</li>
+<li>
+<p>Parametro <u>Attivo</u>:</p>
+<p>Attivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>ID del parametro (database) (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>ID tabella: ID coincidente con quello in periferia (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Data di attivazione del parametro nella stazione (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Data di disattivazione del parametro: generalmente non modificabile (campo di colore grigio) fino a quando il pulsante 'Parametro attivo' è impostato su 'Attivo';</p>
+</li>
+<li>
+<p>Cadenza misurazione;</p>
+</li>
+<li>
+<p>ID esterno parametro: id del parametro sul server su cui viene esportato il dato;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Export <u>Attivo</u>:</p>
+<p>Attivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_attivo.png" height="50px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/cnf_stazioni/img/pulsico/interr_disattivo.png" height="50px"></img></p>
+</li>
+<li>
+<p>Export ID 1;</p>
+</li>
+<li>
+<p>Export ID 2;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u> e <u>Annulla</u>: cliccare il pulsante Salva per effettuare la modifica del parametro, oppure il pulsante Annulla per ritornare alla scheda 'Parametri';</p>
+</li>
+</ol>

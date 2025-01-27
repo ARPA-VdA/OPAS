@@ -1,0 +1,37 @@
+<!-- Page layout type -->
+% layout 'default';
+<!-- Page title -->
+% title 'Homepage';
+
+<!-- page custom script -->
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/home/home.js'))%>" type="text/javascript"></script>
+
+<!-- main hp widgets container -->
+<div id="homepage">
+    <%
+        if( defined $options) {
+
+            foreach my $row ( @{$options} ) {
+                my $large = 12 / scalar @{$row} ;
+    %>
+
+    <!-- lines of widget -->
+    <div class="row">
+    <%
+                foreach my $widget ( @{$row} ){
+    %>
+        <!-- single widget box content -->
+        <div class="col-lg-<%= $large %>">
+            %= include 'include/widgets'.$widget->{'wdg_page_html'};
+        </div>
+        <!-- end single widget box content -->
+    <%          } %>
+    </div>
+    <!-- end lines of widget -->
+
+    <%      }
+        }
+    %>
+
+</div>
+<!-- end main hp widgets container -->

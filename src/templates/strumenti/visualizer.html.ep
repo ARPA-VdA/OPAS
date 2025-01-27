@@ -1,0 +1,476 @@
+% layout 'tools';
+% title 'Visualizer';
+
+<link  href="<%=url_for(helperGetFileVersion('/bobo-css/tools.css'))%>" rel="stylesheet">
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/visualizer_settings.js'))%>" type="text/javascript"></script>
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/strumenti/visualizer.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    var pgid = '<%= $pgid %>';
+    var fromVal = '<%= $from %>';
+    var toVal = '<%= $to %>';
+</script>
+<div class="preloader"></div>
+
+<div id="no-slide">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-main" id="visualizer-navbar">
+        <a href="/" class="go-to-portal" data-toggle="tooltip" data-original-title="Torna al portale"><i class="ti-share-alt"></i></a>
+        <a class="navbar-brand" href="/str_visualizer"><i class="fa-solid fa-chart-scatter-bubble"></i> Visualizer</a>
+        <a href="/help/str_visualizer" class="go-to-help" data-toggle="tooltip" data-original-title="Accedi alla documentazione" target="_blank"><i class="ti-help-alt"></i></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto" id="analyser-menu">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-strumenti" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Strumenti
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown-strumenti">
+                        <!-- <a class="dropdown-item" href="#">Imposta colori</a> -->
+                        <!-- <div class="dropdown-divider"></div> -->
+                        <a class="dropdown-item" href="javascript:void(0)" data-target="#settings-analyser" data-toggle="modal">Opzioni</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-dati" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Dati
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown-dati">
+                        <a class="dropdown-item label-as-link" href="" data-target="#dati-copertura" data-toggle="modal">Copertura: <strong id="copertura">75%</strong></a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown" id="validity-codes">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-validity" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Validità
+                    </a>
+                    <div class="dropdown-menu valcode-menu" aria-labelledby="navbarDropdown-validity">
+                        <span class="validation-operators">
+                            <button><=</button>
+                            <button>=</button>
+                            <button class="sel default-val">>=</button>
+                        </span>
+                        <div class="dropdown-divider"></div>
+                        <%  foreach my $val_code (@{$val_codes}){
+                                if($val_code->{uvc_code_default} == 1){ %>
+                                    <a class="dropdown-item sel default-val" href="#" data-id="<%=$val_code->{uvc_code_id} %>"><span><%=$val_code->{uvc_code_id} %></span> <%= $val_code->{uvc_code_desc} %> <i class="mdi mdi-check text-danger"></i></a>
+                                <% }
+                                else { %>
+                                    <a class="dropdown-item" href="#" data-id="<%=$val_code->{uvc_code_id} %>"><span><%=$val_code->{uvc_code_id} %></span> <%= $val_code->{uvc_code_desc} %></a>
+                                <% }
+                        } %>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Tutti i dati </a>
+                    </div>
+                </li>
+                <!-- <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-macro" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Macro
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown-macro">
+                        <a class="dropdown-item update-macro" href="javascript:void(0)" data-target="#settings-macro" data-toggle="modal">Modifica macro</a>
+                    </div>
+                </li> -->
+            </ul>
+        </div>
+        <a href="/str_ava_visualizer" class="navbar-right" data-toggle="tooltip" title="Apri impostazioni Visualizer"><i class="ti-settings"></i></a>
+    </nav>
+
+    <div class="row bg-grey no-gutters" id="visualizer-nogutters">
+        <div class="col-sm-12">
+            <div class="analyser-buttons clearfix">
+                <!-- BOTTONI DI ESEMPIO
+                <button type="button" class="btn btn-primary"><i class="ti-settings"></i></button>
+                <button type="button" class="btn btn-secondary"><i class="mdi mdi-home-variant"></i></button>
+                <button type="button" class="btn btn-info"><i class="ti-ruler-alt"></i></button>
+                <button type="button" class="btn btn-link">Link</button> -->
+
+                <div class="btn-set select2-set-group">
+                    <select class="form-control select2" id="group-categories">
+                        <option value="-1">Gruppo...</option>
+                        % foreach my $cat (@{$categories}){
+                            <option value="<%= $cat->{'category_id'} %>"><%= $cat->{'category_name'} %></option>
+                        % }
+                    </select>
+                </div>
+                <div class="btn-set select2-set">
+                    <select class="form-control select2" id="group-pages">
+                        <option value="-1">Macro...</option>
+
+                    </select>
+                </div>
+
+                <span class="btn button-divider" id="divide-time"></span>
+                <div class="btn-set close-me" id="btnset-time">
+                    <div class="input-group group-buttons">
+                        <div class="input-group-prepend" id="start-date-btns">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-calendar-multiple"></i></button>
+                                <div class="dropdown-menu">
+                                <a class="dropdown-item" id="start-date-today" href="#">Oggi</a>
+                                <div role="separator" class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="start-date-fdm" href="#">Primo gg mese</a>
+                                <a class="dropdown-item" id="start-date-fdy" href="#">Primo gg anno</a>
+                                <a class="dropdown-item" id="start-date-curr-fdm" href="#">Primo gg mese corrente</a>
+                                <a class="dropdown-item" id="start-date-curr-fdy" href="#">Primo gg anno corrente</a>
+                                <div role="separator" class="dropdown-divider"></div>
+                                <div class="dropdown-item-simple"> <button id="start-date-pd" class="btn btn-dark btn-sm">-</button><span class="centered-label">Giorno</span><button id="start-date-nd" class="btn btn-dark btn-sm">+</button> </div>
+                                <div class="dropdown-item-simple"> <button id="start-date-pm" class="btn btn-dark btn-sm">-</button><span class="centered-label">Mese</span><button id="start-date-nm" class="btn btn-dark btn-sm">+</button> </div>
+                                <div class="dropdown-item-simple"> <button id="start-date-pa" class="btn btn-dark btn-sm">-</button><span class="centered-label">Anno</span><button id="start-date-na" class="btn btn-dark btn-sm">+</button> </div>
+                            </div>
+                        </div>
+                        <input type="text" class="form-control masked-input" id="date-start" placeholder="GG/MM/AAAA HH:mm">
+                    </div>
+                    <div class="input-group group-buttons">
+                        <div class="input-group-prepend" id="end-date-btns">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="mdi mdi-calendar-multiple"></i></button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" id="end-date-today" href="#">Oggi</a>
+                                <div role="separator" class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="end-date-copy" href="#">Copia data inizio</a>
+                                <div role="separator" class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="end-date-ldm" href="#">Ultimo gg mese</a>
+                                <a class="dropdown-item" id="end-date-ldy" href="#">Ultimo gg anno</a>
+                                <div role="separator" class="dropdown-divider"></div>
+                                <div class="dropdown-item-simple"> <button id="end-date-pd" class="btn btn-dark btn-sm">-</button><span class="centered-label">Giorno</span><button id="end-date-nd" class="btn btn-dark btn-sm">+</button> </div>
+                                <div class="dropdown-item-simple"> <button id="end-date-pm" class="btn btn-dark btn-sm">-</button><span class="centered-label">Mese</span><button id="end-date-nm" class="btn btn-dark btn-sm">+</button> </div>
+                                <div class="dropdown-item-simple"> <button id="end-date-pa" class="btn btn-dark btn-sm">-</button><span class="centered-label">Anno</span><button id="end-date-na" class="btn btn-dark btn-sm">+</button> </div>
+                            </div>
+                        </div>
+                        <input type="text" class="form-control masked-input" id="date-end" placeholder="GG/MM/AAAA HH:mm">
+                    </div>
+                    <select class="form-control" id="time-period">
+                        <% foreach my $aggregation (@{$aggregations}){
+
+                            my $class = '';
+                            my $selected = '';
+                            if( $aggregation->{'app_aggregation_default'} == 1){
+                                $class = 'def';
+                                $selected = 'selected';
+                            }
+                        %>
+                            <option class="<%= $class %>" value="<%=$aggregation->{'app_aggregation_label'} %>" <%= $selected %> ><%=$aggregation->{'app_aggregation_desc'} %></option>
+                        % }
+                    </select>
+                    <button id="update-data" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Aggiorna i tab sulla base delle date e della fascia temporale richiesta">
+                        <i class="icon-refresh"></i> Aggiorna
+                    </button>
+                    <!-- <span class="btn button-divider"></span>
+
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop2" type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle-second="tooltip" data-placement="right" title="Resetta i tab (svuota)">
+                        Reset
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                            <a class="dropdown-item" id="reset-active-tab" href="#">Tab attivo</a>
+                            <a class="dropdown-item" id="reset-all-tabs" href="#">Pannello attivo</a>
+                            <a class="dropdown-item" id="reset-page" href="#">Pagina</a>
+                        </div>
+                    </div> -->
+                </div>
+                <span class="btn button-divider close-me" id="divide-dropdown"></span>
+                <div class="btn-set close-me" id="btnset-dropdown">
+                    <div class="btn-group mr-1" role="group">
+                        <button id="btnGroupDrop3" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle-second="tooltip" data-placement="left" title="Modifica il tipo di grafico da visualizzare nel tab">
+                        Tipo grafico
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop3" id="typechart">
+                            <a class="dropdown-item" data-type="line" href="#"><i class="ti-pulse"></i> Linea</a>
+                            <a class="dropdown-item" data-type="line_marker" href="#"><i class="icon-graph"></i> Linea con punti</a>
+                            <a class="dropdown-item" data-type="point" href="#"><i class="ti-more"></i> Punti</a>
+                            <a class="dropdown-item" data-type="column" href="#"><i class="ti-bar-chart"></i> Barre</a>
+                            <a class="dropdown-item" data-type="area" href="#"><i class="ti-pie-chart"></i> Area</a>
+                        </div>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop3" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle-second="tooltip" data-placement="left" title="Modifica il tipo di trattamento applicato ai parametri">
+                        Trattamento
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop3" id="treatment">
+                            % foreach my $treatment (@{$treatments}){
+                                <a class="dropdown-item" data-type="<%= $treatment->{'treatment_id'} %>" href="#"> <%= $treatment->{'treatment_name'} %></a>
+                                <!-- <option value="<%= $treatment->{'treatment_id'} %>"><%= $treatment->{'treatment_name'} %></option> -->
+                            % }
+                        </div>
+                    </div>
+                </div>
+
+                <span class="btn button-divider close-me" id="divide-advanced"></span>
+                <div class="btn-set close-me" id="btnset-advanced">
+                    <button type="button" class="btn btn-info" data-toggle-second="tooltip" data-placement="top" data-original-title="Visualizza elenco dei codici di validazione" data-target="#validation-codes" data-toggle="modal"><i class="mdi mdi-json"></i> Validaz.</button>
+                </div>
+            </div>
+            <a class="can-close-me float-right" href="#"><i class="fa-solid fa-chevron-up"></i></a>
+        </div>
+    </div>
+
+    <h2 id="main-vis-title">Macro: <span>nessuna selezionata</span></h2>
+</div>
+
+<!-- MODAL IMPOSTAZIONI -->
+<div class="modal fade" id="settings-analyser" tabindex="-1" role="dialog" aria-labelledby="settings-analyser" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modifica impostazioni</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row no-gutters">
+                    <div class="col-sm-3">
+                        <div class="nav flex-column nav-pills nav-settings" id="settings-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active" data-toggle="pill" href="#tab-generali" role="tab"  aria-selected="true"><i class="fa fa-cogs" aria-hidden="true"></i> Generali</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-grafici" role="tab"  aria-selected="false"><i class="fa-solid fa-chart-pie"></i> Grafici</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-tabelle" role="tab" aria-selected="false"><i class="fa fa-th-large" aria-hidden="true"></i> Tabelle</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-filtri" role="tab" aria-selected="false"><i class="fa fa-filter" aria-hidden="true"></i> Filtri</a>
+                        </div>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="tab-content tab-settings" id="settings-tab-content">
+                            <div class="tab-pane fade show active" id="tab-generali" role="tabpanel">
+
+                                <h4>Generali</h4>
+                                <!-- <h5>Layout</h5>
+                                <div class="form-group row">
+                                    <label for="number-windows" class="col-sm-4 col-form-label">Num. finestre per riga</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="number-windows" id="number-windows" class="form-control clear-macro" min="1" max="4">
+                                        <span class="legend-settings">Inserisci un valore tra 1 e 4</span>
+                                    </div>
+                                </div> -->
+                                <h5>Estrazione dati</h5>
+                                <div class="form-group row">
+                                    <label for="visible-treatment" class="col-sm-4 col-form-label">Visualizza trattamento</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="visible-treatment" id="visible-treatment">
+                                            <span class="slider round"></span>
+                                        </label><br>
+                                        <span class="legend-settings">Visualizza trattamento nel nome dei dati estratti</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-grafici" role="tabpanel">
+                                <h4>Grafici</h4>
+                                <h5>Layout</h5>
+                                <div class="form-group row">
+                                    <label for="chart-legend" class="col-sm-4 col-form-label">Visualizza legenda</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="chart-legend" id="chart-legend">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-minor-grid" class="col-sm-4 col-form-label">Visualizza griglia fitta</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="chart-minor-grid" id="chart-minor-grid">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-hover-event" class="col-sm-4 col-form-label">Trasparenze al passaggio del mouse</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="chart-hover-event" id="chart-hover-event">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-tooltip-type" class="col-sm-4 col-form-label">Tipologia tooltip</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control clear-macro" id="chart-tooltip-type" name="chart-tooltip-type">
+                                            <option value="disabled">Disabilitato</option>
+                                            <option value="standard">Standard</option>
+                                            <option value="shared">Condiviso</option>
+                                        </select>
+                                        <span class="legend-settings">Seleziona tipo di tooltip visualizzato al passaggio del mouse</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-label-x-angle" class="col-sm-4 col-form-label">Angolo etichette asse X</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" name="chart-label-x-angle" id="chart-label-x-angle" class="form-control clear-macro" min="0" max="90">
+                                        <span class="legend-settings">Inserisci un valore tra 0 e 90 (gradi)</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-title-font" class="col-sm-4 col-form-label">Dimensione immagine esportata</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="exp-chart-width" id="exp-chart-width" class="form-control clear-macro" min="600" max="1280">
+                                        <span class="legend-settings">Inserisci un valore tra 600 e 1280</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-height" id="exp-chart-height" class="form-control clear-macro" min="400" max="960">
+                                        <span class="legend-settings">Inserisci un valore tra 400 e 960</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="offset-sm-4 col-sm-4 sel-left">
+                                        <h6 class="text-primary">Grafico</h6>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <h6 class="text-primary">Immagine esportata</h6>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-title-font" class="col-sm-4 col-form-label">Dimensione font titolo</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-title-font" id="chart-title-font" class="form-control clear-macro" min="5" max="30">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-title-font" id="exp-chart-title-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-label-font" class="col-sm-4 col-form-label">Dimensione font etichette</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-label-font" id="chart-label-font" class="form-control clear-macro" min="5" max="30" >
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-label-font" id="exp-chart-label-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="chart-legend-font" class="col-sm-4 col-form-label">Dimensione font legenda</label>
+                                    <div class="col-sm-4 sel-left">
+                                        <input type="number" name="chart-legend-font" id="chart-legend-font" class="form-control clear-macro" min="5" max="30">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 30</span>
+                                    </div>
+                                    <div class="col-sm-4 sel-right">
+                                        <input type="number" name="exp-chart-legend-font" id="exp-chart-legend-font" class="form-control clear-macro" min="5" max="15">
+                                        <span class="legend-settings">Inserisci un valore tra 5 e 15</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-tabelle" role="tabpanel">
+                                <h4>Tabelle</h4>
+                                <!-- <h5>Nessuna opzione</h5>
+                                Al momento non è possibile modificare le impostazioni -->
+                                <h5>Layout</h5>
+                                <div class="form-group row">
+                                    <label for="table-codes" class="col-sm-4 col-form-label">Visualizza codici</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="table-codes" id="table-codes">
+                                            <span class="slider round"></span>
+                                        </label><br>
+                                        <span class="legend-settings">I codici verranno disabilitati se presenti più di 5 parametri</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-filtri" role="tabpanel">
+                                <h4>Filtri</h4>
+                                <h5>Nessuna opzione</h5>
+                                Al momento non è possibile modificare le impostazioni
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="apply-settings"><i class="mdi mdi-check-all"></i> Applica in locale</button>
+                <button type="button" class="btn btn-primary" id="save-settings"><i class="ti-save-alt"></i> Salva nel DB</button>
+                <button type="button" class="btn btn-link" data-dismiss="modal" id="dismiss-settings"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL COPERTURA DATI -->
+<div class="modal fade" id="dati-copertura" tabindex="-1" role="dialog" aria-labelledby="dati-copertura" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modifica % copertura</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline">
+                    <div class="form-group mx-sm-1 mb-2">
+                        <label for="percent-data">Percentuale</label>
+                        <input type="text" class="form-control ml-2" id="percent-data" placeholder="Percentuale dati" value="75">
+                    </div>
+                    <button id ="percent-data-confirm" type="button" class="btn btn-primary mb-2">Conferma</button>
+                    <button data-val="0"  type="button" class="btn btn-danger ml-4 mb-2 percent-data-value">0%</button>
+                    <button data-val="75" type="button" class="btn btn-danger ml-2 mb-2 percent-data-value">75%</button>
+                    <button type="button" class="btn btn-secondary mb-2 ml-4" data-dismiss="modal">Chiudi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CODICE -->
+<div class="modal fade" id="get-code" tabindex="-1" role="dialog" aria-labelledby="get-code" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settings-macro-title">Ottieni il codice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body one-tab-modal">
+
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs nav-short" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#last-macro">Macro attiva</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#last-query">Ultima query</a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div id="last-macro" class="tab-pane active" style="white-space: pre">
+                        <div class="editor_container">
+                            <pre>
+                                <code class="json add-q">
+                                </code>
+                            </pre>
+                        </div>
+                    </div>
+                    <div id="last-query" class="tab-pane fade" style="white-space: pre">
+                        <div class="editor_container">
+                            <pre>
+                                <code class="sql add-q">
+                                </code>
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link" data-dismiss="modal" id="dismiss-cat"><i class="ti-close"></i> CHIUDI FINESTRA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CODICI DI VALIDITA' -->
+%= include 'include/common/codes';
+
+<div id="main-vis-windows">
+    <div id="main-container" class="row no-gutters">
+    </div>
+</div>
+
+<h3 id="main-vis-footer">
+    Macro: <span>nessuna selezionata</span>
+    <a class="float-right" href="#"><i class="icon-arrow-up-circle"></i> Torna su</small>
+</h3>

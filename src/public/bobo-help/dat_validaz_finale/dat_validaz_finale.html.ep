@@ -1,0 +1,147 @@
+<h1 id="dati---validazione-multilivello">DATI - VALIDAZIONE MULTILIVELLO</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Validazione multilivello&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Validazione multilivello</span>
+</h3>
+<p>La pagina è suddivisa in tre macro sezioni:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[10]_schede.png" alt="10" title="Schede"></p>
+<h2 id="stato-validazione-dati">Stato validazione dati</h2>
+<p>In questa sezione è possibile visualizzare le percentuali per livello e parametro dello stato di validazione multilivello, in modo grafico oppure tabellare.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[20]_stato_validaz_dati.png" alt="20" title="Stato validazione dati"></p>
+<ol>
+<li>Selezione dell'anno che si intende visualizzare;</li>
+<li>Filtro per rete;</li>
+<li>Filtro per provincia;</li>
+<li>Selezione della stazione di cui si intende visualizzare le percentuali;</li>
+</ol>
+<p>Una volta selezionata la stazione, per la scheda &quot;Tabelle&quot;, verranno visualizzate 4 tabelle contenenti le percentuali mensili dei dati, una per ogni livello di validazione:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[21]_tabella_stato_validaz_dati.png" alt="21" title="Tabelle stato validazione dati"></p>
+<p>Oppure, se selezionata la scheda &quot;Grafici&quot;, verranno visualizzati i grafici per ogni parametro della stazione visualizzata. Ogni grafico può essere visualizzato a schermo intero, stampato, oppure scaricato in diversi formati. Inoltre, sempre per ogni grafico, è possibile attivare/disattivare la visualizzazione di ogni singolo livello e, passando sopra al grafico con il cursore del mouse, visualizzare il dettaglio delle percentuali.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[22]_grafici_stato_validaz_dati.png" alt="21" title="Grafici stato validazione dati"></p>
+<p>Infine, cliccando il pulsante <img src="/bobo-help/dat_validaz_finale/img/pulsico/aggiorna-dati.png" height="40px"></img>, è possibile aggiornare i dati visualizzati nelle tabelle/nei grafici recuperando gli ultimi disponibili dal database, consentendo di visualizzare le ultime validazioni effettuate, anche in tempo reale.</p>
+<h2 id="valida-i-dati">Valida i dati</h2>
+<p>Questa sezione permette all'utente di visualizzare, effettuare e verificare le validazioni dei dati per i 4 livelli di validazione, impostati nella sezione &quot;Admin&quot; del portale, per un determinato periodo temporale, per determinate stazioni e i relativi parametri.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[30]_valida_dati.png" alt="30" title="Valida i dati"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[00]_calendar_date.png" alt="41" title="Calendario - Periodo temporale"></p>
+<p>       a. Valori preimpostati OPPURE personalizzati dall'utente;<br>
+       b. Pulsante per visualizzare il mese precedente;<br>
+       c. Pulsante per visualizzare il mese successivo.<br>
+       d. Calendario mese precedente;<br>
+       e. Calendario mese successivo.<br>
+       f. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+       g. Pulsante <u>Applica</u>;<br></p>
+</li>
+<li>
+<p>Selezionare il livello di validazione da verificare/utilizzare;</p>
+</li>
+<li>
+<p>Filtro per provincia;</p>
+</li>
+<li>
+<p>Pulsante <u>Conversione dati</u>: attivando la conversione dei dati, il sistema applicherà il fattore di conversione impostato per il/i parametro/i presente/i sulla/e stazione/i selezionata/e:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/dat_validaz_finale/img/pulsico/si.png" height="50px" width="80px"></img> --&gt; Parametro/i convertiti</p>
+</li>
+<li>
+<p><img src="/bobo-help/dat_validaz_finale/img/pulsico/no.png" height="50px" width="80px"></img> --&gt; Parametro/i non convertiti</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Selezionare la/e stazione/i da verificare/utilizzare (possibile scelta multipla);</p>
+</li>
+<li>
+<p>Selezionare il/i parametro/i da verificare/utilizzare (possibile scelta multipla);</p>
+</li>
+</ol>
+<p>Una volta impostati tutti i filtri, il sistema produrrà la seguente tabella:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[31]_validazione_multilivello.png" alt="31" title="Validazione multilivello"></p>
+<p>Nel dettaglio:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[32]_dettaglio_tabella.png" alt="32" title="Dettaglio tabella"></p>
+<ol>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validaz_finale/img/pulsico/grafico.png" height="40px"></img> : tramite questo pulsante è possibile visualizzare il grafico del parametro selezionato, per il periodo temporale selezionato in precedenza:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[33]_grafico.png" alt="33-1" title="Visualizza grafico"></p>
+<p>Il grafico può essere visualizzato a schermo intero, stampato, oppure scaricato in diversi formati. Inoltre, è possibile attivare/disattivare la visualizzazione delle serie di dati e, passando sopra al grafico con il cursore del mouse, visualizzarne il dettaglio.</p>
+<p>Infine, facendo click con il mouse tenendo premuto il tasto &quot;CTRL&quot; della tastiera su un dato della serie, è possibile visualizzarne il dettaglio all'interno dello strumento &quot;Validazione&quot; (verrà aperta una nuova scheda del browser alla pagina &quot;Dati &gt; Validazione&quot; del portale) nella fascia temporale da 24 ore prima a 24 ore dopo.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[33]_dettaglio_grafico.png" alt="33-2" title="Dettaglio grafico"></p>
+</li>
+<li>
+<p>Nome della stazione;</p>
+</li>
+<li>
+<p>Nome del parametro;</p>
+</li>
+<li>
+<p><u>Copertura</u>: questa colonna indica la percentuale di dati presenti sul totale dei dati attesi;</p>
+</li>
+<li>
+<p><u>% Validi</u>: questa colonna indica la percentuale di dati validi sul totale dei dati attesi;</p>
+</li>
+<li>
+<p>Valore minimo dei dati presenti;</p>
+</li>
+<li>
+<p>Valore massimo dei dati presenti;</p>
+</li>
+<li>
+<p>Valore medio dei dati presenti;</p>
+</li>
+<li>
+<p>Colonna 1° livello di validazione: quando selezionato nei filtri visti in precedenza lo sfondo della colonna sarà di colore grigio;</p>
+</li>
+<li>
+<p>Colonna 2° livello di validazione: quando selezionato nei filtri visti in precedenza lo sfondo della colonna sarà di colore grigio;</p>
+</li>
+<li>
+<p>Colonna 3° livello di validazione: quando selezionato nei filtri visti in precedenza lo sfondo della colonna sarà di colore grigio;</p>
+</li>
+<li>
+<p>Colonna 4° livello di validazione: quando selezionato nei filtri visti in precedenza lo sfondo della colonna sarà di colore grigio;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validaz_finale/img/pulsico/validaz.png" height="40px"></img> : tramite questo pulsante è possibile visualizzare il parametro selezionato all'interno dello strumento &quot;Validazione&quot; (verrà aperta una nuova scheda del browser alla pagina &quot;Dati &gt; Validazione&quot; del portale) con il periodo temporale già impostato in base a quello selezionato in precedenza nei filtri;</p>
+</li>
+<li>
+<p>Pulsanti di validazione:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/dat_validaz_finale/img/pulsico/validato.png" height="40px"></img> : questo pulsante indica che i dati visualizzati sono già stati validati per il livello selezionato in precedenza nei filtri. Passando sopra con il cursore del mouse si noterà che non è possibile effettuare il click poiché i dati sono già validati.</p>
+</li>
+<li>
+<p><img src="/bobo-help/dat_validaz_finale/img/pulsico/applica-livello.png" height="40px"></img> : tramite questo pulsante è possibile effettuare la validazione dei dati visualizzati per il livello selezionato in precedenza nei filtri.</p>
+<p>Una volta cliccato il pulsante, verrà visualizzato il seguente messaggio di conferma con le informazioni relative a quale parametro, livello e periodo si sta effettuando la validazione:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[34-1]_msg_conferma.png" alt="34-1" title="Messaggio di conferma 1"></p>
+<p>Cliccare &quot;Si, Valida&quot; per confermare l'operazione.</p>
+<p>Qualora si stia cercando di effettuare l'operazione per un certo livello, ma la validazione dei livelli inferiori al corrente non è ancora stata completata, il sistema renderà nota questa informazione all'utente in fase di conferma:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[34-2]_msg_conferma.png" alt="34-2" title="Messaggio di conferma 2"></p>
+<p>Se l'operazione è andata a buon fine verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[35]_msg_validazione.png" alt="35" title="Messaggio di avvenuta validazione"></p>
+<p>Infine, qualora si stia cercando di effettuare l'operazione per un certo livello, ma la validazione è già stata effettuata per un livello superiore al corrente, non verrà effettuata alcuna modifica e verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[36]_msg_alert.png" alt="36" title="Nessuna modifica"></p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="registro-attivit%C3%A0">Registro attività</h2>
+<p>In questa sezione è possibile visualizzare il registro delle attività eseguite dagli utenti relative alla validazione multilivello.</p>
+<p><img src="/bobo-help/dat_validaz_finale/img/[40]_registro_attivita.png" alt="40" title="Registro attività"></p>
+<ol>
+<li>Periodo temporale (come sopra);</li>
+<li>Filtro per tipo di validazione;</li>
+<li>Filtro per operatore;</li>
+<li>Filtro per provincia;</li>
+<li>Filtro per stazione;</li>
+<li>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle attività sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</li>
+<li><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</li>
+<li>Tabella delle attività;</li>
+<li>Esplorazione delle pagine;</li>
+</ol>

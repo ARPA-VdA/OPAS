@@ -1,0 +1,243 @@
+% layout 'default';
+% title 'Profilo utente';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utente/profile.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Profilo utente</h4>
+                <h6 class="card-subtitle">Visualizza e modifica le tue informazioni personali</h6>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row -->
+<div class="row" id="profile">
+    <!-- Column -->
+    <div class="col-lg-4 col-xlg-3 col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <center class="m-t-20">
+                    <span class="view-img-profile clear-txt"><img src="" class="img-circle" /></span>
+                    <h4 class="card-title m-t-10 text-success">
+                        <span class="view-name clear-txt"></span>
+                        <span class="view-secondname clear-txt"></span>
+                        <span class="view-surname clear-txt"></span>
+                    </h4>
+                    <h6 class="card-subtitle"><strong>Ruolo:</strong> <span class="view-role clear-txt"></span></h6>
+                </center>
+            </div>
+            <hr class="m-t-0 m-b-0">
+            <div class="card-body">
+                <small class="text-muted">Indirizzo email </small>
+                <h6 class="view-email clear-txt"></h6>
+                <small class="text-muted p-t-30 db">Num. cellulare</small>
+                <h6 class="view-smartphone clear-txt"></h6>
+            </div>
+        </div>
+    </div>
+    <!-- Column -->
+    <!-- Column -->
+    <div class="col-lg-8 col-xlg-9 col-md-7">
+        <div class="card">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs profile-tab" role="tablist">
+                <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#prof" role="tab"><i class="ti-user"></i> Info</a> </li>
+                % if ($user_grants->{user_update}){
+                    <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#settings" role="tab"><i class="icon-note"></i> Modifica</a> </li>
+                    <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#pwd" role="tab"><i class="icon-loop"></i> Password</a> </li>
+                % }
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <!-- tab-->
+                <div class="tab-pane active" id="prof" role="tabpanel">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-xs-6 b-r"> <strong>Nome completo</strong>
+                                <br>
+                                <p class="text-muted">
+                                    <span class="view-name clear-txt"></span>
+                                    <span class="view-secondname clear-txt"></span>
+                                    <span class="view-surname clear-txt"></span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 col-xs-6"> <strong>Email</strong>
+                                <br>
+                                <p class="text-muted view-email clear-txt"></p>
+                            </div>
+                            <div class="col-md-4 col-xs-6"> <strong>Ruolo</strong>
+                                <br>
+                                <p class="text-muted view-role clear-txt"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-xs-6 b-r"> <strong>Num. cellulare</strong>
+                                <br>
+                                <p class="text-muted view-smartphone clear-txt"></p>
+                            </div>
+                            <div class="col-md-4 col-xs-6 b-r"> <strong>Num. telefono</strong>
+                                <br>
+                                <p class="text-muted view-phone clear-txt"></p>
+                            </div>
+                            <div class="col-md-4 col-xs-6"> <strong>Scadenza sessione</strong>
+                                <br>
+                                <p class="text-muted view-session clear-txt"></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <h4>Account associato a: <strong><span class="view-company clear-txt"></span></strong></h4>
+                        <hr>
+                        <div class="img-company view-img-company clear-txt">
+                                <img src="/bobo-img/ecometer/loghi/ecometer.png">
+                        </div>
+                        <div class="info-company">
+                            <div class="row">
+                                <label class="control-label text-right col-md-3">Indirizzo:</label>
+                                <div class="col-md-9">
+                                    <p class="form-control-static view-company-address clear-txt"></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="control-label text-right col-md-3">N° telefono:</label>
+                                <div class="col-md-9">
+                                    <p class="form-control-static view-company-phone clear-txt"></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="control-label text-right col-md-3">Sito web:</label>
+                                <div class="col-md-9">
+                                    <p class="form-control-static view-company-site clear-txt"></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="control-label text-right col-md-3">Email:</label>
+                                <div class="col-md-9">
+                                    <p class="form-control-static view-company-email clear-txt"></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="control-label text-right col-md-3">Descrizione:</label>
+                                <div class="col-md-9 view-company-description clear-txt"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="settings" role="tabpanel">
+                    <div class="card-body">
+                        <form class="form" id="form_user_mod">
+                            <h5 class="divider-title">Informazioni</h5>
+                            <input type="hidden" id="mod-user-id" name="mod-user-id" value="">
+                            <div class="form-group row">
+                                <label for="mod-user-name" class="col-lg-2 col-form-label">Nome <span>*</span></label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-name" name="mod-user-name" placeholder="">
+                                </div>
+                                <label for="mod-user-secondname" class="col-lg-2 col-form-label">Secondo nome</label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-secondname" name="mod-user-secondname" placeholder="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="mod-user-surname" class="col-lg-2 col-form-label">Cognome <span>*</span></label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-surname" name="mod-user-surname" placeholder="">
+                                </div>
+                                <label for="mod-user-role" class="col-lg-2 col-form-label">Ruolo</label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-role" name="mod-user-role" placeholder="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="mod-user-mobile" class="col-lg-2 col-form-label">Numero cellulare</label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-mobile" name="mod-user-mobile" placeholder="">
+                                </div>
+                                <label for="mod-user-phone" class="col-lg-2 col-form-label">Numero telefono</label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-phone" name="mod-user-phone" placeholder="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="mod-user-email" class="col-lg-2 col-form-label">Email <span>*</span></label>
+                                <div class="col-lg-4">
+                                    <input class="form-control clear-form" type="text" id="mod-user-email" name="mod-user-email" placeholder="">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="fileupload" class="col-lg-2 col-form-label">Avatar</label>
+                                <div class="col-lg-10">
+                                    <div id="fileupload" class="dropzone"></div>
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Sessione</h5>
+                            <div class="form-group row">
+                                <label for="mod-user-session" class="col-lg-2 col-form-label">Scadenza <span>*</span></label>
+                                <div class="col-lg-4">
+                                    <select class="form-control custom-select clear-form" id="mod-user-session" name="mod-user-session" placeholder="">
+                                        <option value="86400">1 Giorno</option>
+                                        <option value="259200">3 Giorni</option>
+                                        <option value="604800">1 Settimana</option>
+                                        % if ($user->{user_sys_admin} == 1 ){
+                                        <option value="2147483647">Mai</option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-info" name="mod-user-profile" id="mod-user-profile"> <i class="ti-save"></i> Salva</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-user-profile" id="cancel-user-profile">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane" id="pwd" role="tabpanel">
+                    <div class="card-body">
+                        <form class="form" id="form_pwd_mod">
+                            <h5 class="divider-title">Modifica password</h5>
+                            <input type="hidden" id="mod-pwd-id" name="mod-pwd-id" value="">
+
+                            <div class="form-group row">
+                                <label for="mod-password" class="col-lg-2 col-form-label">Nuova password <span class="text-danger">*</span></label>
+                                <div class="col-lg-4 input-group">
+                                    <input class="form-control clear-form" type="password" id="mod-password" name="mod-password" placeholder="">
+                                    <div class="input-group-append">
+                                        <span toggle="#mod-password" class="field-icon toggle-password input-group-text"><i class="fa-solid fa-eye"></i></span>
+                                    </div>
+                                </div>
+                                <label for="mod-repeat-password" class="col-lg-2 col-form-label">Ripeti password <span class="text-danger">*</span></label>
+                                <div class="col-lg-4 input-group">
+                                    <input class="form-control clear-form" type="password" id="mod-repeat-password" name="mod-repeat-password" placeholder="">
+                                    <div class="input-group-append">
+                                        <span toggle="#mod-repeat-password" class="field-icon toggle-password input-group-text"><i class="fa-solid fa-eye"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-info" name="mod-user-pwd" id="mod-user-pwd"> <i class="ti-save"></i> Salva</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-user-pwd" id="cancel-user-pwd">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Column -->
+</div>
+<!-- Row -->
+
+

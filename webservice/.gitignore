@@ -1,0 +1,27 @@
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Dependency directories
+node_modules/
+
+# Ignore config file
+config.yml
+config.development.yml
+config.production.yml
+
+# Test text files
+*.txt

@@ -1,0 +1,81 @@
+<h1 id="anagrafica---stazioni">ANAGRAFICA - STAZIONI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Anagrafica&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Stazioni&quot;.</p>
+<h3>
+    > Anagrafica<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Stazioni</span>
+</h3>
+<p>Questa pagina permette di visualizzare le informazioni di tutti i parametri e di tutti gli strumenti associati alle varie stazioni della propria/e rete/i di appartenenza.</p>
+<p>La pagina è strutturata in 2 schede:</p>
+<ul>
+<li><u>Parametri nelle stazioni</u>: anagrafica totale dei vari parametri associati alle varie stazioni presenti all'interno del sistema;</li>
+<li><u>Strumenti nelle stazioni</u>: anagrafica degli strumenti, stanziati in determinati periodi temporali, nelle stazioni della propria rete di appartenenza;</li>
+</ul>
+<p><img src="/bobo-help/ang_stazioni/img/[10]_parametri_stazioni.png" alt="10" title="Parametri nelle stazioni"></p>
+<ol>
+<li>
+<p>Selezione del/dei parametro/i da ricercare (filtro per la tabella sottostante);</p>
+<p><img src="/bobo-help/ang_stazioni/img/[11]_selez_parametri.png" alt="11" title="Parametri"></p>
+</li>
+<li>
+<p>Selezione della rete (filtro per la tabella sottostante);</p>
+</li>
+<li>
+<p>Selezione della provincia (filtro per la tabella sottostante);</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei parametri sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina: cliccando sulla freccia è possibile modificare la quantità;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella con le informazioni relative ai parametri;</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<p><img src="/bobo-help/ang_stazioni/img/[20]_stanziamenti.png" alt="20" title="Strumenti nelle stazioni"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione degli stanziamenti.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/ang_stazioni/img/[41]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>       a. Valori preimpostati OPPURE personalizzati dall'utente;<br>
+       b. Pulsante per visualizzare il mese precedente;<br>
+       c. Pulsante per visualizzare il mese successivo.<br>
+       d. Calendario mese precedente;<br>
+       e. Calendario mese successivo.<br>
+       f. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+       g. Pulsante <u>Applica</u>;<br></p>
+</li>
+<li>
+<p>Selezione multipla degli strumenti: filtro per la tabella sottostante; è possibile selezionare più di un elemento dall'elenco e la tabella verrà filtrata in base agli elementi scelti;</p>
+</li>
+<li>
+<p>Filtro per rete;</p>
+</li>
+<li>
+<p>Filtro per provincia;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco degli strumenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina: cliccando sulla freccia è possibile modificare la quantità;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella con le informazioni relative ai vari stanziamenti di strumenti presenti sul sistema;</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="it" translate="no">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="notranslate">
+    <meta name="googlebot" content="notranslate">
+
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="OPAS - Open Air System: Bobo web application">
+    <meta name="author" content="Ecometer">
+
+    <!-- icons all browsers -->
+    <link rel="apple-touch-icon" sizes="180x180" href="<%= $portal_favicon %>/apple-touch-icon.png">
+    <link rel="icon" id="icon32" type="image/png" sizes="32x32" href="<%= $portal_favicon %>/favicon-32x32.png">
+    <link rel="icon" id="icon16" type="image/png" sizes="16x16" href="<%= $portal_favicon %>/favicon-16x16.png">
+    <link rel="manifest"  href="<%= $portal_favicon %>/site.webmanifest">
+    <link rel="mask-icon" href="<%= $portal_favicon %>/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="<%= $portal_favicon %>/favicon.ico">
+
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="<%= $portal_favicon %>/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+
+    <title><%= $user->{portal_name} %> - <%= title %></title>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="<%=url_for('/node_modules/jquery/jquery-3.2.1.min.js')%>"></script>
+
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="<%=url_for('/node_modules/popper/popper.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/bootstrap/dist/js/bootstrap.min.js')%>"></script>
+
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="<%=url_for('/js/perfect-scrollbar.jquery.min.js')%>"></script>
+    <!--Wave Effects -->
+    <script src="<%=url_for('/js/waves.js')%>"></script>
+    <!--Menu sidebar -->
+    <script src="<%=url_for('/js/sidebarmenu.js')%>"></script>
+    <!-- jQuery bootstrap select -->
+    <script src="<%=url_for('/node_modules/bootstrap-select/js/bootstrap-select.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/bootstrap-select/css/bootstrap-select.css')%>" rel="stylesheet" type="text/css">
+    <!-- jQuery ddslick -->
+    <script src="<%=url_for('/node_modules/jquery.ddslick.min.js')%>"></script>
+
+    <!--Custom CSS & JavaScript -->
+    <link  href="<%=url_for(helperGetFileVersion('/css/style.min.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/js/custom.min.js'))%>"></script>
+    <link href="<%=url_for(helperGetFileVersion('/css/stylish-tooltip.css'))%>" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <!-- <script src="https://kit.fontawesome.com/XXXXXXXX.js" crossorigin="anonymous"></script> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Bobo default CSS & JS -->
+    <link  href="<%=url_for(helperGetFileVersion('/bobo-css/default.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/default.js'))%>"></script>
+
+    <!-- Bobo DOCUMENTATION default CSS & JS -->
+    <link  href="<%=url_for(helperGetFileVersion('/bobo-css/help.css'))%>" rel="stylesheet">
+
+</head>
+
+ <!-- page script -->
+<script type="text/javascript">
+    var app_mode = '<%= $self->app->mode %>';
+
+    // push group-page grants into jquery
+    var insert_grant = parseInt('<%= $user_grants->{user_insert} %>');
+    var update_grant = parseInt('<%= $user_grants->{user_update} %>');
+    var delete_grant = parseInt('<%= $user_grants->{user_delete} %>');
+
+    var footer = '<%= $user->{portal_name} %>';
+    var company_web = '<%= $user->{company_web} %>';
+
+</script>
+
+<body class="skin-default fixed-layout">
+    <!-- ============================================================== -->
+    <!-- Preloader - style you can find in spinners.css -->
+    <!-- ============================================================== -->
+    <div class="preloader">
+        <div class="loader">
+            <div class="loader__figure"></div>
+            <p class="loader__label">In caricamento...</p>
+        </div>
+    </div>
+    <!-- Preloader per le funzioni interne al portale -->
+    <div class="inner-preloader">
+        <span class="fa-stack fa-6x">
+            <i class="fa-thin fa-circle-dashed fa-stack-2x fa-flip text-warning" style="--fa-animation-duration: 3s; opacity: 0.8; text-shadow: 2px 2px 4px #ccc;"></i>
+            <i id="transporter" class="" style="--fa-animation-duration: 6s; --fa-flip-x: 0; --fa-beat-scale: 2.0; --fa-secondary-opacity: 1.0; --fa-primary-color: #2293b5; --fa-secondary-color: #dc5a08; text-shadow: 2px 2px 4px #bababa;"></i>
+        </span>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Main wrapper - style you can find in pages.scss -->
+    <!-- ============================================================== -->
+    <div id="main-wrapper">
+        <!-- ============================================================== -->
+        <!-- Topbar header - style you can find in pages.scss -->
+        <!-- ============================================================== -->
+        <header class="topbar">
+            <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                <!-- ============================================================== -->
+                <!-- Logo -->
+                <!-- ============================================================== -->
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="<%=url_for('/')%>">
+                        <span><img src="/bobo-img/help.png" class="dark-logo" alt="homepage" /></span>
+                        <b><img src="/bobo-img/help-little.png" class="dark-logo" alt="homepage" /></b>
+                    </a>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Logo -->
+                <!-- ============================================================== -->
+                <div class="navbar-collapse">
+                    <!-- ============================================================== -->
+                    <!-- toggle and nav items -->
+                    <!-- ============================================================== -->
+                    <ul class="navbar-nav mr-auto">
+                        <!-- This is  -->
+                        <li class="nav-item"> <a class="nav-link nav-toggler d-block d-md-none waves-effect waves-dark" href="javascript:void(0)"><i class="ti-menu"></i></a> </li>
+                        <li class="nav-item"> <a class="nav-link sidebartoggler d-none d-lg-block d-md-block waves-effect waves-dark" href="javascript:void(0)"><i class="icon-menu"></i></a> </li>
+                        <!-- ============================================================== -->
+                        <!-- Search -->
+                        <!-- ============================================================== -->
+                        <!-- <li class="nav-item">
+                            <form class="app-search d-none d-md-block d-lg-block">
+                                <input type="text" class="form-control" placeholder="Search & enter">
+                            </form>
+                        </li> -->
+                    </ul>
+                    <h1 class="help-title">Specifiche funzionali dell'applicativo <strong><%=$self->config->{'portal_name'}%></strong></h1>
+                </div>
+            </nav>
+        </header>
+        <!-- ============================================================== -->
+        <!-- End Topbar header -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <aside class="left-sidebar">
+            <!-- Sidebar scroll-->
+            <div class="scroll-sidebar">
+                <!-- Sidebar navigation-->
+                <nav class="sidebar-nav nav-help">
+                    <ul id="sidebarnav">
+                    <%
+                        my $last_level = 2;
+
+                        foreach my $menu_element (@{$sidebar_usermenu}) {
+                            # Initialization of variables
+                            my $menu_page_class = defined($menu_element->{'menu_page_active'}) ? $menu_element->{'menu_page_active'}  .' '. $menu_element->{'menu_page_class'} : $menu_element->{'menu_page_class'};
+                            my $aria_expanded = 'false';
+                            my $collapse = 'collapse';
+                            my $blank = '';
+                            my $page_href = 'javascript:void(0)';
+                            my $close_li  = 0;
+
+                            if( $menu_element->{'menu_page_expanded'} ){
+                                $aria_expanded = '';
+                            }
+
+                            # If active the menu is open -> class = collapse in
+                            if(defined($menu_element->{'menu_page_active'})){
+                                $collapse= 'collapse in';
+                            }
+
+                            # If element has a defined page_href, then it cannot be a dropdown menu -> close li element
+                            if(defined($menu_element->{'page_href'})){
+                                $page_href = '/help'.$menu_element->{'page_href'};
+                                $close_li= 1;
+                            }
+
+                            if ($menu_element->{'menu_page_level'} == $last_level) {
+                            # Same level -> add new element to the list
+                    %>
+                                <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                    <a class="<%= $menu_page_class %>" href="<%= $page_href  %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> >
+                    <%          if ($menu_element->{'menu_page_level'} > 2) { %>
+                                        <%= $menu_element->{'page_name'} %>
+                    <%          } else { %>
+                                        <i class="<%= $menu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $menu_element->{'page_name'} %></span>
+                    <%          } %>
+                    <%          if ($menu_element->{'menu_page_beta'}) { %>
+                                        <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%          } %>
+                                    </a>
+                    <%          if ($close_li){ %>
+                                <!-- Close </li> because element cannot be a dropdown menu -->
+                                </li>
+                    <%          }
+                            } elsif ($menu_element->{'menu_page_level'} > $last_level){
+                            # higher level -> add an inner list
+                    %>
+                                <ul aria-expanded="false" class="<%= $collapse %>">
+                                    <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                        <a class="<%= $menu_page_class %>" href="<%= $page_href %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> ><%= $menu_element->{'page_name'} %>
+                    <%                  if ($menu_element->{'menu_page_beta'}) { %>
+                                            <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%                  } %>
+                                        </a>
+                    <%          if ($close_li){ %>
+                                    </li>
+                    <%          }
+                            } else {
+                            # lower level -> close inner list and add an element at the right level
+                                for(my $i= $last_level; $i > $menu_element->{'menu_page_level'}; $i--){
+                    %>
+                                    </ul>
+                                </li>
+                    <%          } %>
+
+                                <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                    <a class="<%= $menu_page_class %>" href="<%= $page_href  %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> >
+
+                    <%          if ($menu_element->{'menu_page_level'} > 2) { %>
+                                        <%= $menu_element->{'page_name'} %>
+                    <%          } else { %>
+                                        <i class="<%= $menu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $menu_element->{'page_name'} %></span>
+                    <%          } %>
+                    <%              if ($menu_element->{'menu_page_beta'}) { %>
+                                        <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%              } %>
+                                    </a>
+                    <%          if ($close_li){ %>
+                                </li>
+                    <%          }
+                            }
+
+                            $last_level = $menu_element->{'menu_page_level'};
+                        }
+
+                        for(; $last_level >= 3; $last_level--){
+                    %>
+                            </ul>
+                    <%  } %>
+                        <li class="nav-small-cap"></li>
+
+                    <li class="">
+                        <a aria-expanded="false" class="has-arrow waves-effect waves-dark" href="javascript:void(0)"><i class="ti-user"></i><span class="hide-menu">Menu utente</span></a>
+                        <ul aria-expanded="false" class="collapse">
+                            <% foreach my $usernav_element (@{$usernav}) { %>
+                                <!-- prevent add logout element -->
+                                % if( $usernav_element->{'page_href'} ne '/logout' ) {
+                                    <li><a href="/help<%= $usernav_element->{'page_href'} %>"> <%= $usernav_element->{'page_name'} %></a></li>
+                                %  }
+                            <%  } %>
+                        </ul>
+                    </li>
+
+                        <li class="nav-small-cap"></li>
+
+                    <%  foreach my $secondmenu_element (@{$sidebar_secondmenu}) { %>
+                        <!-- prevent add help element -->
+                        % if( $secondmenu_element->{'page_href'} ne '/help' ) {
+                            <li class="no-mb"> <a class="<%= $secondmenu_element->{'menu_page_class'} %>" href="/help<%= $secondmenu_element->{'page_href'} %>" aria-expanded="false"><i class="<%= $secondmenu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $secondmenu_element->{'page_name'} %></span></a></li>
+                        %  }
+                    <% } %>
+                    </ul>
+                </nav>
+                <!-- End Sidebar navigation -->
+            </div>
+            <!-- End Sidebar scroll-->
+        </aside>
+        <!-- ============================================================== -->
+        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+            <!-- ============================================================== -->
+            <!-- Container fluid  -->
+            <!-- ============================================================== -->
+            <div class="container-fluid">
+                <!-- ============================================================== -->
+                <!-- Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <div class="row page-titles">
+                    <div class="col-md-5 align-self-center">
+                        <%  if(! defined( $breadcrumb) ){ %>
+                            <h4 class="text-themecolor">Homepage</h4>
+                        <%  } else { %>
+                            <h4 class="text-themecolor">
+                                <%= @{$breadcrumb}[-1]->{'page_name'} %>
+                                <%  if ( lc $self->app->mode eq 'development' ) { %>
+                                    (user grants: <%= $user_grants->{total_user_grants}%>)
+                                <% } %>
+                            </h4>
+                        <%  } %>
+                    </div>
+                    <div class="col-md-7 align-self-center text-right">
+                        <div class="d-flex justify-content-end align-items-center">
+                            <ol class="breadcrumb">
+                            <%  if(! defined( $breadcrumb) ){ %>
+                                <li class="breadcrumb-item active">Homepage</li>
+                            <%  } else { %>
+                                <li class="breadcrumb-item"><a href="/">Homepage</a></li>
+                            <%  }
+
+                                foreach my $breadcrumb_element (@{$breadcrumb}) {
+                                    my $page_href = $breadcrumb_element->{'page_href'};
+                                    if($breadcrumb_element->{'menu_page_active'} eq 'active'){
+                                        $page_href = undef;
+                                    }
+                            %>
+                                <li class="breadcrumb-item <%= $breadcrumb_element->{'menu_page_active'} %>">
+                            <%      if(defined ($page_href)){ %>
+                                    <a href="<%= $page_href %>"><%= $breadcrumb_element->{'page_name'} %></a>
+                            <%      } else { %>
+                                    <%= $breadcrumb_element->{'page_name'} %>
+                            <%      } %>
+                                </li>
+                            <%  } %>
+                            </ol>
+                            <!-- <button type="button" class="btn btn-info d-none d-lg-block m-l-15"><i class="fa fa-plus-circle"></i> Create New</button> -->
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+
+                <!-- card body -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card help-text">
+                            <div class="card-body">
+                                <%= content %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END card body -->
+
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- footer -->
+        <!-- ============================================================== -->
+        % my $tm = Time::Moment->now;
+
+        <footer class="footer">
+            © Copyright <%= $tm->strftime("%Y"); %> <%= $user->{'portal_footer_text'} %> - developed by <a href="http://www.ecometer.it/" target="_blank" title="www.ecometer.it">Ecometer S.n.c</a>
+        </footer>
+        <!-- ============================================================== -->
+        <!-- End footer -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+
+</body>
+
+</html>

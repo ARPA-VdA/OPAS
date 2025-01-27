@@ -1,0 +1,34 @@
+<h1 id="dati---immagini-horiba">DATI - IMMAGINI HORIBA</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Immagini Horiba&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Immagini Horiba</span>
+</h3>
+<p>Questa pagina permette di visualizzare i dati e le immagini raccolti dallo strumento <strong>Horiba PX-375</strong> in corrispondenza delle acquisizioni effettuate (4 volte al giorno).</p>
+<p><img src="/bobo-help/dat_horiba/img/[10]_horiba.png" alt="10" title="Dati Horiba PX-375"></p>
+<ol>
+<li>
+<p>Data: verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/dat_horiba/img/[20]_data.png" alt="20" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);</li>
+</ol>
+</li>
+<li>
+<p>Selezione della rete (filtro per la tabella sottostante);</p>
+</li>
+<li>
+<p>Selezione della provincia (filtro per la tabella sottostante);</p>
+</li>
+<li>
+<p>Selezione della stazione (filtro per la tabella sottostante);</p>
+</li>
+<li>
+<p>Tabella dei dati: vengono visualizzati i valori del PM10, dei metalli e l'immagine acquisita nella relativa ora.</p>
+</li>
+</ol>

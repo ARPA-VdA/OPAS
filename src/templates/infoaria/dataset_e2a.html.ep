@@ -1,0 +1,190 @@
+% layout 'default';
+% title 'Dataset E2a';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/infoaria/dataset_e2a.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report" role="tab">Invio dataset E2A</a> </li>
+            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#resume" role="tab">Riassunto parametri attivi</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4" id="main-tab">
+
+            <div class="tab-pane p-20 active" id="report" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-sm-12" id="to-send">
+                                <h4 class="card-title text-success">Dataset <strong>E2A</strong></h4>
+                                <h6 class="card-subtitle"><strong>Parametri per stazione</strong> che vengono inviati ad ISPRA</h6>
+                                <hr class="m-t-0 m-b-20">
+                                <h5 class="text-info m-t-20 m-b-20">Selezionando <strong>"SI" su un'associazione stazione/parametro</strong> invii i tuoi dati <strong>in Real Time ad ISPRA</strong></h5>
+                                <div class="m-b-10 row row-filter">
+                                    <div class="col-lg-3">
+                                        <select class="custom-select col-12" id="networks" name="networks">
+                                            <option value="-1">Seleziona rete...</option>
+                                            % foreach my $net (@{$networks}){
+                                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <select class="custom-select col-12" id="provinces" name="provinces">
+                                            <option value="-1">Seleziona provincia...</option>
+                                            % my $region = '';
+                                            % foreach my $province (@{$provinces}){
+
+                                                % if ($region eq ''){
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }else{
+                                                    % if ($region eq $province->{'region_id'}){
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }
+                                                % }
+                                                % $region = $province->{'region_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <select class="custom-select col-12" id="stations" name="stations">
+                                            <option value="-1">Seleziona stazione...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <select class="custom-select col-12" id="parameters" name="parameters">
+                                            <option value="-1">Seleziona parametro...</option>
+                                            % foreach my $pollutant (@{$pollutants}){
+                                                <option value="<%= $pollutant->{'param_id'} %>"><%= $pollutant->{'pollutant_id'} %> - <%= $pollutant->{'param_name'} %></option>
+                                            % }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="container-all-chk" class="row">
+                                    <div class="col-md-12">
+                                        <p class="p-r-20 p-t-0 m-b-0">
+                                            Invio di <strong>tutte le stazioni/parametri</strong> visualizzati in tabella:&nbsp;&nbsp;<input type="checkbox" class="all-param" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android" />
+                                        </p>
+                                    </div>
+                                </div>
+                                <table id="table-switch-params" class="table table-striped table-hover bt-switch">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-right">Stazione / Parametro</th>
+                                            <th>Invio</th>
+                                            <th class="text-right">Stazione / Parametro</th>
+                                            <th>Invio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-right">Stazione / Parametro</th>
+                                            <th>Invio</th>
+                                            <th class="text-right">Stazione / Parametro</th>
+                                            <th>Invio</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane p-20" id="resume" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success">Vista riassuntiva <strong>parametri attivi</strong></h4>
+                        <h6 class="card-subtitle">Nella seguente tabella vengono <strong>visualizzati tutti i parametri attivi</strong> che vengono inviati per il report E2A</h6>
+                        <hr class="m-t-0 m-b-20">
+
+                        <div class="m-b-10 row row-filter">
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="view-networks" name="view-networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="view-provinces" name="view-provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="view-stations" name="view-stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2">
+                                <button id="view-update" type="button" class="btn btn-info btn-inline" data-toggle="tooltip" data-placement="top" title="" data-original-title="Aggiorna visualizzazione">
+                                    <i class="icon-refresh"></i> Aggiorna
+                                </button>
+                            </div>
+                        </div>
+                        <table id="list-table" class="display responsive table table-hover table-striped tbl-va-center tbl-str-left" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Nome SPO</th>
+                                    <th>EU Code</th>
+                                    <th>Stazione</th>
+                                    <th>ID inquinante</th>
+                                    <th>Parametro</th>
+                                    <th>Attivaz. parametro in staz.</th>
+                                    <th>Tipo strumento</th>
+                                    <th>Metodo</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Nome SPO</th>
+                                    <th>EU Code</th>
+                                    <th>Stazione</th>
+                                    <th>ID inquinante</th>
+                                    <th>Parametro</th>
+                                    <th>Attivaz. parametro in staz.</th>
+                                    <th>Tipo strumento</th>
+                                    <th>Metodo</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

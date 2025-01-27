@@ -1,0 +1,6 @@
+% layout 'help';
+% title 'Help! Documentazione';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utilities/help.js'))%>" type="text/javascript"></script>
+
+%= include '../public/bobo-help/'.$html_url;

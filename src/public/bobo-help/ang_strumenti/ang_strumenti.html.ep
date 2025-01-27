@@ -1,0 +1,15 @@
+<h1 id="anagrafica---strumenti">ANAGRAFICA - STRUMENTI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Anagrafica&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Strumenti&quot;.</p>
+<h3>
+    > Anagrafica<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Strumenti</span>
+</h3>
+<p>Questa pagina permette di visualizzare le informazioni di tutti gli strumenti presenti sul sistema.</p>
+<p><img src="/bobo-help/ang_strumenti/img/[10]_tipologia_strumenti.png" alt="10" title="Tipologie strumenti"></p>
+<ol>
+<li>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco delle tipologie di strumenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</li>
+<li>Numero di elementi della tabella per pagina: cliccando sulla freccia è possibile modificare la quantità;</li>
+<li><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</li>
+<li>Tabella con le informazioni relative alle varie tipologie di strumento presenti sul sistema;</li>
+<li>Esplorazione delle pagine;</li>
+</ol>

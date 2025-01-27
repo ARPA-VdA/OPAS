@@ -1,0 +1,309 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>ol-ext: control Legend</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="iconic font and scalable vector icons for OL3" />
+  <meta name="keywords" content="ol3, style, vector, font, fontawesome, icon, maki" />
+
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="../css/fontmaki.css" />
+  <link rel="stylesheet" href="../css/fontmaki2.css" />
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <!-- ol-ext maki and fontawesome defintions used in fontsymbol -->
+  <script type="text/javascript" src="../../dist/extra/FontAwesomeDef.js"></script>
+
+  <style>
+    .options canvas {
+      background-color: #fff;
+      width: 60px;
+    }
+    button {
+      margin: .5em 0;
+    }
+    input[type="number"] {
+      width: 4em;
+    }
+  </style>
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <i clas="fa fa-car" style="position: absolute; top: -100px;"></i>
+
+  <a href="../../index.html">
+    <h1>ol-ext: control Legend</h1>
+  </a>
+  <div class="info">
+    The <i>ol/control/Legend</i> computes a legend based on <i>ol/style/Style</i> and draw it on the map.
+    <ul>
+      <li>
+        You can add or remove rows in the legend. 
+      </li>
+      <li>
+        The control use a style or a feature with a style or a style functions to handle styles based on feature properties.
+      </li>
+      <li>
+        A <i>select</i> event is fired when click on the rows in the legend control.
+      </li>
+      <li>
+        You can use the <i>ol.legend.Legend.getLegendImage()</i> function to retrieve an image of a single style or feature.
+      </li>
+    </ul>
+  </div>
+
+  <!-- DIV pour la carte -->
+  <div id="map" style="width:600px; height:400px;"></div>
+
+  <div class="options">
+    <p>
+      Title: 
+      <input type="text" value="Legend" placeholder="Legend title" onchange="legend.setTitle(this.value);" />
+      <br/>
+      margin:
+      <input type="number" value="10" onchange="legend.set('margin', Number(this.value));" />
+      <br/>
+      symbol:
+      <input type="number" value="40" onchange="legend.set('size', [Number(this.value),legend.get('size')[1]]);" />
+      x
+      <input type="number" value="25" onchange="legend.set('size', [legend.get('size')[0],Number(this.value)]);" />
+      <br/>
+      <button onclick="legend.getItems().clear()">Clear Legend</button>
+      <label><input type="checkbox" onclick="legendCtrl.setCanvas($(this).prop('checked'));"/> draw in map</label>
+      <br/>
+      <i>Select an object on the map and add it to the legend...</i>
+    </p>
+    <form class="row">
+      <div class="img" style="display: inline-block; vertical-align: middle; margin-right: .5em;"></div>
+      <textarea style="vertical-align: middle;" placeholder="title">Title</textarea>
+      <br/>
+      <button type="submit" onclick="addToLegend(); event.preventDefault();">Add to Legend</button>
+      <label id="center"><input type="checkbox"> center title</label>
+    </form>
+  </div>
+
+  <style>
+    .ol-legend li:hover {
+      background-color: rgba(0,60,136,.5);
+    }
+    .ol-saveas {
+      display: none;
+    }
+  </style>
+
+<script type="text/javascript">
+  
+  // Layers
+  var layer = new ol.layer.Tile({ source: new ol.source.Stamen({ layer: 'watercolor' }) });
+    
+  // The map
+  var map = new ol.Map ({
+    target: 'map',
+    view: new ol.View ({
+      zoom: 6,
+      center: [166326, 5992663]
+    }),
+    layers: [layer]
+  });
+  // Print control
+  var printControl = new ol.control.PrintDialog();
+  map.addControl(printControl);
+  printControl.on('print', function(e) {
+    // Print success
+    if (e.canvas) {
+      window.open().document.write('<img src="'+e.canvas.toDataURL()+'"/>');
+    } else {
+      console.warn('No canvas to export');
+    }
+  });
+
+  // Style function
+  function getFeatureStyle (feature) {
+    var st= [];
+    // Shadow style
+    st.push (new ol.style.Style ({
+      image: new ol.style.Shadow ({
+        radius: 15
+      })
+    }));
+    var st1= [];
+    // Font style
+    st.push ( new ol.style.Style ({
+      image: new ol.style.FontSymbol({
+        form: "marker", 
+        glyph: 'fa-car', 
+        radius: 15, 
+        offsetY: -15,
+        fontSize: .7,
+        color: '#fff',
+        fill: new ol.style.Fill ({
+          color: 'blue'
+        }),
+        stroke: new ol.style.Stroke ({
+          color: '#fff',
+          width: 2
+        })
+      }),
+      stroke: new ol.style.Stroke ({
+        width: 5,
+        color: '#f00'
+      }),
+      fill: new ol.style.Fill ({
+        color: [255, 0, 0, 0.6]
+      })
+    }));
+    return st;
+  }
+
+  // Vector layer
+  var vector = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: getFeatureStyle
+  })
+  map.addLayer(vector);
+
+  // Add features
+  /* */
+  var f = new ol.Feature(new ol.geom.Polygon([[[30000, 6300000], [-200000, 6000000], [300000, 6000000], [34000, 6300000]]]));
+  vector.getSource().addFeature(f);
+  f = new ol.Feature(new ol.geom.LineString([[400000, 6000000], [680000, 5900000], [690000, 6100000], [420000, 6200000]]));
+  vector.getSource().addFeature(f);
+  /* */
+  var f0 = new ol.Feature(new ol.geom.Point(	[269914, 6248592]));
+  vector.getSource().addFeature(f0);
+
+  /* */
+  // Add features with style
+  f = new ol.Feature(new ol.geom.Point(	[500000, 6300000]));
+  vector.getSource().addFeature(f);
+  f.setStyle (new ol.style.Style({
+    image: new ol.style.RegularShape({
+      radius: 18,
+      radius2: 7,
+      points: 5,
+      stroke: new ol.style.Stroke ({ color: [255,128,0,1], width: 1.5 }),
+      fill: new ol.style.Fill ({ color: [255,255,0,.3], width: 1 })
+    })
+  }));
+  // Add features with style
+  var f = new ol.Feature(new ol.geom.Point(	[500000, 6100000]));
+  f.setStyle (new ol.style.Style({
+    image: new ol.style.Icon({ src:"../data/camera.png" })
+  }));
+  vector.getSource().addFeature(f);
+  // Add features with style
+  var f = new ol.Feature(new ol.geom.Polygon([[[30000, 5600000], [-100000, 5900000], [300000, 5800000], [34000, 5600000]]]));
+  f.setStyle (new ol.style.Style({
+    fill: new ol.style.Fill({ color: 'cyan'  }),
+    stroke: new ol.style.Stroke({ color: 'blue', width: 2, lineDash:[5,8]})
+  }));
+  vector.getSource().addFeature(f);
+  // Add features with style
+  var f = new ol.Feature(new ol.geom.LineString([[400000, 5900000], [680000, 5800000], [690000, 5700000], [420000, 5600000]]));
+  f.setStyle ([ 
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({ color: 'blue', width: 8})
+    }),
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({ color: '#fff', width: 4})
+    })
+  ]);
+  vector.getSource().addFeature(f);
+  /* */
+
+  // Define a new legend
+  var legend = new ol.legend.Legend({
+    title: 'Legend',
+    style: getFeatureStyle
+  })
+  var legendCtrl = new ol.control.Legend({ 
+    legend: legend,
+    collapsed: false
+  });
+  map.addControl(legendCtrl);
+  legend.on('select', function(e) {
+    if (e.index >= 0) console.log((e.symbol ? 'You click on symbol: ':'You click on row: ')+e.item.get('title')+' ('+e.index+')');
+    else console.log('You click on the title: '+e.item.get('title'));
+  });
+  legend.addItem({ title: 'Car placemark', feature: f0 });
+  function addSVG(svg, scale) {
+    legend.addItem({ 
+      title: 'SVG icon', 
+      typeGeom: 'Point',
+      style: new ol.style.Style({
+        image: new ol.style.Icon({
+          src: svg || 'https://upload.wikimedia.org/wikipedia/commons/6/67/OpenLayers_logo.svg',
+          scale: scale || .3
+        })
+      })
+    });
+  }
+
+  // Display the style on select
+  var select = new ol.interaction.Select({ hitTolerance: 3 });
+  map.addInteraction(select);
+
+  select.on('select', function(e){
+    var f = e.selected[0];
+    // Remove feature from select (to get its style back) BUG ol6 ?
+    select.getFeatures().remove(f);
+    $('.options .img').html('');
+    if (f) {
+      var img = ol.legend.Legend.getLegendImage({
+        /* given a style  and a geom type
+        style: f.getStyle() || getFeatureStyle(f),
+        typeGeom: f.getGeometry().getType()
+        */
+        /* or given a feature */
+        feature: f.clone(),
+        style: getFeatureStyle
+      });
+      $('.options .img').append(img);
+      $('#center').hide();
+    } else {
+      $('#center').show();
+    }
+    if (f) select.getFeatures().push(f);
+  });
+
+  // Add selection to legend
+  function addToLegend() {
+    var f = select.getFeatures().item(0);
+    // Remove feature from select (to get its style back with ol6) 
+    if (f) select.getFeatures().remove(f);
+    legend.addItem({
+      className: $('#center input').prop('checked') ? 'center': '',
+      title: $('.options .row textarea').val(),
+      /* given a style  and a geom type
+      style: f.getStyle() || getFeatureStyle(f),
+      typeGeom: f.getGeometry().getType()
+      */
+      /* or given a feature */
+      feature: f
+    });
+    if (f) select.getFeatures().push(f);
+  }
+
+	$(window).on("load", function(){ legend.refresh(); vector.changed(); });
+
+</script>
+  
+</body>
+</html>

@@ -1,0 +1,354 @@
+% layout 'default';
+% title 'Anagrafica stazioni';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/anagrafica/stazioni.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#params" role="tab">Parametri nelle stazioni</a> </li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tools" role="tab">Strumenti nelle stazioni</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#globals" role="tab">Elementi per stazione</a></li>
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4 img-all-view" id="main-tab">
+
+            <div class="tab-pane p-20 active" id="params" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success"><strong>Parametri nelle stazioni</strong></h4>
+                        <h6 class="card-subtitle">Anagrafica totale dei parametri presenti nelle stazioni della tua rete</h6>
+                        <hr class="hr-dotted m-t-0" />
+                        <div class="row m-b-10">
+                            <div class="col-md-4">
+                                <select class="custom-select col-12" id="parameters" name="parameters" multiple>
+                                    % my $type = '';
+                                    % foreach my $param (@{$params}){
+                                        % if ($type eq ''){
+                                            <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                            <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                        % }else{
+                                            % if ($type eq $param->{'parameter_type_id'}){
+                                                <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                                <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                            % }
+                                        % }
+                                        % $type = $param->{'parameter_type_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="custom-select col-12" id="networks2" name="networks2">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $network (@{$networks}){
+                                        <option value="<%= $network->{st_network_id}%>"><%= $network->{st_network_desc} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="custom-select col-12" id="provinces2" name="provinces2">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <table id="parameters-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Ente</th>
+                                    <th>Stazione</th>
+                                    <th>Staz attiva</th>
+                                    <th>Parametro</th>
+                                    <th>Param attivo</th>
+                                    <th>Unità misura</th>
+                                    <th>Unità conv.</th>
+                                    <th>ID</th>
+                                    <th>PRID</th>
+                                    <th>STPRID</th>
+                                    <th>GROUPID</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Ente</th>
+                                    <th>Stazione</th>
+                                    <th>Staz attiva</th>
+                                    <th>Parametro</th>
+                                    <th>Param attivo</th>
+                                    <th>Unità misura</th>
+                                    <th>Unità conv.</th>
+                                    <th>ID</th>
+                                    <th>PRID</th>
+                                    <th>STPRID</th>
+                                    <th>GROUPID</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane p-20" id="tools" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success"><strong>Strumenti nelle stazioni</strong></h4>
+                        <h6 class="card-subtitle">Anagrafica degli strumenti in determinati periodi nelle stazioni</h6>
+                        <hr class="hr-dotted m-t-0" />
+                        <div class="row m-b-10">
+                            <div class="input-group col-md-3">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="custom-select col-12" id="instruments" name="instruments" multiple>
+                                    % foreach my $instr (@{$instrs}){
+                                        <option value="<%= $instr->{instr_type_id}%>"><%= $instr->{instr_type_fullname} %> [ <%= $instr->{category_name} %> ]</option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="custom-select col-12" id="networks" name="networks">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $network (@{$networks}){
+                                        <option value="<%= $network->{st_network_id}%>"><%= $network->{st_network_desc} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="custom-select col-12" id="provinces" name="provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <table id="stations-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>ID staz.</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Identificativo</th>
+                                    <th>Strum. principale</th>
+                                    <th>Inizio stanziamento</th>
+                                    <th>Fine stanziamento</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>ID staz.</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Identificativo</th>
+                                    <th>Strum. principale</th>
+                                    <th>Inizio stanziamento</th>
+                                    <th>Fine stanziamento</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane p-20" id="globals" role="tabpanel">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-success"><strong>Elementi per stazione</strong></h4>
+                        <h6 class="card-subtitle">Seleziona una stazione e visualizzane gli strumenti, le bombole e le dotazioni</h6>
+                        <hr class="hr-dotted m-t-0" />
+                        <div class="row form-group p-t-0 show-space-between-med">
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="networks3" name="networks3">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="provinces3" name="provinces3">
+                                    <option value="-1">Seleziona provincia...</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="custom-select col-12" id="stations3" name="stations3">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <input type="checkbox" id="hide-inactive" name="hide-inactive" class="js-switch" data-color="#79a030" checked/>
+                                <label for="hide-inactive">Elementi <b>attivi</b></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h6 class="little-title" id="tobe-selected"><strong>Seleziona una stazione</strong> tramite il menu a tendina qui sopra per visualizzare: <strong>strumenti, bombole e dotazioni</strong>&nbsp;&nbsp;<i class="fa-regular fa-arrow-turn-up"></i> </h6>
+                                <h6 class="little-title" id="selected-station">Hai selezionato la stazione di: <strong>Aosta - I Maggio</strong> <small class="font-bold">&rarr; STID 1000</small></h6>
+                            </div>
+                        </div>
+                        <div id="all-equipments">
+                            <hr class="hr-dotted m-t-0" />
+                            <h4><i class="fa-solid fa-circle-1"></i> Tutti gli <strong>strumenti</strong> stanziati nella stazione <strong class="selected-station-name">Aosta - I Maggio</strong></h4>
+                            <table class="table table-striped table-compressed-middle" id="tbl-summary-instruments">
+                                <thead>
+                                    <tr>
+                                        <th>ID strumento</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Tipo</th>
+                                        <th>Nome</th>
+                                        <th>S.N.</th>
+                                        <th>Categoria</th>
+                                        <th>Arpa&nbsp;ID</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Primario</th>
+                                        <th>Parametri associati</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID strumento</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Tipo</th>
+                                        <th>Nome</th>
+                                        <th>S.N.</th>
+                                        <th>Categoria</th>
+                                        <th>Arpa&nbsp;ID</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Primario</th>
+                                        <th>Parametri associati</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <hr class="hr-dotted" />
+                            <h4><i class="fa-solid fa-circle-2"></i> Tutte le <strong>bombole</strong> stanziate nella stazione <strong class="selected-station-name">Aosta - I Maggio</strong></h4>
+                            <table class="table table-striped table-compressed-middle" id="tbl-summary-cylinders">
+                                <thead>
+                                    <tr>
+                                        <th>ID bombola</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Arpa&nbsp;ID</th>
+                                        <th>Nome</th>
+                                        <th>Scadenza</th>
+                                        <th>Miscela</th>
+                                        <th>Valori</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Esaurita</th>
+                                        <th>Attiva</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID bombola</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Arpa&nbsp;ID</th>
+                                        <th>Nome</th>
+                                        <th>Scadenza</th>
+                                        <th>Miscela</th>
+                                        <th>Valori</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Esaurita</th>
+                                        <th>Attiva</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <hr class="hr-dotted" />
+                            <h4><i class="fa-solid fa-circle-3"></i> Tutte le <strong>dotazioni</strong> stanziate nella stazione <strong class="selected-station-name">Aosta - I Maggio</strong></h4>
+                            <table class="table table-striped table-compressed-middle" id="tbl-summary-miscellanies">
+                                <thead>
+                                    <tr>
+                                        <th>ID dotazione</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Arpa ID</th>
+                                        <th>Dotazione</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Attiva</th>
+                                        <th>Note</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID dotazione</th>
+                                        <th>ID stanziamento</th>
+                                        <th>Arpa ID</th>
+                                        <th>Dotazione</th>
+                                        <th>Dal</th>
+                                        <th>Al</th>
+                                        <th>Attiva</th>
+                                        <th>Note</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,133 @@
+<h1 id="strumenti---dataview">DATAVIEW</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Strumenti&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Dataview&quot;.</p>
+<h3>
+    > Strumenti<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Dataview</span>
+</h3>
+<p>Verrà visualizzata la schermata principale dello strumento &quot;Dataview&quot;.</p>
+<p>I dati visualizzati saranno relativi alle stazioni che fanno parte delle reti associate all'utente che ha effettuato il login sul portale.</p>
+<p><img src="/bobo-help/str_dataview/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p><u>Mappa</u>: sulla mappa vengono visualizzati i dati delle stazioni disponibili sul portale.</p>
+<p>Passando il cursore del mouse sopra uno dei dati verrà visualizzato un piccolo specchietto relativo alla stazione.
+<img src="/bobo-help/str_dataview/img/[20]_pin_staz.png" alt="20" title="Pin della stazione">
+In dettaglio:</p>
+<p><img src="/bobo-help/str_dataview/img/[30]_mouseover_pin.png" alt="30" title="Mouseover su valore puntuale"></p>
+<ol>
+<li>Nome della stazione;</li>
+<li>Valore selezionato in quel momento;</li>
+<li>Rete di appartenenza;</li>
+</ol>
+<p>Al click del pin sulla mappa, verranno visualizzate ulteriori informazioni:</p>
+<p><img src="/bobo-help/str_dataview/img/[31]_click_pin.png" alt="31" title="Click sul pin della stazione"></p>
+<ol>
+<li>Nome della stazione;</li>
+<li>Comune, Località, Quota, Rete e un link esterno alla pagina di anagrafica della stazione (vedi &quot;Anagrafica stazione&quot;);</li>
+</ol>
+</li>
+<li>
+<p><u>Zoom +/- della mappa</u> (è possibile zoomare in avanti e indietro anche utilizzando la rotella del mouse);</p>
+</li>
+<li>
+<p><u>Filtro della mappa</u>:</p>
+<p>Attraverso questo filtro è possibile modificare la visualizzazione della mappa:</p>
+<p><img src="/bobo-help/str_dataview/img/[40]_map_types.png" alt="40" title="Tipologia della mappa"></p>
+<p>Gli elementi <u>SELEZIONATI</u> e <u>ATTIVI</u> sono quelli in <u>GRIGIO</u>, mentre quelli in <u>BIANCO</u> sono <u>DISATTIVATI</u>.</p>
+<p>Seguono alcuni esempi di filtro:</p>
+<p>Formato mappa: STANDARD</p>
+<p><img src="/bobo-help/str_dataview/img/[41]_map_standard.png" alt="41" title="Mappa Standard"></p>
+<p>Formato mappa: TOPOGRAFICA</p>
+<p><img src="/bobo-help/str_dataview/img/[42]_map_topografica.png" alt="42" title="Mappa Topografica"></p>
+<p>Formato mappa: INDICATORI</p>
+<p><img src="/bobo-help/str_dataview/img/[43]_map_indicatori.png" alt="43" title="Mappa Indicatori"></p>
+</li>
+<li>
+<p><u>Mappa a schermo intero</u>;</p>
+</li>
+<li>
+<p><u>Tendina Stazioni/Parametri</u>: (vedi &quot;Tendina Stazioni/Parametri&quot;);</p>
+</li>
+<li>
+<p>Pulsante <u>mostra/nascondi tendina Stazioni/Parametri</u>;</p>
+</li>
+</ol>
+<h3 id="tendina-stazioniparametri">Tendina Stazioni/Parametri</h3>
+<p>In questa sezione vengono elencate le stazioni e, cliccando sulla scheda &quot;Parametri&quot;, i parametri relativi ai dati presenti sulla mappa.</p>
+<p><img src="/bobo-help/str_dataview/img/[60]_tent_dx.png" alt="60" title="Menu di destra"></p>
+<ol>
+<li>
+<p>Modifica visualizzazione per la tabella: o per stazione o per parametro;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+<p>Filtro per Rete:</p>
+<p><img src="/bobo-help/str_dataview/img/[90]_filtro_staz.png" alt="90" title="Filtro per Rete"></p>
+<p>Filtro per Stazione:</p>
+<p><img src="/bobo-help/str_dataview/img/[91]_filtro_staz_2.png" alt="91" title="Filtro per Stazione"></p>
+</li>
+<li>
+<p><u>Tabella Stazioni/Parametri</u>;</p>
+<p>Passando il cursore del mouse sopra all'id (1) oppure al nome di una delle stazioni elencate nella tabella (2), verrà visualizzato il relativo specchietto sulla mappa (3):
+<img src="/bobo-help/str_dataview/img/[80]_mouseover_staz_a_dx.png" alt="80" title="Mouseover su stazione elencata a destra">
+Mentre al click, si verrà reindirizzati alla pagina del dettaglio della stazione (vedi &quot;Dettaglio stazione&quot;).</p>
+</li>
+<li>
+<p><u>Esplorazione delle pagine</u>;</p>
+</li>
+</ol>
+<p>Visualizzando la tabella dei parametri, è possibile selezionare dei parametri e visualizzare sulla mappa le stazioni con i relativi dati.</p>
+<ul>
+<li>
+<p>E' possibile selezionare un solo parametro:</p>
+<p><img src="/bobo-help/str_dataview/img/[71]_esempio_1_param_selez.png" alt="71" title="Mappa con 1 parametro selezionato"></p>
+</li>
+<li>
+<p>Più parametri: verranno visualizzate tutte le stazioni che hanno in comune il gruppo di parametri scelti.</p>
+<p><img src="/bobo-help/str_dataview/img/[72]_esempio_piu_param_selez.png" alt="72" title="Mappa con più di 1 parametro selezionato"></p>
+</li>
+<li>
+<p>Oppure nessun parametro: in questo caso verranno visualizzati tutti i dati di tutte le stazioni.</p>
+<p><img src="/bobo-help/str_dataview/img/[70]_esempio_mappa_no_selez.png" alt="70" title="Mappa con nessun parametro selezionato"></p>
+</li>
+</ul>
+<h3 id="dettaglio-stazione">Dettaglio stazione</h3>
+<p>In questa sezione verrà visualizzato il dettaglio della stazione selezionata.</p>
+<p><img src="/bobo-help/str_dataview/img/[32]_dettaglio_staz.png" alt="32" title="Anagrafica stazione"></p>
+<ol>
+<li>
+<p><u>Seleziona stazione</u>: menù a tendina per visualizzare direttamente il dettaglio di una stazione senza ritornare alla mappa delle stazioni e dei parametri vista in precedenza;</p>
+</li>
+<li>
+<p>Schede del dettaglio:</p>
+<h4 id="grafici">Grafici</h4>
+<p>In questa sezione verranno visualizzati i dati della stazione con i relativi parametri sia in formato grafico sia in formato tabellare. Inoltre, è possibile scaricare ogni singolo grafico cliccando su quest'icona <img src="/bobo-help/str_dataview/img/[210]_logo_menu_graph.png" alt="210" title="Grafici"> e selezionando 'JPEG')</p>
+<p><img src="/bobo-help/str_dataview/img/[34]_grafici.png" alt="34" title="Grafici"></p>
+<h4 id="tabelle">Tabelle</h4>
+<p>In questa sezione verranno visualizzati i dati della stazione con i relativi parametri sia in formato grafico sia in formato tabellare.</p>
+<p>Formato tabellare: (cliccando sulle intestazioni delle colonne è possibile ordinare i dati)</p>
+<p><img src="/bobo-help/str_dataview/img/[35]_tabelle.png" alt="35" title="Tabelle"></p>
+<h4 id="anagrafica">Anagrafica</h4>
+<p>Oltre ai dati, è possibile visualizzare una panoramica dell'anagrafica della stazione.</p>
+<p><img src="/bobo-help/str_dataview/img/[36]_anagrafica.png" alt="36" title="Anagrafica"></p>
+<h4 id="nelle-vicinanze">Nelle vicinanze</h4>
+<p>Infine, nella scheda &quot;Nella vicinanze&quot; verranno visualizzati un elenco delle stazioni nelle vicinanze geografiche della stazione selezionata e la relativa mappa di riferimento.</p>
+<p><img src="/bobo-help/str_dataview/img/[100]_nelle_vicinanze.png" alt="100" title="Nelle vicinanze"></p>
+</li>
+<li>
+<p>Pulsante <u>mostra/nascondi tendina Stazioni/Parametri</u>;</p>
+</li>
+<li>
+<p>Pulsante <u>Torna a mappa stazioni</u>: si verrà reindirizzati alla pagina principale del Dataview;</p>
+</li>
+<li>
+<p><u>Valori disponibili</u>: mostra i dati della stazione aggiornati all'ora indicata (sempre orario UTC);</p>
+</li>
+<li>
+<p><u>Visualizza parametri</u>: è possibile personalizzare la visualizzazione dei dati dei grafici/tabelle poste a destra; si possono visualizzare i dati orari o giornalieri e impostare il periodo temporale selezionandone uno dal menù a tendina;</p>
+<p><img src="/bobo-help/str_dataview/img/[33]_visal_param_+_periodo_temp.png" alt="33" title="Visualizza parametri + Periodo temporale"></p>
+</li>
+<li>
+<p><u>Anagrafica stazione</u>: qui vengono visualizzati i dati relativi all'anagrafica della stazione;</p>
+</li>
+</ol>

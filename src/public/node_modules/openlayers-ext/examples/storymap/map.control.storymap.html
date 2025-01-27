@@ -1,0 +1,231 @@
+﻿  <!DOCTYPE html>
+<html>
+<head>
+<!--
+  Copyright (c) 2015-2018 Jean-Marc VIGLINO,
+  released under CeCILL-B (french BSD like) licence: http://www.cecill.info/
+-->
+  <title>ol-ext: Storymap control</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="A control with scroll-driven navigation to create narrative maps." />
+  <meta name="keywords" content="ol, storymap, narration, control" />
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    [data-fullscreen] #map {
+      position: fixed;
+      inset: 0;
+      margin: 0;
+      width: unset!important;
+      height: unset!important;
+      z-index: 10;
+    }
+    .ol-zoom {
+      left: auto;
+      right: .5em;
+    }
+
+    #story {
+      /*
+      height: 400px;
+      */
+    }
+    #story img {
+      display: block;
+      margin: auto;
+      max-width: 100%;
+    }
+    #story .chapter.ol-select {
+      /*
+      background-color: rgba(255,255,255,.8);
+      */
+    }
+    .options a {
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a href="../../index.html">
+    <h1>ol-ext: Storymap control</h1>
+  </a>
+  <div class="info">
+    <p>
+      The <i>ol/control/Storymap</i> is a control with scroll-driven navigation to create narrative maps.
+    </p>
+    <ul>
+      <li>
+        You can specify the story content using the <i>html</i> options as a string or a DOM Element.
+      </li><li>
+        You can also specify a <i>target</i> to use as story content
+      </li><li>
+        Use an element with a <i>chapter</i> class and a <i>name</i> to specify a new chapter in the story. 
+      </li><li>
+        The <i>setChapter()</i> method lets you move to a chapter given its name.
+      </li><li>
+        Listen to the <i>scrollto</i> event to get the current chapter.
+      </li><li>
+        You can set <i>data-lon</i>, <i>data-lat</i> and <i>data-zoom</i> global attributes to your chapter to get them back on <i>scrollto</i> event.
+        <br/>
+        Set a <i>data-animation="flyto"</i> attribute to fly to the position defined by this attributes when the chapter is reached.
+      </li><li>
+        Listen to the <i>clickimage</i> event to get warned when an image with <i>data-title</i> is clicked.
+      </li><li>
+        Use an element with a <i>ol-scroll-next</i> class in your story to scroll to the next chapter on click.
+      </li>
+      <li>
+        Use an element with a <i>ol-scroll-top</i> class in your story to scroll to the top of the story.
+      </li>
+    </ul>
+    <p>
+      <a href="map.control.storymap.2.html">See example with a story outside the map.</a>
+    </p>
+  </div>
+
+  <!-- Map div -->
+  <div id="map" style="width:600px; height:400px;"></div>
+  
+  <div class="options">
+    <label>ClassName: </label>
+    <select onchange="setClassName(this.value)">
+      <option value="">default</option>
+      <option value="scrollLine">scrollLine</option>
+      <option value="scrollBox">scrollBox</option>
+    </select>
+    <br/><br/>
+    Set chapters:
+    <ol>
+      <li>
+        <a onclick="story.setChapter('Paris')">Paris</a>
+      </li>
+      <li>
+        <a onclick="story.setChapter('London')">London</a>
+      </li>
+      <li>
+        <a onclick="story.setChapter('Berlin')">Berlin</a>
+      </li>
+    </ol>
+    <a onclick="document.body.dataset.fullscreen=''; map.updateSize();">Show fullscreen</a>
+    <br/>
+    Click on image to show it fullscreen.
+  </div>
+
+  <div id="story">
+    <div class="chapter" name="start" data-lon="1.5600502550133257" data-lat="48.356243383667106" data-zoom="6" data-animation="flyto">
+      <h2>Capitals</h2>
+      <p>
+        A story map with Openlayers.
+        <br/>
+        <span style="font-size: .8em;">
+          text & images &copy; Wikipedia
+        </span>
+      </p>
+      <div class="ol-scroll-next"><span>Start</span></div>
+    </div>
+    <div class="chapter" name="Paris" data-lon="2.351828" data-lat="48.856578" data-zoom="9" data-animation="flyto">
+      <h2>Paris</h2>
+      <img data-title="Paris" src="https://upload.wikimedia.org/wikipedia/commons/0/08/Seine_and_Eiffel_Tower_from_Tour_Saint_Jacques_2013-08.JPG">
+      <p>
+        Paris is the capital and most populous city of France, with an area of 105 square kilometres (41 square miles) and a population of 2,206,488. Since the 17th century, Paris has been one of Europe's major centres of finance, commerce, fashion, science, and the arts.
+      </p>
+    </div>
+    <div class="chapter" name="London" data-lon="-0.1275" data-lat="51.507222" data-zoom="8" data-animation="flyto">
+      <h2>London</h2>
+      <img data-title="London" src="https://upload.wikimedia.org/wikipedia/commons/c/cd/London_Montage_L.jpg">
+      <p>
+        London is the capital and largest city of both the United Kingdom and England. Standing on the River Thames in southeastern England, 50 miles (80 km) upstream from its estuary with the North Sea, London has been a major settlement for two millennia. Londinium was founded by the Romans. The City of London, London's ancient core − an area of just 1.12 square miles (2.9 km2) and colloquially known as the Square Mile − retains its medieval boundaries.
+      </p>
+    </div>
+    <div class="chapter" name="Berlin" data-lon="13.383333" data-lat="52.516667" data-zoom="7" data-animation="flyto">
+      <h2>Berlin</h2>
+      <img data-title="Berlin" src="https://upload.wikimedia.org/wikipedia/commons/0/02/Berlin_Skyline_Fernsehturm_02.jpg">
+      <p>
+        Berlin is the capital and largest city of Germany by both area and population. Its 3,711,930 (2017) inhabitants make it the second most populous city proper of the European Union after London. The city is one of Germany's 16 federal states. It is surrounded by the state of Brandenburg and forms the center of the Berlin/Brandenburg Metropolitan Region, which is, with 6,004,857 (2015) inhabitants and area of 30,370 square km, Germany's third-largest metropolitan region after the Rhine-Ruhr and Rhine-Main regions.
+      </p>
+      <div class="ol-scroll-top"><span>Top</span></div>
+    </div>
+  </div>
+  
+  <script type="text/javascript">
+
+  // Two base layers
+  var stamen = new ol.layer.Tile({
+    title: "Watercolor",
+    baseLayer: true,
+    source: new ol.source.Stamen({
+      layer: 'watercolor'
+    })
+  });
+
+
+  // The map
+  var map = new ol.Map ({
+    target: 'map',
+    view: new ol.View ({
+      zoom: 6,
+      center: [173664, 6166327],
+      padding: [0,0,0,210]
+    }),
+    layers: [stamen]
+  });
+
+  // Add placemark
+  var placemark = new ol.Overlay.Placemark();
+  map.addOverlay (placemark);
+
+  // The storymap
+  var story = new ol.control.Storymap({
+    html: document.getElementById('story'),
+    //target: document.getElementById('story')
+    minibar: true,
+    //className: 'scrollBox'
+  });
+
+  // Show image fullscreen on click
+	var fullscreen = new ol.control.Overlay ({ hideOnClick: true, className: 'zoom' });
+	map.addControl(fullscreen);
+  story.on('clickimage', function(e){
+    console.log(e)
+    fullscreen.showImage(e.img.src, e);
+  });
+
+  // Fly to the chapter on the map
+  story.on('scrollto', function(e){
+    if (e.name==='start') {
+      placemark.hide();
+    } else {
+      placemark.show(e.coordinate);
+    }
+  });
+  map.addControl (story);
+
+  function setClassName(c) {
+    console.log(c)
+    story.element.classList.remove('scrollLine')
+    story.element.classList.remove('scrollBox')
+    if (c) story.element.classList.add(c)
+    window.dispatchEvent(new Event('resize'))
+  }
+  </script>
+  
+</body>
+</html>

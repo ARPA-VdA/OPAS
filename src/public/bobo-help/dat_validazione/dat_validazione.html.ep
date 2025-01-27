@@ -1,0 +1,248 @@
+<h1 id="dati---validazione">DATI - VALIDAZIONE</h1>
+<p>Per accedere alla sezione dedicata alla validazione dei dati delle stazioni, cliccare nel menu laterale sulla voce &quot;Dati&quot; e selezionare &quot;Validazione&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Validazione</span>
+</h3>
+<p>Verrà visualizzata la schermata principale dello strumento Validazione.</p>
+<p><img src="/bobo-help/dat_validazione/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p><u>Menu di Validazione</u>: vedi &quot;Menu di Validazione&quot;;</p>
+</li>
+<li>
+<p><u>Lista stazioni &amp; dati sospetti</u>: in questa sezione vengono elencate, organizzate ad albero, le stazioni, raggruppate per rete di appartenenza, e i dati identificati automaticamente come sospetti.</p>
+<p><img src="/bobo-help/dat_validazione/img/[30]_staz_e_sosp.png" alt="30" title="Lista stazioni e dati sospetti"></p>
+<p>È possibile modificare questa sezione rendendo possibile la selezione per parametro:</p>
+<ul>
+<li>
+<p>Dal menu a tendina &quot;Strumenti&quot;, cliccare 'Opzioni'.</p>
+<p><img src="/bobo-help/dat_validazione/img/[40]_strumenti_si_invalid.png" alt="40" title="Strumenti"></p>
+</li>
+<li>
+<p>Attivare l'opzione 'Visualizza per parametro' e cliccare su 'Applica in locale'.</p>
+<p><img src="/bobo-help/dat_validazione/img/[41]_opz_generali.png" alt="41" title="Generali"></p>
+</li>
+<li>
+<p>E così verranno visualizzati i parametri</p>
+<p><img src="/bobo-help/dat_validazione/img/[41-1]_visu_param.png" alt="41-1" title="Visualizza per parametro"></p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Dettaglio codici &amp; storico modifiche</u>: in questa sezione è possibile visualizzare, una volta selezionato il dato dalla tabella posta al centro (punto 4.), il dettaglio dei codici attualmente applicati al valore (tab &quot;Codici validità&quot;) e il dettaglio delle modifiche effettuate sul dato scelto, sia come valore sia come codice applicato, sotto forma di &quot;storico&quot; (tab. &quot;Storico modifiche&quot;):</p>
+<ul>
+<li>
+<p>Dettaglio dei codici</p>
+<p><img src="/bobo-help/dat_validazione/img/[50]_his_+_valid.png" alt="50" title="Dettaglio codici - Valido">
+<img src="/bobo-help/dat_validazione/img/[51]_his_+_valid_2.png" alt="51" title="Dettaglio codici - Non Valido"></p>
+</li>
+<li>
+<p>Dettaglio delle modifiche</p>
+<p><img src="/bobo-help/dat_validazione/img/[52]_his_+_valid_3.png" alt="52" title="Storico modifiche"></p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Schermata di visualizzazione tabellare dei dati</u>: in questa sezione vengono visualizzati i dati, in formato tabellare, della stazione selezionata;</p>
+<p><img src="/bobo-help/dat_validazione/img/[60]_tabella_principale.png" alt="60" title="Tabella dei dati"></p>
+<p>La schermata di default visualizzerà i dati del giorno precedente a quello odierno dalle ore 00 (mezzanotte) alle ore 23.</p>
+<p>Qualora si selezioni un periodo più esteso di un giorno, sarà possibile selezionare il numero di righe per pagina tra dei multipli di 24, così da poter selezionare 2, 3 o 4 giorni.</p>
+<p><img src="/bobo-help/dat_validazione/img/[61]_numero_righe.png" alt="61" title="Numero di righe per pagina"></p>
+<p>Per validare un dato, selezionare la cella corrispondente, oppure cliccare e trascinare per selezionare più celle in una volta sola</p>
+<p><img src="/bobo-help/dat_validazione/img/[62]_celle_multiple.png" alt="62" title="Celle multiple"></p>
+<p>e successivamente selezionare il codice desiderato dall'elenco di quelli disponibili posto alla destra della tabella (punto 5.).</p>
+<p>Per modificare un dato, effettuare doppio click sulla cella selezionata (il dato sarà disponibile per la modifica)</p>
+<p><img src="/bobo-help/dat_validazione/img/[63]_modifica_dato.png" alt="63" title="Modificare un dato"></p>
+<p>e successivamente modificare il dato inserendo un nuovo valore, oppure utilizzando gli appositi pulsanti &quot;Su&quot; e &quot;Giù&quot;.</p>
+<p>Per effettuare modifiche su più dati contemporaneamente, selezionare le celle desiderate e utilizzare la schemata delle &quot;Operazioni&quot; (punto 6.).</p>
+<p>Infine, per effettuare validazioni o modifiche su grandi moli di dati, è possibile utilizzare lo strumento <img src="/bobo-help/dat_validazione/img/pulsico/calendario.png" height="40px" /> (vedi &quot;Calendario&quot;) oppure lo strumento <img src="/bobo-help/dat_validazione/img/pulsico/mod_avanzata.png" height="40px" /> (vedi &quot;Modalità Avanzata&quot;).</p>
+<p>Quando uno o più dati della tabella appaiano in grassetto:</p>
+<p><img src="/bobo-help/dat_validazione/img/[100]_dati_modificati.png" alt="100" title="Dati modificati"></p>
+<p>Significa che sono state apportate modifiche (validazione/operazione) e, una volta aggiornata la tabella tramite il tasto 'Aggiorna' in alto, torneranno normali.</p>
+<p>Inoltre, possono avere colori diversi in base ai codici di validazione apportati ai dati (punto 5.). Se il dato è valido, di default la cella è di colore bianco.</p>
+<p>Facendo click con il tasto destro del mouse sulla cella di un dato è possibile visualizzare il grafico del dettaglio nella fascia temporale da 24 ore prima a 24 ore dopo.</p>
+<p><img src="/bobo-help/dat_validazione/img/[110]_grafico.png" alt="110" title="Grafico"></p>
+<p>Infine, mediante il bottone posto in alto a destra del grafico è possibile visualizzare a schermo intero e stampare il grafico.</p>
+<p><img src="/bobo-help/dat_validazione/img/[111]_pulsante_grafico.png" alt="111" title="Menu del grafico"></p>
+</li>
+<li>
+<p><u>Codici validità</u>: elenco dei codici di validità disponibili;</p>
+<p><img src="/bobo-help/dat_validazione/img/[60]_codici.png" alt="60" title="Codici di validità"></p>
+<p>Dopo aver selezionato dalla tabella il/i dato/dati, cliccare il codice di validazione che si vuole applicare.</p>
+<p>Quando si vogliono assegnare più codici ad un/dei dato/dati, bisognerà selezionare nuovamente il/i dato/dati nella tabella applicando una validazione alla volta.</p>
+<p>Infine, cliccando il pulsante <img src="/bobo-help/dat_validazione/img/pulsico/help.png" height="40px"></img> verrà visualizzato l'elenco dei codici di validazione impostati per il portale.</p>
+</li>
+<li>
+<p><u>Operazioni</u>: da questa sezione è possibile applicare ed effettuare delle operazioni ad uno o più dati selezionati nella tabella principale.</p>
+<p><img src="/bobo-help/dat_validazione/img/[70]_operazioni.png" alt="70" title="Operazioni"></p>
+<p>Dopo aver selezionato dalla tabella il/i dato/dati che serve/servono, scegliere una delle quattro operazioni, inserire il valore e, infine, cliccare il tasto 'Esegui'.</p>
+<p>Esattamente come accade per i codici di validità, anche le operazioni possono essere fatte una alla volta selezionando nuovamente dalla tabella il dato che si intende modificare.</p>
+</li>
+</ol>
+<h2 id="menu-di-validazione">Menu di Validazione</h2>
+<p><img src="/bobo-help/dat_validazione/img/[190]_menu_principale.png" alt="190" title="Menu principale"></p>
+<ol>
+<li>Torna al portale;</li>
+<li>Torna alla pagina iniziale di Validazione;</li>
+<li>Accedi alla documentazione (questa pagina);</li>
+</ol>
+<h3 id="menu-principale---strumenti">Menu principale - <em>Strumenti</em></h3>
+<p><img src="/bobo-help/dat_validazione/img/[40]_strumenti_si_invalid.png" alt="40" title="Menu Strumenti"></p>
+<ul>
+<li>
+<p><u>Opzioni</u>:</p>
+<p>Tutte le impostazioni che si andranno a modificare in questa voce possono essere applicate in maniera temporanea (pulsante &quot;Applica in locale&quot;) o salvate nel database (pulsante &quot;Salva nel DB&quot;) in modo tale da ritrovarle ad un successivo accesso alla sezione. Le impostazioni sono per utente e quindi le modifiche di uno non andranno ad influenzare gli altri utenti.</p>
+<ul>
+<li>
+<p><u>Generali</u>: in questo menu è possibile visualizzare i dati grezzi, andando a disattivare l'interruttore 'Visualizza dati convertiti', attivare/disattivare la visualizzazione dell'STID (ID della stazione), della QUOTA cliccando sul relativo bottone;</p>
+<p><img src="/bobo-help/dat_validazione/img/[41]_opz_generali.png" alt="41" title="Generali"></p>
+</li>
+<li>
+<p><u>Grafici</u>: in questa sezione è possibile personalizzare il layout dei grafici visualizzati;</p>
+<p><img src="/bobo-help/dat_validazione/img/[120]_opz_grafici.png" alt="120" title="Grafici"></p>
+</li>
+<li>
+<p><u>Tabelle</u>: in questa sezione è possibile attivare/disattivare i filtri di visualizzazione;</p>
+<p><img src="/bobo-help/dat_validazione/img/[130]_opz_tabelle.png" alt="130" title="Tabelle"></p>
+<p>Attraverso i filtri è possibile effettuare delle ricerche di determinati valori all'interno della tabella visualizzata:</p>
+<p><img src="/bobo-help/dat_validazione/img/[131]_filtri.png" alt="131" title="Filtri di visualizzazione"></p>
+<ol>
+<li>
+<p>Selezionare la colonna che si intende filtrare;</p>
+</li>
+<li>
+<p>Selezionare l'operazione di ricerca tra quelle disponibili:</p>
+<p><img src="/bobo-help/dat_validazione/img/[132]_operazioni_filtri.png" alt="132" title="Operazioni"></p>
+</li>
+<li>
+<p>Inserire il valore per cui filtrare;</p>
+</li>
+</ol>
+<p>Di seguito un esempio:</p>
+<p><img src="/bobo-help/dat_validazione/img/[133]_valori_filtrati.png" alt="133" title="Valori filtrati"></p>
+<p>Cliccando il pulsante &quot;Annulla&quot; verranno resettati tutti i filtri e si visualizzerà nuovamente l'intera tabella.</p>
+</li>
+<li>
+<p><u>Filtri</u>: ###</p>
+</li>
+</ul>
+</li>
+<li>
+<p><u>Carica albero completo</u>: cliccando su questa voce è possibile caricare velocemente tutto l'albero delle stazioni/parametri. Per confermare l'azione, cliccare su &quot;Si, carica!&quot;.</p>
+<p><img src="/bobo-help/dat_validazione/img/[150]_strum_carica_alb.png" alt="150" title="Carica albero completo"></p>
+</li>
+</ul>
+<h3 id="menu-secondario---filtri-e-operazioni">Menu secondario - Filtri e operazioni</h3>
+<p><img src="/bobo-help/dat_validazione/img/[300]_menu_secondario.png" alt="300" title="Filtri e operazioni"></p>
+<ol>
+<li>
+<p><u>Data inizio/fine</u>: selezionare il periodo temporale in cui verranno visualizzati i dati;</p>
+<p><img src="/bobo-help/dat_validazione/img/[301]_data_inizio_fine.png" alt="301" title="Inserimento data"></p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/aggiorna.png" height="40px" />: aggiorna i tab sulla base delle date e della fascia temporale richiesta;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/validaz.png" height="40px" />: contrassegna come validati tutti i parametri visualizzati;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/calendario.png" height="40px" />: cliccando questo pulsante è possibile effettuare la validazione dei parametri, oppure delle operazioni, tramite calendario:</p>
+<p><img src="/bobo-help/dat_validazione/img/[200]_validazione_calendario.png" alt="200" title="Validazione tramite calendario"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine (il calendario di sinistra si riferisce alla data d'inizio, mentre quello di destra alla data di fine).</p>
+<p>Per impostare l'orario, selezionare i minuti e le ore dai menu a tendina (quelli di sinistra si riferiscono all'ora d'inizio, mentre quelli di destra all'ora di fine).</p>
+<p>Per confermare il periodo cliccare il pulsante &quot;Applica&quot;.</p>
+<p><img src="/bobo-help/dat_validazione/img/[31]_calendar_datehour.png" alt="31" title="Calendario data/ora"></p>
+</li>
+<li>
+<p>Seleziona la provincia;</p>
+</li>
+<li>
+<p>Seleziona la stazione;</p>
+</li>
+<li>
+<p>Seleziona il parametro;</p>
+</li>
+<li>
+<p>Attività da svolgere: selezionare l'attività da svolgere nel periodo temporale impostato al punto 1:</p>
+<ul>
+<li>
+<p>Modifica dei dati</p>
+<p><img src="/bobo-help/dat_validazione/img/[201]_attività_modifica.png" alt="201" title="Attività da svolgere &gt; Modifica"></p>
+</li>
+<li>
+<p>Validazione dei dati</p>
+<p><img src="/bobo-help/dat_validazione/img/[202]_attività_validaz.png" alt="202" title="Attività da svolgere &gt; Validazione"></p>
+</li>
+</ul>
+<p>Attivando &quot;Filtrare per valore&quot; è possibile selezionare i dati da modificare/validare in maniera ancora più precisa:</p>
+<p><img src="/bobo-help/dat_validazione/img/[203]_filtrare_per_valore.png" alt="203" title="Filtrare per valore"></p>
+</li>
+</ol>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/mod_avanzata.png" height="40px" />: attiva la modalità avanzata per inserimento/modifica dei dati (vedi &quot;Modalità avanzata&quot;);</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/copia_tabella.png" height="40px" />: cliccando questo pulsante è possibile copiare la tabella visualizzata negli appunti (clipboard) del PC, rendendo possibile incollarla su un foglio di calcolo, come ad esempio Excel;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/reset.png" height="40px" />: resetta i tab (svuota), o quello attivo, o tutti quelli presenti attualmente;</p>
+<p><img src="/bobo-help/dat_validazione/img/[36]_menu_2_reset.png" alt="36" title="Reset"></p>
+</li>
+</ol>
+<h2 id="modalit%C3%A0-avanzata">Modalità avanzata</h2>
+<p>Cliccando il pulsante <img src="/bobo-help/dat_validazione/img/pulsico/mod_avanzata.png" height="40px" /> verrà abilitata la modalità avanzata la tabella visualizzata si colorerà di rosso, li linee diventeranno tratteggiate e verranno aggiunti dei pulsanti al menù:</p>
+<p><img src="/bobo-help/dat_validazione/img/[402]_tabella_mod.png" alt="402" title="Tabella rossa"></p>
+<p><img src="/bobo-help/dat_validazione/img/[400]_modalita_avanzata.png" alt="400" title="Menu principale"></p>
+<ol>
+<li>
+<p>Il pulsante principale passerà allo stato &quot;ON&quot; una volta attivata la modalità avanzata;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/copia_tabella.png" height="40px" />: cliccando questo pulsante è possibile copiare la tabella visualizzata negli appunti (clipboard) del PC, rendendo possibile incollarla su un foglio di calcolo, come ad esempio Excel;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/salva.png" height="40px" />: salva le modifiche effettuate;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/annulla.png" height="40px" />: scarta le modifiche effettuate;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/dat_validazione/img/pulsico/info.png" height="40px" />: cliccando questo pulsante verranno visualizzate le informazioni relative all'utilizzo della modalità avanzata:</p>
+<p><img src="/bobo-help/dat_validazione/img/[401]_info_mod_ava.png" alt="401" title="Menu principale"></p>
+</li>
+</ol>
+<p>Successivamente:</p>
+<ul>
+<li>
+<p>Cliccare sul bottone blu <img src="/bobo-help/dat_validazione/img/pulsico/copia_tabella.png" height="40px" />: un messaggio di avvenuta copia verrà visualizzato in alto a destra:</p>
+<p><img src="/bobo-help/dat_validazione/img/[403]_msg_copia.png" alt="403" title="Copia avvenuta"></p>
+</li>
+<li>
+<p>Sul proprio dispositivo, aprire un nuovo foglio di calcolo, ad esempio &quot;Excel&quot;, e incollare la tabella copiata:</p>
+<p><img src="/bobo-help/dat_validazione/img/[404]_excel.png" alt="404" title="Incollo su Excel"></p>
+</li>
+<li>
+<p>Inserire e/o modificare i dati come si desidera;</p>
+</li>
+<li>
+<p>Copiare la tabella modificata selezionando TUTTE le colonne precedentemente incollate, non solo quelle modificate;</p>
+</li>
+<li>
+<p>Tornare su &quot;Validazione&quot; e mettere a fuoco la tabella cliccando (click singolo o doppio) sulla colonna &quot;Data&quot;;</p>
+</li>
+<li>
+<p>Incollare la tabella tramite la combinazione di tasti CTRL + V: un messaggio di avvenuta copia verrà visualizzato in alto a destra:</p>
+<p><img src="/bobo-help/dat_validazione/img/[405]_msg_incolla.png" alt="405" title="Incolla avvenuta"></p>
+<p>le celle modificate saranno evidenziate tramite uno sfondo rosso:</p>
+<p><img src="/bobo-help/dat_validazione/img/[406]_fine_copia_incolla.png" alt="406" title="Modifiche copiate e incollate"></p>
+</li>
+<li>
+<p>Salvare le modifiche nel database tramite il bottone blu <img src="/bobo-help/dat_validazione/img/pulsico/salva.png" height="40px" />, oppure cliccare su <img src="/bobo-help/dat_validazione/img/pulsico/annulla.png" height="40px" /> per cancellare le modifiche e disabilitare la modalità avanzata.</p>
+</li>
+</ul>

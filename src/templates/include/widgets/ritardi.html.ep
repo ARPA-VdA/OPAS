@@ -1,0 +1,50 @@
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/include/widgets/ritardi.js'))%>" type="text/javascript"></script>
+
+<div class="card" id="hp-st-late">
+    <div class="preloader-mini" id="preloader-delays">
+        <span class="fa-stack fa-4x">
+            <i class="fa-thin fa-bahai fa-stack-2x fa-flip text-warning"  style="--fa-animation-duration: 2s; opacity: 0.9; text-shadow: 2px 2px 3px #ddd;"></i>
+            <i class="fa-duotone fa-mug-hot fa-stack-1x fa-beat" style="font-size: 0.7em; line-height: 2.6em; --fa-flip-x: 0; --fa-secondary-opacity: 1.0; --fa-primary-color: #2293b5; --fa-secondary-color: #dc5a08; text-shadow: 2px 2px 3px #cacaca;"></i>
+            <!-- fa-spin-pulse fa-beat -->
+        </span>
+    </div>
+    <div class="card-body table-hp">
+        <h4 class="card-title"><i class="icon-refresh"></i> Dati aggiornati stazioni</h4>
+        <h6 class="card-subtitle">Aggiornamento <strong>dati dalle stazioni</strong>, ultimo dato atteso <code id="utc-time"></code>.</h6>
+
+        <table id="datast-table" class="display nowrap table table-hover table-striped" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">Stazione</th>
+                    <th>Prov.</th>
+                    <th class="bobo-nowrap">Orario</th>
+                    <th>Stato</th>
+                    <th class="bobo-nowrap">Rete</th>
+                    <th class="control"></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <%
+        foreach my $row ( @{$options} ) {
+            foreach my $widget ( @{$row} ){
+                if($widget->{'wdg_page_html'} eq '/ritardi'){
+
+                    my $dest = $widget->{'gw_dest'};
+                    if( $dest->{'type'} eq 'page' || $dest->{'type'} eq 'external' ){
+    %>
+                    <div class="card-footer">
+                        <span class="show-more">
+                            <a href="<%= $dest->{'link'} %>" class="show-more"><i class="mdi mdi-library-plus"></i> <%= $dest->{'title'} %> &raquo;</a>
+                        </span>
+                    </div>
+    <%
+                    }
+                }
+            }
+        }
+    %>
+</div>

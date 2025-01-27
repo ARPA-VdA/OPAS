@@ -1,0 +1,125 @@
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/codes.js'))%>" type="text/javascript"></script>
+
+<!-- MODAL CODICI DI VALIDITA' -->
+<div class="modal fade common-styles" id="validation-codes" tabindex="-1" role="dialog" aria-labelledby="validation-codes" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-json"></i> Elenco dei codici di validazione</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row no-gutters">
+                    <div class="col-sm-3">
+                        <div class="nav flex-column nav-pills nav-settings" id="codes-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active" data-toggle="pill" href="#tab-cod-per" role="tab"  aria-selected="true"><i class="mdi mdi-chevron-right" aria-hidden="true"></i> Codici periferia</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-cod-auto" role="tab"  aria-selected="false"><i class="mdi mdi-chevron-right" aria-hidden="true"></i> Codici autovalidazione</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-cod-val" role="tab" aria-selected="false"><i class="mdi mdi-chevron-right" aria-hidden="true"></i> Codici validaz. utente</a>
+                            <a class="nav-link" data-toggle="pill" href="#tab-cod-fin" role="tab" aria-selected="false"><i class="mdi mdi-chevron-right" aria-hidden="true"></i> Codici finali</a>
+                        </div>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="tab-content tab-settings" id="codes-tab-content">
+                            <div class="tab-pane fade show active" id="tab-cod-per" role="tabpanel">
+                                <h4 class="text-primary">Codici periferia</h4>
+                                <table class="table table-striped" id="tbl-cod-per">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="tab-cod-auto" role="tabpanel">
+                                <h4 class="text-primary">Codici autovalidazione</h4>
+                                <table class="table table-striped" id="tbl-cod-auto">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="tab-cod-val" role="tabpanel">
+                                <h4 class="text-primary">Codici validazione utente</h4>
+                                <table class="table table-striped" id="tbl-cod-val">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="tab-cod-fin" role="tabpanel">
+                                <h4 class="text-primary">Codici finali</h4>
+                                <table class="table table-striped" id="tbl-cod-fin">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th>Colore</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-center">Cod.</th>
+                                            <th>Descrizione</th>
+                                            <th>Colore</th>
+                                            <th class="text-center">Valido</th>
+                                            <th class="text-center">Default</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="dismiss-codes"><i class="ti-close"></i> Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+

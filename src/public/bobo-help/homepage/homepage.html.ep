@@ -1,0 +1,8 @@
+<h1>Benvenuto nel portale <strong><%=$self->config->{'portal_name'}%></strong>!</h1>
+<h3>Questo spazio è dedicato alla documentazione della tua piattaforma.</h3>
+<p>Per aiutarti a comprendere meglio tutte le funzionalità disponibili <strong>stiamo creando alcuni video</strong> così che tu possa rivederli ogni volta che sia necessario.<br>Di seguito ti elenchiamo quelli già disponibili:</p>
+<ul>
+    <li><a href="https://youtu.be/bXkdVZxNd78" target="_blank">Primo login / smarrimento password</a></li>
+    <li><a href="https://youtu.be/ecm7iVyhnsw" target="_blank">Modifica del profilo utente e della password</a></li>
+    <li><a href="https://youtu.be/ITvHd-nTG4k" target="_blank">Utilizzo delle FAQ</a></li>
+</ul>

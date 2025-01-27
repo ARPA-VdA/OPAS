@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!--
+  Copyright (c) 2017-2018 Jean-Marc VIGLINO,
+  released under CeCILL-B (french BSD like) licence: http://www.cecill.info/
+-->
+  <title>ol-ext: INSEEBin source</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="ol.source.HexBin is a source to display hexagonal binning on a map." />
+  <meta name="keywords" content="ol3, layer, hexbin, cluster, hexagon, binning, heatmap" />
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <!-- filesaver-js -->
+	<script type="text/javascript" src="https://cdn.rawgit.com/eligrey/FileSaver.js/aa9f4e0e/FileSaver.min.js"></script>
+
+  <!-- Proj4 -->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.14/proj4.js"></script>
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    #map {
+      width: 600px;
+      height: 400px;
+    }
+    .fullscreen #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .fullscreen .options {
+      position: fixed;
+      top: 0;
+      right: 0;
+    }
+    .fullscreen .info:last-child, 
+    .fullscreen #legend {
+      display: none;
+    }
+    .waiting {
+      opacity: .5;
+    }
+    .waiting:before {
+      content: "Calculating...";
+      background: #fff;
+      padding: 1em;
+      font-size: 2em;
+      top: 30%;
+      left: 50%;
+      position: fixed;
+      transform: translate(-50%,-30%);
+      z-index: 999;
+      box-shadow: 1px 1px 2px 2px;
+    }
+    .fa-arrows-alt {
+      float: right;
+      cursor: pointer;
+    }
+    button {
+      font-size: 1em;
+      color: #fff;
+      background: #369;
+      border: 0;
+      padding: .2em 1em;
+    }
+    .attributes label {
+      width: 7em;
+      display: inline-block;
+      text-align: right;
+      margin-right: .5em;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a href="../../index.html">
+    <h1>ol-ext: INSEEBin source</h1>
+  </a>
+
+  <div class="info">
+    Used in the field of geomarketing, gridding is a method for sub-dividing the country 
+    into regular grids, square in shape and of equal area.
+    <br/>
+    It can be used for binning data to obtain sociodemographic information that is 
+    much more granular and representative of the population.
+    <br/>
+    The <a href="https://www.insee.fr/fr/accueil"> French INSEE</a> grid is a 2.3 million squares grid (200m x 200m) that cover the France 
+    based on lambert azimutha equal area projection (EPSG:3035).
+  </div>
+
+  <!-- Map DIV -->
+  <div id="map"></div>
+
+  <div class="options">
+        <i class="fa fa-arrows-alt"  title="fullscreen" onclick="$('body').toggleClass('fullscreen'); map.updateSize();"></i>
+        <h2>Options:</h2>
+    <ul>
+      <li>
+        Size: <input id="size" type="number" min=".2" max="100" value="100" set=".2" onchange="reset();" /> km
+      </li>
+    
+      <li>
+        <div class="info">
+          <input id="showsource" type="checkbox" onchange="layerSource.setVisible($(this).prop('checked')); modify.setActive($(this).prop('checked'));" /><label for="showsource">
+            Display source features and move them around to see what happens to the bin!
+          </label>
+        </div>
+      </li>
+    
+      <li>
+        <button onclick='save()'><i class="fa fa-download"></i> download result</button>
+        <button onclick='saveWithPop()'><i class="fa fa-download"></i> download (pop/1km)</button>
+      </li>
+    </ul>
+    <div class="info">Selection: <span>0</span> feature(s)</div>
+    <div class="info">
+      <i class="fa fa-upload"></i> Drag'n'drop .geojson to calculate on your data!
+      <br/>
+      <label>
+        <input id="add" type="checkbox" />
+        add features when dropped
+      </label>
+    </div>
+    <div class="info">
+      Report attributes in the bin:
+      <ul class='attributes'></ul>
+      <p class='pop' style="display:none;">Pop per <input type="number" style="width:5em;" value=100 /> hab. (1km x 1km)</p>
+      <button onclick='updateAttributes()'>update <i class="fa fa-undo"></i></button>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  // The map
+  var map = new ol.Map({
+    target: 'map',
+    view: new ol.View({
+      zoom: 4,
+      center: [166326, 5992663]
+    }),
+    layers: [ new ol.layer.Tile({ source: new ol.source.OSM() })]
+  });
+
+  var select  = new ol.interaction.Select();
+  map.addInteraction(select);
+  select.on('select', function(e){
+    if (e.selected.length){
+      var f = e.selected[0].get('features');
+      if (f) $(".options .info span").text(e.selected[0].get('features').length);
+      else $(".options .info span").text("0");
+    }
+    else $(".options .info span").text("0");
+  });
+
+  // Create a set of features on seed points
+  function addFeatures(nb){
+    var ssize = 20;		// seed size
+    var ext = grid.getSource().getGridExtent();
+    var dx = ext[2]-ext[0];
+    var dy = ext[3]-ext[1];
+    var dl = Math.min(dx,dy);
+    var features=[];
+    for (var i=0; i<nb/ssize; ++i){
+      var seed = [ext[0]+dx*Math.random(), ext[1]+dy*Math.random()]
+      for (var j=0; j<ssize; j++){
+        var f = new ol.Feature(new ol.geom.Point([
+          seed[0] + dl/10*Math.random(),
+          seed[1] + dl/10*Math.random()
+        ]));
+        features.push(f);
+      }
+    }
+    source.clear(true);
+    source.addFeatures(features);
+    reset();
+  }
+
+  // Vector source
+  var source = new ol.source.Vector();
+  // Interaction to move the source features
+  var modify = new ol.interaction.Modify({ source: source });
+  modify.setActive(false);
+  map.addInteraction(modify);
+  var layerSource = new ol.layer.Vector({ source: source, visible:false })
+  map.addLayer(layerSource);
+
+  // Style function 
+  var min, max;
+  var styleFn = function(f,res){
+    var color;
+    if (f.get('features').length > min+2*(max-min)/3) color = [136, 0, 0, .5];
+    else if (f.get('features').length > min + (max-min)/3) color = [255, 165, 0, .5];
+    else color = [0, 136, 0, .5];
+    return [ new ol.style.Style({ fill: new ol.style.Fill({  color: color }) }) ];
+  };
+  // The rid layer
+  var grid = new ol.layer.Vector({ 
+    style: styleFn, 
+    source: new ol.source.InseeBin({ 
+      source: source,
+      size: 100000
+    })
+  })
+  map.addLayer(grid);
+  // add 1000 features
+  addFeatures(1000);
+
+  // Add feature on drop
+  var dd = new ol.interaction.DropFile();
+  map.addInteraction (dd);
+  dd.on('loadstart', function () { $('body').addClass('waiting'); });
+  dd.on('loadend', function () { $('body').removeClass('waiting'); });
+	dd.on ('addfeatures', function(event) {
+    var f = event.features;
+    if (!$("#add").prop('checked')) source.clear(true);
+    source.addFeatures(f);
+  });
+
+  // Create Bin
+  function reset() {
+    grid.getSource().setSize(Number($('#size').val())*1000);
+    max = 0;
+    min = Infinity;
+    grid.getSource().getFeatures().forEach(function (f) {
+      var nb = f.get('features').length;
+      if (nb>max) max = nb;
+      if (nb<min) min = nb;
+    });
+  };
+
+  // Save bin
+  function save() {
+    var pop = false;
+    $(".attributes select").each(function(){
+      if (/pop/.test($(this).val())) pop = true;
+    });
+    if (pop) saveWithPop();
+    else saveBin();
+  }
+
+  // Save
+  function saveBin (point) {
+    var format = new ol.format.GeoJSON();
+    var features = grid.getSource().getGridFeatures();
+    if (point) {
+      features.forEach(function (f) {
+        var g = f.getGeometry().getInteriorPoint();
+        f.setGeometry(g);
+      });
+    }
+		var data = format.writeFeatures(features, {
+			dataProjection: 'EPSG:4326',
+			featureProjection: map.getView().getProjection()
+    });
+		var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+		saveAs(blob, "grid.geojson");
+  }
+  
+  // Add population to the grid
+  function saveWithPop() {
+    $('body').addClass('waiting');
+    $.ajax('../data/insee_1km.csv', {
+      success: function(res){
+        res = res.split('\n');
+        res.shift();
+        grid.getSource().getFeatures().forEach(function(b) { b.set('pop',0); });
+        res.forEach(function(data){
+          var source = grid.getSource();
+          data = data.split(',');
+          var coord = [ Number(data[0]*1000)+500, Number(data[1]*1000)+500];
+          coord = ol.proj.transform(coord, 'EPSG:3035', map.getView().getProjection());
+          var bin = source.getBinAt(coord);
+          if (bin) {
+            bin.set('pop', (bin.get('pop')||0) + Number(data[2]));
+          }
+        });
+        saveBin();
+        $('body').removeClass('waiting');
+      }
+    });
+  }
+
+  // List of attribute to add to the cluster on save
+  function updateAttributes() {
+    var f = source.getFeatures()[0];
+    var ul = $('.attributes').html('');
+    var found = false;
+    for (var p in f.getProperties()) {
+      if (p==='geometry') continue;
+      found = true;
+      var li = $('<li>').appendTo(ul);
+      $('<label>').text(p).appendTo(li);
+      var sel = $('<select>').data('attr', p).appendTo(li);
+      ['none','nb/pop','sum()','sum()/pop','sum()/area','sum()/area/pop','moy()','moy()/pop','moy()/area','moy()/area/pop'].forEach(function(op) {
+        $('<option>').text(op).appendTo(sel);
+      });
+    };
+    if (!found) {
+      var li = $('<li>').text('no attributes to report...').appendTo(ul);
+    }
+    $('p.pop').show();
+  }
+
+  // Flatten attributes on save
+  grid.getSource().setFlatAttributesFn(function (bin, features) {
+    /*
+    if (bin.get('pop')) {
+      bin.set('nb_pop',100*bin.get('nb')/bin.get('pop'));
+    }
+    */
+    $(".attributes select").each(function(){
+      var att = $(this).data('attr');
+      var val = 0;
+      var what = $(this).val();
+      switch (what) {
+        case 'nb/pop': {
+          val = bin.get('nb');
+          break;
+        }
+        case 'sum()':
+        case 'sum()/pop':
+        case 'sum()/area':
+        case 'sum()/area/pop': {
+          features.forEach(function(f) {
+            val += parseFloat(f.get(att)||0);
+          });
+          break;
+        }
+        case 'moy()':
+        case 'moy()/pop':
+        case 'moy()/area':
+        case 'moy()/area/pop': {
+          features.forEach(function(f) {
+            val += parseFloat(f.get(att)||0);
+          })
+          val /= features.length;
+          break;
+        }
+        default: break;
+      }
+      if (what!=='none') {
+        if (/area/.test(what)) {
+          var s = parseFloat($('#size').val())
+          val /= s*s;
+        }
+        if (/pop$/.test(what)) {
+          var per = parseInt($('p.pop input').val()||1);
+          var p = (per===1 ? '' : '_'+per);
+          if (what==='nb/pop') bin.set('nb_pop'+p, per*val/bin.get('pop'));
+          else bin.set(att+'_pop'+p, per*val/bin.get('pop'));
+        } else {
+          bin.set(att, val);
+        }
+      }
+    });
+  });
+
+</script>
+
+</body>
+</html>

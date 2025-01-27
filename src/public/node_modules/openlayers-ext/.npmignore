@@ -1,0 +1,12 @@
+.vscode
+*.npmignore
+.VSCodeCounter/*
+# ignore examples
+examples
+# ignore doc pages
+doc/doc-pages
+# ignore the dist
+dist/extra
+dist/*.js
+# ignore the src (copy in the root)
+src

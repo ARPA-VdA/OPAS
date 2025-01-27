@@ -1,0 +1,57 @@
+<h1 id="report---automatici">REPORT - AUTOMATICI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Report&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Automatici&quot;.</p>
+<h3>
+    > Report<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Automatici</span>
+</h3>
+<p>All'interno di questa pagina, è possibile visualizzare i report di analisi dei dati inviati automaticamente e le relative risposte che vengono restituite dal sistema di riferimento.</p>
+<p><img src="/bobo-help/rep_automatici/img/[10]_index.png" alt="10" title="Report - Automatici"></p>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>WS Siral</u>: pagina dei report relativi al webservice di Siral;</li>
+<li><u>WS Aer Nostrum</u>: pagina dei report relativi al webservice di Aer Nostrum;</li>
+</ul>
+<h3 id="ws-siral">WS Siral</h3>
+<p><img src="/bobo-help/rep_automatici/img/[20]_siral.png" alt="20" title="WS Siral"></p>
+<ol>
+<li>
+<p>Data dei report: per l'inserimento di una data è possibile seguire le seguenti indicazioni:</p>
+<p><img src="/bobo-help/rep_automatici/img/[00]_data.png" alt="00" title="Data"></p>
+ <ol type="a">
+   <li>Mese precedente;</li>
+   <li>Mese successivo;</li>
+   <li>Anno precedente;</li>
+   <li>Anno successivo;</li>
+   <li>Scelta del giorno;</li>
+   <li>Pulsanti <b><i>Annulla</i></b> (ritorna alla schermata precedente) e <b><i>OK</i></b> (imposta la data selezionata);</li>
+ </ol>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/rep_automatici/img/pulsico/aggiorna.png" height="50px"/> : cliccando questo pulsante è possibile aggiornare la visualizzazione dei dati della tabella agli ultimi disponibili nel database;</p>
+</li>
+<li>
+<p>Tabella dei dati;</p>
+</li>
+<li>
+<p>Pulsante <img src="/bobo-help/rep_automatici/img/pulsico/più-info.png" height="50px"/> : cliccando questo pulsante è possibile visualizzare il log completo dell'invio dei dati selezionato; verrà aperta una finestra contenente il log in formato JSON:</p>
+<p><img src="/bobo-help/rep_automatici/img/[21]_dettaglio_json.png" alt="21" title="Dettaglio JSON"></p>
+</li>
+</ol>
+<h3 id="ws-aer-nostrum">WS Aer Nostrum</h3>
+<p>All'interno della tabella è indicato, ora per ora, lo status dei dati del webservice Aer Nostrum; se positivo viene indicato con l'icona <img src="/bobo-help/rep_automatici/img/pulsico/ok.png" height="50px"/> .</p>
+<p><img src="/bobo-help/rep_automatici/img/[30]_aernostrum.png" alt="30" title="WS Aer Nostrum"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/rep_automatici/img/[00]_calendar_date.png" alt="00" title="Periodo temporale"></p>
+<p>       a. Pulsante per visualizzare il mese precedente;<br>
+       b. Pulsante per visualizzare il mese successivo.<br>
+       c. Calendario mese precedente;<br>
+       d. Calendario mese successivo.<br>
+       e. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;<br>
+       f. Pulsante <u>Applica</u>;<br></p>
+</li>
+</ol>

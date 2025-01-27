@@ -1,0 +1,73 @@
+<h1 id="dati---tarature-automatiche">TARATURE AUTOMATICHE</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Tarature automatiche&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Tarature automatiche</span>
+</h3>
+<p>Questa pagina permette di visualizzare i risultati delle tarature automatiche in formato tabellare, oppure guardare tutte le tarature che sono state effettuate in una singola giornata. Inoltre, è possibile visualizzare il grafico con il risultato delle singole tarature automatiche.</p>
+<p><img src="/bobo-help/dat_tarature_aut/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/dat_tarature_aut/img/[31]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Elenco delle reti disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/dat_tarature_aut/img/[23]_stazioni.png" alt="23" title="Seleziona stazioni"></p>
+</li>
+<li>
+<p>Seleziona parametro;</p>
+</li>
+<li>
+<p>Pulsante <u>Taratura con risultato</u>: se attivato, verranno visualizzate solo le tarature che presentano un risultato nella colonna 'Risultato':</p>
+<p>Attivo -&gt; <img src="/bobo-help/dat_tarature_aut/img/pulsico/interr_attivo.png" height="40px" width="65px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/dat_tarature_aut/img/pulsico/interr_disattivo.png" height="40px" width="65px"></img></p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei dissesti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina: cliccando sulla freccia è possibile modificare la quantità ;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella delle tarature automatiche: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Data;</li>
+<li>Stazione;</li>
+<li>Parametro;</li>
+<li>Tipo di taratura;</li>
+<li>Stato della taratura;</li>
+<li>Valore;</li>
+<li>Riferimento;</li>
+<li>Tolleranza;</li>
+<li>Risultato;</li>
+</ul>
+</li>
+<li>
+<p></u>Visualizza grafico</u>: cliccando il pulsante <img src="/bobo-help/dat_tarature_aut/img/pulsico/visualizza_grafico.png" height="35px"></img> è possibile visualizzare il grafico della taratura automatica selezionata:</p>
+<p><img src="/bobo-help/dat_tarature_aut/img/[60]_grafico.png" alt="60" title="Grafico"></p>
+<p>Inoltre, cliccando il pulsante <img src="/bobo-help/dat_tarature_aut/img/pulsico/menu_grafico.png" height="35px"></img> è possibile effettuare il download del grafico in formato JPEG, oppure i dati in formato CSV.</p>
+<p>Infine, è possibile attivare/disattivare le linee del grafico di un determinato dato cliccando sul parametro nella legenda posta in basso sotto al grafico.</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

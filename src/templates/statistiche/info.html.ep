@@ -1,0 +1,183 @@
+% layout 'default';
+% title 'Informazione sui limiti';
+
+<!-- <script src="<%=url_for(helperGetFileVersion('/bobo-js/statistiche/indicatori.js'))%>" type="text/javascript"></script> -->
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <!-- <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tab-period" role="tab">Periodo</a></li> -->
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#tab-sup" role="tab">Limiti riferimento</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big mb-4 img-all-view" id="main-tab">
+            <!-- Superamenti -->
+            <div class="tab-pane p-20 active" id="tab-sup" role="tabpanel">
+                <h4 class="box-title text-info">Limiti di riferimento <strong>suddivisi per inquinante</strong></h4>
+                <hr class="m-t-0 m-b-20">
+                <p>Per ogni inquinante vengono inseriti i limiti di riferimento con i massimi superamenti annuali previsti.</p>
+                <!-- da copiare http://www.arpat.toscana.it/temi-ambientali/aria/qualita-aria/limiti -->
+                <table class="display responsive table tbl-va-center" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Inquinante</th>
+                            <th>Limite</th>
+                            <th>Periodo di mediazione</th>
+                            <th>Limite</th>
+                            <th>Superamenti in un anno</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ************ PM10 ************* -->
+                        <tr>
+                            <td rowspan="2" style=" vertical-align: middle;">
+                                <strong class="text-info">PM10</strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore limite sulle 24 ore per la protezione della salute umana</td>
+                            <td>Media giornaliera</td>
+                            <td>50 µg/m<sup>3</sup></td>
+                            <td>massimo 35</td>
+                        </tr>
+                        <tr>
+                            <td>Valore limite annuale per la protezione della salute umana</td>
+                            <td>anno civile</td>
+                            <td>40 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ PM2.5 ************* -->
+                        <tr>
+                            <td>
+                                <strong class="text-info">PM2.5</strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore Limite annuale per la protezione della salute umana</td>
+                            <td>anno civile</td>
+                            <td>25 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ NO2 ************* -->
+                        <tr>
+                            <td rowspan="2" style=" vertical-align: middle;">
+                                <strong class="text-info">NO<sub>2</sub></strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore limite orario per la protezione della salute umana</td>
+                            <td>Media massima oraria</td>
+                            <td>200 µg/m<sup>3</sup></td>
+                            <td>massimo 18</td>
+                        </tr>
+                        <tr>
+                            <td>Valore limite annuale per la protezione della salute umana</td>
+                            <td>anno civile</td>
+                            <td>40 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ OZONO ************* -->
+                        <tr>
+                            <td rowspan="4" style=" vertical-align: middle;">
+                                <strong class="text-info">O<sub>3</sub></strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Soglia d'informazione</td>
+                            <td>Media massima oraria</td>
+                            <td>180 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Soglia d'allarme</td>
+                            <td>Media massima oraria</td>
+                            <td>240 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Valore obiettivo</td>
+                            <td>Media massima giornaliera calcolata su 8 ore</td>
+                            <td>120 µg/m<sup>3</sup></td>
+                            <td>&lt;= 25 volte/anno come media su 3 anni</td>
+                        </tr>
+                        <tr>
+                            <td>Valore obiettivo per laprotezione della vegetazione</td>
+                            <td>AOT40, calcolato sulla base dei valori di 1 ora da maggio a luglio</td>
+                            <td>18000 µg/m<sup>3</sup> come media su 5 anni</td>
+                            <td></td>
+                        </tr><!-- ************ CO ************* -->
+                        <tr>
+                            <td>
+                                <strong class="text-info">CO</strong> (mg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore limite orario per la protezione della salute umana</td>
+                            <td>Media massima giornaliera calcolata su 8 ore</td>
+                            <td>10 mg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ SO2 ************* -->
+                        <tr>
+                            <td rowspan="2" style=" vertical-align: middle;">
+                                <strong class="text-info">SO<sub>2</sub></strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore limite giornaliero</td>
+                            <td>Media giornaliera</td>
+                            <td>125 µg/m<sup>3</sup></td>
+                            <td>massimo 3</td>
+                        </tr>
+                        <tr>
+                            <td>Valore limite su 1 ora per la protezione della salute umana</td>
+                            <td>Media massima oraria</td>
+                            <td>350 µg/m<sup>3</sup></td>
+                            <td>massimo 24</td>
+                        </tr><!-- ************ BENZENE ************* -->
+                        <tr>
+                            <td>
+                                <strong class="text-info">Benzene</strong> (µg/m<sup>3</sup>)
+                            </td>
+                            <td>Valore limite su base annua</td>
+                            <td>anno civile</td>
+                            <td>5 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ Benzo(a)pirene  ************* -->
+                        <tr>
+                            <td>
+                                <strong class="text-info">Benzo(a)pirene</strong> (ng/m<sup>3</sup>)
+                            </td>
+                            <td>Concentrazione presente nella frazione PM10 del materiale particolato, calcolato come media su un anno civile</td>
+                            <td>anno civile</td>
+                            <td>1 ng/m<sup>3</sup></td>
+                            <td></td>
+                        </tr><!-- ************ Metalli As, Cd, Ni   ************* -->
+                        <tr>
+                            <td rowspan="4" style=" vertical-align: middle;">
+                                <strong class="text-info">Metalli pesanti</strong> (ng/m<sup>3</sup>)
+                            </td>
+                            <td>Arsenico</td>
+                            <td>anno civile</td>
+                            <td>6 ng/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Cadmio</td>
+                            <td>anno civile</td>
+                            <td>5 ng/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nichel</td>
+                            <td>anno civile</td>
+                            <td>20 ng/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Piombo</td>
+                            <td>anno civile</td>
+                            <td>0,5 µg/m<sup>3</sup></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Inquinante</th>
+                            <th>Limite</th>
+                            <th>Periodo di mediazione</th>
+                            <th>Limite</th>
+                            <th>Superamenti in un anno</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

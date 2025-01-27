@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!--
+  Copyright (c) 2015-2018 Jean-Marc VIGLINO, 
+  released under CeCILL-B (french BSD like) licence: http://www.cecill.info/
+-->
+  <title>ol-ext: Edit bar</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <meta name="description" content="ol.control.Bar is a control bar that contains controls." />
+  <meta name="keywords" content="ol3, control, bar, panel, ol3, openlayers, interaction" />
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <!-- Openlayers -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+  <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  
+  <!-- ol-ext -->
+  <link rel="stylesheet" href="../../dist/ol-ext.css" />
+  <script type="text/javascript" src="../../dist/ol-ext.js"></script>
+  <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+  <script src="https://unpkg.com/elm-pep"></script>
+
+  <style>
+    .ol-button i
+    {	color: inherit;
+    }
+    .ol-notification i {
+      color: #fff;
+    }
+
+  </style>
+
+</head>
+<body >
+  <a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
+
+  <a href="../../index.html">
+    <h1>ol-ext: Edit bar</h1>
+  </a>
+  <div class="info">
+    <p>
+      <i>ol.control.EditBar</i> is a control bar for editing a source.
+      It is provided with a bunch of editing tools.
+    </p>
+    <p>
+      You can give your own interaction to the edit bar using the interactions option.
+    </p><p>
+      You can set your own title in the interactions options by :
+      <ol>
+        <li>passing the title directly</li>
+        <li>passing an object with a title propertie</li>
+        <li>passing an interaction with a title property</li>
+      </ol>
+    </p>
+  </div>
+
+  <!-- Map div -->
+  <div id="map" style="width:600px; height:400px;"></div>
+
+  <div class="options" >
+    <div class="info"></div>
+  </div>
+
+  <script type="text/javascript">
+
+    //  Vector layer
+    var vector = new ol.layer.Vector( { source: new ol.source.Vector() })
+
+    // The map
+    var map = new ol.Map({
+      target: 'map',
+      view: new ol.View({
+        zoom: 14,
+        center: [270701, 6247637]
+      }),
+      layers: [
+        new ol.layer.Tile({ source: new ol.source.OSM() }),
+        vector
+      ]
+    });
+    var note = new ol.control.Notification();
+    map.addControl(note)
+
+    // Add the editbar
+    var select = new ol.interaction.Select({ title: 'Sélection'});
+    select.set('title', 'Sélection');
+    var edit = new ol.control.EditBar({
+      // Translate interaction title / label 
+      interactions: { 
+        // Use our own interaction > set the title inside
+        Select: select,
+        // Define button title
+        DrawLine: 'Ligne',
+        // Drawregular with label
+        DrawRegular: { title: 'Forme régullière', ptsLabel: 'pts', circleLabel: 'cercle' }
+      },
+      source: vector.getSource() 
+    });
+    map.addControl(edit);
+
+    // Add a tooltip
+    var tooltip = new ol.Overlay.Tooltip();
+    map.addOverlay(tooltip);
+
+    edit.getInteraction('Select').on('select', function(e){
+      if (this.getFeatures().getLength()) {
+        tooltip.setInfo('Drag points on features to edit...');
+      }
+      else tooltip.setInfo();
+    });
+    edit.getInteraction('Select').on('change:active', function(e){
+      tooltip.setInfo('');
+    });
+    edit.getInteraction('ModifySelect').on('modifystart', function(e){
+      if (e.features.length===1) tooltip.setFeature(e.features[0]);
+    });
+    edit.getInteraction('ModifySelect').on('modifyend', function(e){
+      tooltip.setFeature();
+    });
+    edit.getInteraction('DrawPoint').on('change:active', function(e){
+      tooltip.setInfo(e.oldValue ? '' : 'Click map to place a point...');
+    });
+    edit.getInteraction('DrawLine').on(['change:active','drawend'], function(e){
+      tooltip.setFeature();
+      tooltip.setInfo(e.oldValue ? '' : 'Click map to start drawing line...');
+    });
+    edit.getInteraction('DrawLine').on('drawstart', function(e){
+      tooltip.setFeature(e.feature);
+      tooltip.setInfo('Click to continue drawing line...');
+    });
+    edit.getInteraction('DrawPolygon').on('drawstart', function(e){
+      tooltip.setFeature(e.feature);
+      tooltip.setInfo('Click to continue drawing shape...');
+    });
+    edit.getInteraction('DrawPolygon').on(['change:active','drawend'], function(e){
+      tooltip.setFeature();
+      tooltip.setInfo(e.oldValue ? '' : 'Click map to start drawing shape...');
+    });
+    edit.getInteraction('DrawHole').on('drawstart', function(e){
+      tooltip.setFeature(e.feature);
+      tooltip.setInfo('Click to continue drawing hole...');
+    });
+    edit.getInteraction('DrawHole').on(['change:active','drawend'], function(e){
+      tooltip.setFeature();
+      tooltip.setInfo(e.oldValue ? '' : 'Click polygon to start drawing hole...');
+    });
+    edit.getInteraction('DrawRegular').on('drawstart', function(e){
+      tooltip.setFeature(e.feature);
+      tooltip.setInfo('Move and click map to finish drawing...');
+    });
+    edit.getInteraction('DrawRegular').on(['change:active','drawend'], function(e){
+      tooltip.setFeature();
+      tooltip.setInfo(e.oldValue ? '' : 'Click map to start drawing shape...');
+    });
+
+
+    edit.on('info', function(e){
+      console.log(e)
+      note.show('<i class="fa fa-info-circle"></i> '+e.features.getLength()+' feature(s) selected');
+    });
+
+  </script>
+
+</body>
+</html>

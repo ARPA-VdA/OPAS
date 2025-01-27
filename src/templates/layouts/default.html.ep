@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="it" translate="no">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="notranslate">
+    <meta name="googlebot" content="notranslate">
+
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="OPAS - Open Air System: Bobo web application">
+    <meta name="author" content="Ecometer">
+
+    <!-- icons all browsers -->
+    <link rel="apple-touch-icon" sizes="180x180" href="<%=helperGetFileVersion($portal_favicon.'/apple-touch-icon.png')%>">
+    <link rel="icon" id="icon32" type="image/png" sizes="32x32" href="<%=helperGetFileVersion($portal_favicon.'/favicon-32x32.png')%>">
+    <link rel="icon" id="icon16" type="image/png" sizes="16x16" href="<%=helperGetFileVersion($portal_favicon.'/favicon-16x16.png')%>">
+    <link rel="manifest"  href="<%=helperGetFileVersion($portal_favicon.'/site.webmanifest')%>">
+    <link rel="mask-icon" href="<%=helperGetFileVersion($portal_favicon.'/safari-pinned-tab.svg')%>" color="#5bbad5">
+    <link rel="shortcut icon" href="<%=helperGetFileVersion($portal_favicon.'/favicon.ico')%>">
+
+    <!-- theme configuration -->
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="<%=helperGetFileVersion($portal_favicon.'/browserconfig.xml')%>">
+    <meta name="theme-color" content="#ffffff">
+
+    <title><%= $user->{portal_name} %> - <%= title %></title>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="<%=url_for('/node_modules/jquery/jquery-3.2.1.min.js')%>"></script>
+
+    <!-- Jquery UI -->
+    <script src="<%=url_for('/node_modules/jqueryui/jquery-ui.min.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/jqueryui/jquery-ui.min.css')%>" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="<%=url_for('/node_modules/popper/popper.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/bootstrap/dist/js/bootstrap.min.js')%>"></script>
+
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="<%=url_for('/js/perfect-scrollbar.jquery.min.js')%>"></script>
+    <!--Wave Effects -->
+    <script src="<%=url_for('/js/waves.js')%>"></script>
+    <!--Menu sidebar -->
+    <script src="<%=url_for('/js/sidebarmenu.js')%>"></script>
+    <!-- jQuery bootstrap select -->
+    <script src="<%=url_for('/node_modules/bootstrap-select/js/bootstrap-select.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/bootstrap-select/css/bootstrap-select.css')%>" rel="stylesheet" type="text/css">
+    <!-- jQuery ddslick -->
+    <script src="<%=url_for('/node_modules/jquery.ddslick.min.js')%>"></script>
+
+    <!--Stickey kit -->
+    <script src="<%=url_for('/node_modules/sticky-kit-master/dist/sticky-kit.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/sparkline/jquery.sparkline.min.js')%>"></script>
+
+    <!-- Validate plugin -->
+    <script src="<%=url_for('/node_modules/jquery-validate/jquery.validate.js')%>"></script>
+    <script src="<%=url_for('/node_modules/jquery-validate/additional-methods.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/jquery-validate/localization/messages_it.min.js')%>"></script>
+
+    <!-- Sweet alert -->
+    <link  href="<%=url_for('/node_modules/sweetalert/sweetalert.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/sweetalert/sweetalert.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/sweetalert/jquery.sweet-alert.custom.js')%>"></script>
+
+    <!-- toast notification -->
+    <!-- https://kamranahmed.info/toast -->
+    <link  href="<%=url_for('/node_modules/toast-master/css/jquery.toast.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/toast-master/js/jquery.toast.js')%>"></script>
+
+    <!-- Select2 -->
+    <link  href="<%=url_for('/node_modules/select2/dist/css/select2.min.css')%>" rel="stylesheet" type="text/css">
+    <script src="<%=url_for('/node_modules/select2/dist/js/select2.full.min.js')%>" type="text/javascript"></script>
+
+    <!-- Moment js -->
+    <script src="<%=url_for('/node_modules/moment/moment-with-locales.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment/moment-timezone-with-data.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/moment-holiday.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/locale/easter.js')%>"></script>
+    <script src="<%=url_for('/node_modules/moment-holiday-master/locale/italy.js')%>"></script>
+
+    <!-- Datepicker plugin -->
+    <link  href="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.min.css')%>" rel="stylesheet" type="text/css" />
+    <script src="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/bootstrap-datepicker/bootstrap-datepicker.it.js')%>"></script>
+
+    <!-- Clockpicker plugin -->
+    <link  href="<%=url_for('/node_modules/clockpicker/dist/jquery-clockpicker.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/clockpicker/dist/jquery-clockpicker.min.js')%>"></script>
+
+    <!-- Daterange picker plugin -->
+    <link  href="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/bootstrap-daterangepicker/daterangepicker.js')%>"></script>
+
+    <!-- Openlayer plugin -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/openlayers/v8.2.0-dist/ol.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/openlayers/v8.2.0-dist/ol.js'))%>"></script>
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/openlayers-ext/dist/ol-ext.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/openlayers-ext/dist/ol-ext.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/proj4/dist/proj4.js'))%>"></script>
+
+    <!-- Jquery color picker http://jscolor.com/examples/ -->
+    <script src="<%=url_for('/node_modules/jscolor.js')%>"></script>
+
+    <!-- Switchery plugin -->
+    <link  href="<%=url_for('/node_modules/switchery/dist/switchery.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/switchery/dist/switchery.min.js')%>"></script>
+
+    <!-- Dropzone plugin -->
+    <link  href="<%=url_for('/node_modules/dropzone-master/dist-v5.9.2/dropzone.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/dropzone-master/dist-v5.9.2/dropzone.js')%>"></script>
+
+    <!-- Popup plugin -->
+    <link  href="<%=url_for('/node_modules/Magnific-Popup-master/dist/magnific-popup.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/Magnific-Popup-master/dist/jquery.magnific-popup.min.js')%>"></script>
+    <script src="<%=url_for('/node_modules/Magnific-Popup-master/dist/jquery.magnific-popup-init.js')%>"></script>
+
+    <!-- JSTree plugin -->
+    <!-- https://www.jstree.com/demo/ & https://github.com/vakata/jstree -->
+    <link href="<%=url_for('/node_modules/jstree/themes/default/style.min.css')%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/jstree/jstree.js')%>"></script>
+
+    <!-- SheetJS Plugin -->
+    <script lang="text/javascript" src="<%=url_for('/node_modules/sheetjs-master/dist/xlsx.full.min.js')%>"></script>
+
+    <!-- Tabulator plugin -->
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator.min.css'))%>" rel="stylesheet">
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_simple.min.css'))%>" rel="stylesheet">
+    <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/tabulator.js'))%>"></script>
+
+
+    <link href="<%=url_for('/node_modules/DataTables-v2.0.7/datatables.min.css')%>" rel="stylesheet">
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v2.0.7/datatables.min.js')%>"></script>
+
+
+    <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/datetime-moment.js')%>"></script>
+
+    <!-- bootstrap datetimepicker -->
+    <script src="<%=url_for('/node_modules/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js')%>"></script>
+    <link href="<%=url_for('/node_modules/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css')%>" rel="stylesheet">
+
+    <!-- Highstock -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/map.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/data.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/annotations.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/accessibility.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/exporting.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/offline-exporting.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/export-data.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost-canvas.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost.js'))%>"></script>
+
+
+    <!-- Calendar Plugin -->
+    <script src="<%=url_for('/node_modules/fullcalendar/lib/main.js')%>"></script>
+    <script src="<%=url_for('/node_modules/fullcalendar/lib/locales/it.js')%>"></script>
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/fullcalendar/lib/main.css'))%>" rel="stylesheet">
+
+    <!-- jquery file download -->
+    <script type="text/javascript" src="<%= url_for('/node_modules/filedownload/jquery.fileDownload.js')%>"></script>
+
+    <!-- bt-switch -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/bootstrap-switch/bootstrap-switch.min.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/bootstrap-switch/bootstrap-switch.min.js')%>"></script>
+
+    <!-- bt4-toggle -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/bootstrap4-toggle/js/bootstrap4-toggle.min.js')%>"></script>
+
+    <!-- Form Wizard -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/wizard/steps.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/wizard/jquery.steps.js')%>"></script>
+
+    <!-- Summernote Editor -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/summernote/dist/summernote-bs4.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/summernote/dist/summernote-bs4.js')%>"></script>
+    <script src="<%=url_for('/node_modules/summernote/dist/lang/summernote-it-IT.min.js')%>"></script>
+
+    <!-- multi-select -->
+    <script src="<%=url_for('/node_modules/multi-select/quicksearch.js')%>"></script>
+    <script src="<%=url_for('/node_modules/multi-select/multi-select.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/multi-select/multi-select.css')%>" rel="stylesheet" />
+
+    <!-- multi-select -->
+    <script src="<%=url_for('/node_modules/multiselect-master/js/multiselect.js')%>"></script>
+
+    <!-- timeline css -->
+    <link  href="<%=url_for(helperGetFileVersion('/css/timeline-vertical-horizontal.css'))%>" rel="stylesheet">
+
+    <!-- ion rangeslider -->
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/ion-rangeslider/css/ion.rangeSlider.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/ion-rangeslider/js/ion-rangeSlider/ion.rangeSlider.min.js')%>"></script>
+
+    <script src="<%=url_for('/node_modules/canvg-v3_0_10.js')%>"></script>
+
+    <!-- jsPDF -->
+    <script type="text/javascript" src="<%=url_for('/node_modules/html2canvas.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/DOMPurify-v2_3_6/dist/purify.min.js')%>"></script>
+    <script type="text/javascript" src="<%=url_for('/node_modules/jsPDF-v2_5_1/dist/jspdf.umd.js')%>"></script>
+
+    <!-- jsonEditor https://github.com/josdejong/jsoneditor -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/jsoneditor/jsoneditor.min.js'))%>"></script>
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/jsoneditor/jsoneditor.min.css'))%>" rel="stylesheet">
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/jsoneditor/darktheme.css'))%>" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <!-- <script src="https://kit.fontawesome.com/XXXXXXXX.js" crossorigin="anonymous"></script> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Morris JS -->
+    <link href="<%=url_for(helperGetFileVersion('/node_modules/morrisjs/morris.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/raphael/raphael-min.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/morrisjs/morris.js'))%>"></script>
+
+    <!-- Peity JS -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/peity/jquery.peity.min.js'))%>"></script>
+
+    <!-- Raty JS - rating -->
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/raty/jquery.raty.js'))%>"></script>
+
+    <!-- Image picker -->
+    <script src="<%=url_for('/node_modules/image-picker/image-picker.js')%>"></script>
+    <link  href="<%=url_for('/node_modules/image-picker/image-picker.css')%>" rel="stylesheet">
+
+    <!--Custom CSS & JavaScript -->
+    <link  href="<%=url_for(helperGetFileVersion('/css/style-no-fa.css'))%>" rel="stylesheet">
+    <script src="<%=url_for(helperGetFileVersion('/js/custom.min.js'))%>"></script>
+    <link href="<%=url_for(helperGetFileVersion('/css/stylish-tooltip.css'))%>" rel="stylesheet">
+
+    <!-- Bobo default CSS & JS -->
+    <link  href="<%=url_for(helperGetFileVersion('/bobo-css/default.css'))%>" rel="stylesheet">
+    % if( defined $user->{portal_style} ){
+        <link  href="<%=url_for(helperGetFileVersion( $user->{portal_style} ))%>" rel="stylesheet">
+    % }
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/default.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/storage.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/notifier.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/global.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/globalDropzone.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/jsoneditorVariables.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/bobo-js/include/common/openlayerFunctions.js'))%>"></script>
+
+</head>
+
+ <!-- page script -->
+<script type="text/javascript">
+    // tell the user if you are in development or production mode
+    var app_mode = '<%= $self->app->mode %>';
+
+    // push group-page grants into jquery
+    var insert_grant = parseInt('<%= $user_grants->{user_insert} %>');
+    var update_grant = parseInt('<%= $user_grants->{user_update} %>');
+    var delete_grant = parseInt('<%= $user_grants->{user_delete} %>');
+
+    var footer = '<%= $user->{portal_name} %>';
+    var company_web = '<%= $user->{company_web} %>';
+    var portal_region = parseInt('<%= $user->{portal_region} %>');
+    console.log('REGIONE '+ portal_region);
+    if(isNaN(portal_region)){
+        portal_region = 0;
+    }
+</script>
+
+<body class="skin-default fixed-layout">
+    <!-- ============================================================== -->
+    <!-- Preloader - style you can find in spinners.css -->
+    <!-- ============================================================== -->
+    <div class="preloader">
+        <div class="loader">
+            <div class="loader__figure"></div>
+            <p class="loader__label">In caricamento...</p>
+        </div>
+    </div>
+    <!-- Preloader per le funzioni interne al portale -->
+    <!-- <div class="inner-preloader"></div> -->
+    <div class="inner-preloader">
+        <span class="fa-stack fa-6x">
+            <i class="fa-thin fa-circle-dashed fa-stack-2x fa-flip text-warning" style="--fa-animation-duration: 3s; opacity: 0.8; text-shadow: 2px 2px 4px #ccc;"></i>
+            <i id="transporter" class="" style="--fa-animation-duration: 6s; --fa-flip-x: 0; --fa-beat-scale: 2.0; --fa-secondary-opacity: 1.0; --fa-primary-color: #2293b5; --fa-secondary-color: #dc5a08; text-shadow: 2px 2px 4px #bababa;"></i>
+        </span>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Main wrapper - style you can find in pages.scss -->
+    <!-- ============================================================== -->
+    <div id="main-wrapper">
+        <!-- ============================================================== -->
+        <!-- Topbar header - style you can find in pages.scss -->
+        <!-- ============================================================== -->
+        <header class="topbar">
+            <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                <!-- ============================================================== -->
+                <!-- Logo -->
+                <!-- ============================================================== -->
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="<%=url_for('/')%>">
+                        <span><img src="<%=url_for(helperGetFileVersion($user->{'portal_logo'}))%>" class="dark-logo" alt="homepage" /></span>
+                        <b><img src="<%=url_for(helperGetFileVersion($user->{'portal_thumb_logo'}))%>" class="dark-logo" alt="homepage" /></b>
+                    </a>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Logo -->
+                <!-- ============================================================== -->
+                <div class="navbar-collapse">
+                    <!-- ============================================================== -->
+                    <!-- toggle and nav items -->
+                    <!-- ============================================================== -->
+                    <ul class="navbar-nav mr-auto">
+                        <!-- This is  -->
+                        <li class="nav-item"> <a class="nav-link nav-toggler d-block d-md-none waves-effect waves-dark" href="javascript:void(0)"><i class="ti-menu"></i></a> </li>
+                        <li class="nav-item"> <a class="nav-link sidebartoggler d-none d-lg-block d-md-block waves-effect waves-dark" href="javascript:void(0)"><i class="icon-menu"></i></a> </li>
+                        <!-- ============================================================== -->
+                        <!-- Search -->
+                        <!-- ============================================================== -->
+                        <!-- <li class="nav-item">
+                            <form class="app-search d-none d-md-block d-lg-block">
+                                <input type="text" class="form-control" placeholder="Search & enter">
+                            </form>
+                        </li> -->
+                        <!-- ============================================================== -->
+                        <!-- MAIN TITLE -->
+                        <!-- ============================================================== -->
+                        <li class="nav-item portal-title">
+                            <h1>Portale <strong><%= $user->{'portal_name'} %></strong></h1>
+                        </li>
+                    </ul>
+                    <!-- ============================================================== -->
+                    <!-- User profile and search -->
+                    <!-- ============================================================== -->
+                    <ul class="navbar-nav my-lg-0">
+                        <!-- ============================================================== -->
+                        <!-- mega menu -->
+                        <!-- ============================================================== -->
+                        <li class="nav-item dropdown mega-dropdown"> <a class="nav-link dropdown-toggle waves-effect waves-dark" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="icon-info"></i></a>
+                            <div class="dropdown-menu animated bounceInDown">
+                                <ul class="mega-dropdown-menu row">
+                                    <li class="col-lg-3 col-xlg-2">
+                                        <h4 class="m-b-20">Il progetto</h4>
+                                        <!-- CAROUSEL -->
+                                        <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+                                            <div class="carousel-inner" role="listbox">
+                                                % my $class_active = 'active';
+                                                % foreach my $carousel_img (@{$user->{'portal_carousel'}}) {
+                                                    <div class="carousel-item <%= $class_active %>">
+                                                        <div class="container"> <img class="d-block img-fluid" src="<%=url_for($carousel_img)%>" alt="Immagine slideshow"></div>
+                                                    </div>
+                                                %   $class_active = '';
+                                                % }
+                                            </div>
+                                            <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev"> <span class="carousel-control-prev-icon" aria-hidden="true"></span> <span class="sr-only">Previous</span> </a>
+                                            <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next"> <span class="carousel-control-next-icon" aria-hidden="true"></span> <span class="sr-only">Next</span> </a>
+                                        </div>
+                                        <!-- End CAROUSEL -->
+                                    </li>
+                                    <li class="col-lg-5">
+                                        <h4 class="m-b-20">Portale <%= $user->{'portal_name'} %></h4>
+                                        <p><%= $user->{'portal_desc'} %></p>
+                                    </li>
+                                    %= include 'include/common/portal-desc-static';
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <!-- ============================================================== -->
+        <!-- End Topbar header -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <aside class="left-sidebar">
+            <!-- Sidebar scroll-->
+            <div class="scroll-sidebar">
+                <!-- User Profile-->
+                <div class="user-profile">
+                    <div class="user-pro-body">
+
+                        <div><img src="<%=url_for(helperGetFileVersion($user->{'user_avatar_thumb'}))%>" alt="user-img" class="img-circle"></div>
+                        <div class="dropdown">
+                            <a href="javascript:void(0)" class="dropdown-toggle u-dropdown link hide-menu" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><%= $user->{user_fullname} %><span class="caret"></span></a>
+                            <div class="dropdown-menu animated flipInY">
+                            <% foreach my $usernav_element (@{$usernav}) { %>
+                                <!-- text-->
+                                <a href="<%= $usernav_element->{'page_href'} %>" class="dropdown-item <%= $usernav_element->{'menu_page_class'} %>"><i class="<%= $usernav_element->{'menu_page_icon'} %>"></i> <%= $usernav_element->{'page_name'} %></a>
+                            <%  } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sidebar navigation-->
+                <nav class="sidebar-nav">
+                    <ul id="sidebarnav">
+                    <%
+                        my $last_level = 2;
+                        my $prev_menu_element;
+
+                        foreach my $menu_element (@{$sidebar_usermenu}) {
+                            # Initialization of variables
+                            my $menu_page_class = defined($menu_element->{'menu_page_active'}) ? $menu_element->{'menu_page_active'}  .' '. $menu_element->{'menu_page_class'} : $menu_element->{'menu_page_class'};
+                            my $aria_expanded = 'false';
+                            my $collapse = 'collapse';
+                            my $blank = '';
+                            my $page_href = 'javascript:void(0)';
+                            my $close_li  = 0;
+
+                            if( $menu_element->{'menu_page_expanded'} ){
+                                $aria_expanded = '';
+                            }
+
+                            # If element has a defined page_href, then it cannot be a dropdown menu -> close li element
+                            if(defined($menu_element->{'page_href'})){
+                                $page_href = $menu_element->{'page_href'};
+                                $close_li= 1;
+                            }
+
+                            if( $menu_element->{'menu_page_blank'} ){
+                                $blank = 'target=_blank';
+                            }
+
+                            # if active the menu is open -> class = collapse in
+                            if(defined($prev_menu_element) && defined($prev_menu_element->{'menu_page_active'})){
+                                $collapse= 'collapse in';
+                            }
+
+                            if ($menu_element->{'menu_page_level'} == $last_level) {
+                            # Same level -> add new element to the list
+                    %>
+                                <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                    <a class="<%= $menu_page_class %>" href="<%= $page_href  %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> >
+                    <%          if ($menu_element->{'menu_page_level'} > 2) { %>
+                                        <%= $menu_element->{'page_name'} %>
+                    <%          } else { %>
+                                        <i class="<%= $menu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $menu_element->{'page_name'} %></span>
+                    <%          } %>
+                    <%          if ($menu_element->{'menu_page_beta'}) { %>
+                                        <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%          } %>
+                                    </a>
+                    <%          if ($close_li){ %>
+                                <!-- Close </li> because element cannot be a dropdown menu -->
+                                </li>
+                    <%          }
+                            } elsif ($menu_element->{'menu_page_level'} > $last_level){
+                                # higher level -> add an inner list
+                    %>
+                                <ul aria-expanded="false" class="<%= $collapse %>">
+                                    <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                        <a class="<%= $menu_page_class %>" href="<%= $page_href %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> ><%= $menu_element->{'page_name'} %>
+                    <%              if ($menu_element->{'menu_page_beta'}) { %>
+                                            <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%              } %>
+                                        </a>
+                    <%          if ($close_li){ %>
+                                    </li>
+                    <%          }
+                            } else {
+                            # lower level -> close inner list and add an element at the right level
+                                for(my $i= $last_level; $i > $menu_element->{'menu_page_level'}; $i--){
+                    %>
+                                    </ul>
+                                </li>
+                    <%          } %>
+
+                                <li class="<%= $menu_element->{'menu_page_active'} %>">
+                                    <a class="<%= $menu_page_class %>" href="<%= $page_href  %>" aria-expanded="<%= $aria_expanded %>" <%= $blank %> >
+
+                    <%          if ($menu_element->{'menu_page_level'} > 2) { %>
+                                        <%= $menu_element->{'page_name'} %>
+                    <%          } else { %>
+                                        <i class="<%= $menu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $menu_element->{'page_name'} %></span>
+                    <%          } %>
+
+                    <%          if ($menu_element->{'menu_page_beta'}) { %>
+                                        <span class="badge badge-pill badge-info text-white ml-auto pull-right">beta</span>
+                    <%          } %>
+                                    </a>
+                    <%          if ($close_li){ %>
+                                </li>
+                    <%          }
+                            }
+
+                            $last_level = $menu_element->{'menu_page_level'};
+                            $prev_menu_element = $menu_element;
+                        }
+
+                        for(; $last_level >= 3; $last_level--){
+                    %>
+                            </ul>
+                    <%  } %>
+                        <li class="nav-small-cap"></li>
+
+                    <%  foreach my $secondmenu_element (@{$sidebar_secondmenu}) { %>
+                        <li class="no-mb"> <a class="<%= $secondmenu_element->{'menu_page_class'} %>" href="<%= $secondmenu_element->{'page_href'} %>" aria-expanded="false"><i class="<%= $secondmenu_element->{'menu_page_icon'} %>"></i><span class="hide-menu"><%= $secondmenu_element->{'page_name'} %></span></a></li>
+                    <% } %>
+                    </ul>
+                </nav>
+                <!-- End Sidebar navigation -->
+            </div>
+            <!-- End Sidebar scroll-->
+
+            <!-- Start shortcut icons -->
+            <ul id="short-icons">
+                % if(defined $shortcuts && scalar @{$shortcuts} > 0){
+                    % my @icons = @{$shortcuts};
+                    <li>
+                        <a href="<%= $icons[0]->{'page_href'} %>" class="text-primary" data-toggle="tooltip" data-original-title="<%= $icons[0]->{'page_name'} %>"><i class="<%= $icons[0]->{'page_shortcut_icon'} %>"></i></a>
+                    </li>
+                    <li>
+                        <a href="<%= $icons[1]->{'page_href'} %>" class="text-info" data-toggle="tooltip" data-original-title="<%= $icons[1]->{'page_name'} %>"><i class="<%= $icons[1]->{'page_shortcut_icon'} %>"></i></a>
+                    </li>
+                    <li>
+                        <a href="<%= $icons[2]->{'page_href'} %>" class="text-success" data-toggle="tooltip" data-original-title="<%= $icons[2]->{'page_name'} %>"><i class="<%= $icons[2]->{'page_shortcut_icon'} %>"></i></a>
+                    </li>
+                    <li>
+                        <a href="<%= $icons[3]->{'page_href'} %>" class="text-warning" data-toggle="tooltip" data-original-title="<%= $icons[3]->{'page_name'} %>"><i class="<%= $icons[3]->{'page_shortcut_icon'} %>"></i></a>
+                    </li>
+                % }
+            </ul>
+            <!-- End shortcut icons -->
+
+        </aside>
+        <!-- ============================================================== -->
+        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+            <!-- ============================================================== -->
+            <!-- Container fluid  -->
+            <!-- ============================================================== -->
+            <div class="container-fluid">
+                <!-- ============================================================== -->
+                <!-- Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <div class="row page-titles">
+                    <div class="col-md-5 align-self-center">
+                        <%  if(! defined( $breadcrumb) ){ %>
+                            <h4 class="text-themecolor"><i class="fa-regular fa-globe"></i> Homepage <a href="/help" class="go-to-help" data-toggle="tooltip" data-original-title="Accedi alla documentazione" target="_blank"><i class="ti-help-alt"></i></a></h4>
+                        <%  } else { %>
+                            <!-- recupero l'url della pagina per la documentazione -->
+                            <% my $page_href = @{$breadcrumb}[-1]->{'page_href'}; %>
+                            <h4 class="text-themecolor">
+                                <i class="<%= @{$breadcrumb}[-1]->{'page_shortcut_icon'} %>"></i>
+                                <%= @{$breadcrumb}[-1]->{'page_name'} %>
+                                <%  if ( lc $self->app->mode eq 'development' ) { %>
+                                    (user grants: <%= $user_grants->{total_user_grants}%>)
+                                <% } %>
+
+                                <a href="/help<%= $page_href %>" class="go-to-help" data-toggle="tooltip" data-original-title="Accedi alla documentazione" target="_blank"><i class="ti-help-alt"></i></a>
+                            </h4>
+                        <%  } %>
+                    </div>
+                    <div class="col-md-7 align-self-center text-right">
+                        <div class="d-flex justify-content-end align-items-center">
+                            <ol class="breadcrumb">
+                            <%  if(! defined( $breadcrumb) ){ %>
+                                <li class="breadcrumb-item active">Homepage</li>
+                            <%  } else { %>
+                                <li class="breadcrumb-item"><a href="/">Homepage</a></li>
+                            <%  }
+
+                                foreach my $breadcrumb_element (@{$breadcrumb}) {
+                                    my $page_href = $breadcrumb_element->{'page_href'};
+                                    if($breadcrumb_element->{'menu_page_active'} eq 'active'){
+                                        $page_href = undef;
+                                    }
+                            %>
+                                <li class="breadcrumb-item <%= $breadcrumb_element->{'menu_page_active'} %>">
+                            <%      if(defined ($page_href)){ %>
+                                    <a href="<%= $page_href %>"><%= $breadcrumb_element->{'page_name'} %></a>
+                            <%      } else { %>
+                                    <%= $breadcrumb_element->{'page_name'} %>
+                            <%      } %>
+                                </li>
+                            <%  } %>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Bread crumb and right sidebar toggle -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+                <div id="main-page-content">
+                    <%= content %>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- footer -->
+        <!-- ============================================================== -->
+        % my $tm = Time::Moment->now;
+
+        <footer class="footer">
+            © Copyright <%= $tm->strftime("%Y"); %> <%= $user->{'portal_footer_text'} %> - developed by <a href="http://www.ecometer.it/" target="_blank" title="www.ecometer.it">Ecometer S.n.c</a>
+        </footer>
+        <!-- ============================================================== -->
+        <!-- End footer -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+
+</body>
+
+</html>

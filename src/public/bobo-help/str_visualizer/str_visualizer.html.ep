@@ -1,0 +1,102 @@
+<h1 id="strumenti---visualizer">VISUALIZER</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Strumenti&quot; posta nel menu principale di sinistra e cliccare sull'elemento &quot;Visualizer&quot;.</p>
+<h3>
+    > Strumenti<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Visualizer</span>
+</h3>
+<p>Verrà visualizzata la schermata principale dello strumento Visualizer.</p>
+<p><img src="/bobo-help/str_visualizer/img/[20]_homepage.png" alt="20" title="Visualizer"></p>
+<ol>
+<li>
+<p><u>Menu di Visualizer</u>: vedi &quot;I Menu di Visualizer&quot;;</p>
+</li>
+<li>
+<p>Pulsante &quot;<u>Apri impostazioni Visualizer</u>&quot;: si viene reindirizzati alla pagina di &quot;Avanzate - Visualizer&quot;;</p>
+</li>
+<li>
+<p><u>Schermata di visualizzazione grafici e tabelle</u>: in questa sezione vengono visualizzati grafici e tabelle della macro selezionata tra quelle disponibili:</p>
+<p><img src="/bobo-help/str_visualizer/img/[70]_pannelli.png" alt="70" title="Menu principale"></p>
+</li>
+<li>
+<p>Pulsante &quot;<u>TORNA SU</u>&quot;: cliccando questo pulsante, quando la pagina è abbastanza lunga, sarà possibile ritornare all'inizio della stessa;</p>
+</li>
+</ol>
+<h2 id="i-menu-di-visualizer">I Menu di Visualizer</h2>
+<h3 id="menu-principale---visualizer">Menu Principale - Visualizer</h3>
+<p><img src="/bobo-help/str_visualizer/img/[30]_menu_princ.png" alt="30" title="Menu principale"></p>
+<ol>
+<li>
+<p>Torna al portale;</p>
+</li>
+<li>
+<p>Torna alla pagina iniziale di Visualizer;</p>
+</li>
+<li>
+<p>Accedi alla documentazione (questa pagina);</p>
+</li>
+<li>
+<p><strong>Strumenti</strong></p>
+<p><img src="/bobo-help/str_visualizer/img/[31]_menu_1_strum.png" alt="31" title="Strumenti"></p>
+<p>Tutte le impostazioni che si andranno a modificare in questa voce (&quot;Opzioni&quot;) possono essere applicate in maniera temporanea (pulsante &quot;Applica in locale&quot;) o salvate nel database (pulsante &quot;Salva nel DB&quot;) in modo tale da ritrovarle ad un successivo accesso alla sezione. Le impostazioni sono per utente e quindi le modifiche di uno non andranno ad influenzare gli altri utenti.</p>
+<ul>
+<li>
+<p><u>Generali</u>: tramite il seguente pulsante, disattivo di default, è possibile modificare la visualizzazione delle finestre, Se attivo, i vari tab verranno visualizzati tutti sotto forma di box singoli;</p>
+<p><img src="/bobo-help/str_visualizer/img/[32]_opz_generali.png" alt="32" title="Generali"></p>
+</li>
+<li>
+<p><u>Grafici</u>: in questa sezione è possibile personalizzare il layout dei grafici che verranno generati su Visualizer;</p>
+<p><img src="/bobo-help/str_visualizer/img/[33]_opz_grafici.png" alt="33" title="Grafici"></p>
+</li>
+<li>
+<p><u>Tabelle</u>: tramite il seguente pulsante, attivo di default, è possibile disabilitare i codici se nella macro sono caricati più di 5 parametri;</p>
+<p><img src="/bobo-help/str_visualizer/img/[34]_opz_tabelle.png" alt="34" title="Tabelle"></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Dati</strong>: consente di apportare modifiche sul tipo di dati da visualizzare;</p>
+<p><img src="/bobo-help/str_visualizer/img/[40]_dati.png" alt="40" title="Dati"></p>
+<ul>
+<li>
+<p><u>Copertura</u>: è possibile filtrare i dati in base alla percentuale di copertura minima nell'unità temporale scelta (oraria, giornaliera, ecc.…). Questo filtro può essere applicato indicando una percentuale specifica e cliccando sul pulsante &quot;Conferma&quot;, oppure si può cliccare direttamente uno dei due pulsanti rossi se si desidera applicare la percentuale dello 0% o del 75%. Premere il pulsante &quot;Chiudi&quot; per tornare alla schermata principale.</p>
+<p><img src="/bobo-help/str_visualizer/img/[41]_dati_perc.png" alt="41" title="Modifica percentuale copertura"></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Validità</strong>: questa voce del menu principale permette di filtrare i dati visualizzati per codice di validità. È possibile filtrare i dati tramite la selezione di uno dei 3 pulsanti di minore-uguale (&lt;=), uguale (=) e maggiore-uguale (&gt;=) in combinazione con il codice di validità.</p>
+<p>Ad esempio, nell'immagine seguente, saranno visualizzati i dati con codice di validità maggiore o uguale a 0. Inoltre, è possibile visualizzare tutti i dati indipendentemente dal codice di validità cliccando su &quot;Tutti i dati&quot;. Per rendere effettive le modifiche su grafici e tabelle è necessario cliccare il pulsante &quot;Aggiorna&quot; nel menu in alto.</p>
+<p><img src="/bobo-help/str_visualizer/img/[50]_valid.png" alt="50" title="Validità"></p>
+</li>
+</ol>
+<h3 id="menu-secondario---visualizer">Menu Secondario - Visualizer</h3>
+<p><img src="/bobo-help/str_visualizer/img/[60]_menu_sec.png" alt="60" title="Menu secondario"></p>
+<ol>
+<li>
+<p>Seleziona macro: seleziona una delle macro presenti nel menu a tendina;</p>
+<p><img src="/bobo-help/str_visualizer/img/[61]_menu_2_macro.png" alt="61" title="Seleziona macro"></p>
+<p>Una volta selezionata la macro, verranno generati i grafici e le tabelle corrispondenti, come visto sopra.</p>
+<p>Nel dettaglio:</p>
+<p><img src="/bobo-help/str_visualizer/img/[71]_pannelli-grafico.png" alt="71" title="Dettaglio grafici e tabelle"></p>
+<ol>
+<li>
+<p>Legenda/Filtro: è possibile mostrare/nascondere le varie funzioni cliccando sui singoli elementi della legenda/filtro: si noterà che, se deselezionato, l'elemento non sarà visibile e il relativo filtro sarà opaco;</p>
+</li>
+<li>
+<p>Pulsanti del pannello:</p>
+<p><img src="/bobo-help/str_visualizer/img/[72]_puls_pannelli.png" width="500px" height="110px"></img></p>
+<p>          a. <u>Formato grafico</u>: visualizza il grafico dei dati;</p>
+<p>          b. <u>Formato tabella</u>: visualizza la tabella dei dati;</p>
+<p>          c. <u>Tutti i dati (anche NON validi)</u>: vengono visualizzati TUTTI i dati nel grafico/tabella, indipendentemente dal fatto che siano validi oppure no;</p>
+<p>          d. <u>Modifica periodo temporale</u>: selezionare un arco temporale dal menu a tendina e premere &quot;VAI&quot;;</p>
+<p><img src="/bobo-help/str_visualizer/img/[73]_arco_temp.png" alt="73" title="Arco temporale"></p>
+<p>          e. <u>Opzioni grafico</u>: selezionare una tipologia di grafico dal menu a tendina e premere &quot;VAI&quot;;</p>
+<p>                    <img src="/bobo-help/str_visualizer/img/[74]_opz_grafico.png" alt="74" title="Opzioni grafico"></p>
+<p>          f. <u>Scarica grafico</u>:  verrà effettuato il download del grafico in formato &quot;.png&quot;;</p>
+<p>          g. <u>Scarica CSV</u>:  verrà effettuato il download dei dati in formato &quot;.csv&quot;;</p>
+<p>          h. <u>Informazioni</u>: vengono visualizzate le informazioni principali del pannello:</p>
+<p>                    <img src="/bobo-help/str_visualizer/img/[75]_info.png" alt="75" title="Opzioni grafico"></p>
+</li>
+</ol>
+</li>
+</ol>

@@ -1,0 +1,951 @@
+% layout 'default';
+% title 'Admin';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utente/admin_permissions.js'))%>" type="text/javascript"></script>
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utente/admin_settings.js'))%>" type="text/javascript"></script>
+
+<script>
+    var system_admin = parseInt('<%= $user->{user_sys_admin} %>');
+</script>
+<div class="row">
+    <div class="col-md-12">
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist" id="main-list">
+            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#pu-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-universal-access"></i></span> <span class="hidden-xs-down">Profilazione utenze</span></a> </li>
+            <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#ig-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-gear-complex"></i></span> <span class="hidden-xs-down">Impostazioni generali</span></a> </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content tabcontent-border tab-big m-b-25" id="main-tab">
+            <div class="tab-pane active" id="pu-tab" role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab p-t-5" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#group-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-user-group"></i></span> <span class="hidden-xs-down">Gruppi</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#user-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-user-cowboy"></i></span> <span class="hidden-xs-down">Utenti</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#page-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-file"></i></span> <span class="hidden-xs-down">Pagine</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#station-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-house"></i></span> <span class="hidden-xs-down">Stazioni</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#other-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-circle-ellipsis"></i></span> <span class="hidden-xs-down">Altro</span></a> </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content" id="main-tab">
+                    <div class="tab-pane p-20 active" id="group-tab" role="tabpanel">
+                        <h4 class="tab-title">Amministrazione GRUPPI</h4>
+                        <h6 class="tab-subtitle">Creazione, modifica e disabilitazione dei gruppi relativi al portale</h6>
+
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <table class="table responsive table-striped" id="group-table" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Descrizione</th>
+                                            <th>Admin</th>
+                                            <th>Portali</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Descrizione</th>
+                                            <th>Admin</th>
+                                            <th>Portali</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="light-bg">
+                                    <h4 class="box-title">Inserisci <strong>nuovo gruppo</strong></h4>
+                                    <hr class="m-t-0 m-b-20">
+                                    <form class="form" name="form_group_new" id="form_group_new">
+                                        <h5 class="divider-title">Aggiungi dettagli</h5>
+                                        <input type="hidden" id="new-group-id" name="new-group-id" class="clear-input" value="">
+                                        % if( $user->{user_sys_admin} == 1 ){
+                                        <div class="form-group row">
+                                            <label for="new-group-portals" class="col-3 col-form-label">Portale di riferimento <span class="text-danger">*</span></label>
+                                            <div class="col-9">
+                                                <select class="select2 select2-multiple col-12 " id="new-group-portals" name="new-group-portals"  multiple="multiple" data-placeholder="Seleziona...">
+                                                    % foreach my $portal (@{$portals}){
+                                                        <option value="<%= $portal->{'portal_id'} %>"><%= $portal->{'portal_name'} %></option>
+                                                    % }
+                                                </select>
+                                            </div>
+                                            <!-- <div class="col-2">
+                                                <a id="selected-azienda-detail" href="#info-portale" role="button" data-toggle="modal" class="info-box"><i class="icon-info"></i> Info portale</a>
+                                            </div> -->
+                                        </div>
+                                        % }
+                                        <div class="form-group row">
+                                            <label for="new-group-name" class="col-3 col-form-label">Nome <span class="text-danger">*</span></label>
+                                            <div class="col-9">
+                                                <input class="form-control clear-input" type="text" id="new-group-name" name="new-group-name" placeholder="">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="new-group-desc" class="col-3 col-form-label">Descrizione</label>
+                                            <div class="col-9">
+                                                <textarea class="form-control clear-input" rows="4" id="new-group-desc" name="new-group-desc"></textarea>
+                                            </div>
+                                        </div>
+                                        <hr class="m-t-0 m-b-20">
+                                        <div class="form-group row">
+                                            <div class="col-12">
+                                                <button type="submit" class="btn btn-info" name="btn-group-form" id="btn-group-form"> <i class="ti-save"></i> Salva</button>
+                                                <button type="button" class="btn btn-inverse" name="cancel-group-form" id="cancel-group-form">Annulla</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane p-20" id="user-tab" role="tabpanel">
+
+                        <h4 class="tab-title">Amministrazione utenti</h4>
+                        <h6 class="tab-subtitle">Creazione, modifica e disabilitazione degli utenti relativi al portale</h6>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs big-nav customtab" role="tablist">
+                            <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#users_list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Utenti</span></a> </li>
+                            <!-- if user has insert grant -->
+                            % if ($user_grants->{user_insert}){
+                                <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down">Nuovo</span></a> </li>
+                            % }
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content big-tab">
+                            <div class="tab-pane p-20 active" id="users_list" role="tabpanel">
+                                <div class="row m-b-10 row-filter">
+                                    <div class="col-lg-6">
+                                        <select class="custom-select col-12" id="filter-group" name="filter-group">
+                                        </select>
+                                    </div>
+                                </div>
+                                <table class="table responsive table-striped" id="user-table" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Nome</th>
+                                            <th>Cognome</th>
+                                            <th>Email</th>
+                                            <th>Portale</th>
+                                            <th>Società</th>
+                                            <th>Admin</th>
+                                            <th>Attivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th>Nome</th>
+                                            <th>Cognome</th>
+                                            <th>Email</th>
+                                            <th>Portale</th>
+                                            <th>Società</th>
+                                            <th>Admin</th>
+                                            <th>Attivo</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                            </div>
+                            <div class="tab-pane p-20" id="new" role="tabpanel">
+                                <h4 class="box-title">Inserisci nuovo utente</h4>
+                                <hr class="m-t-0 m-b-20">
+                                <form class="form" id="form_user_new">
+                                    <h5 class="divider-title">Informazioni personali</h5>
+                                    <input type="hidden" id="new-user-id" name="new-user-id" value="">
+                                    <div class="form-group row">
+                                        <label for="new-user-name" class="col-2 col-form-label">Nome <span class="text-danger">*</span></label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-name" name="new-user-name" placeholder="">
+                                        </div>
+                                        <label for="new-user-secondname" class="col-2 col-form-label">Secondo nome</label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-secondname" name="new-user-secondname" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="new-user-surname" class="col-2 col-form-label">Cognome <span class="text-danger">*</span></label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-surname" name="new-user-surname" placeholder="">
+                                        </div>
+                                        <label for="new-user-role" class="col-2 col-form-label">Ruolo</label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-role" name="new-user-role" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="new-user-mobile" class="col-2 col-form-label">Numero cellulare</label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-mobile" name="new-user-mobile" placeholder="">
+                                        </div>
+                                        <label for="new-user-phone" class="col-2 col-form-label">Numero telefono</label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-phone" name="new-user-phone" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="new-user-email" class="col-2 col-form-label">Email <span class="text-danger">*</span></label>
+                                        <div class="col-4">
+                                            <input class="form-control" type="text" id="new-user-email" name="new-user-email" placeholder="">
+                                        </div>
+                                        <div class="col-sm-4 offset-md-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input checked disabled type="checkbox" class="custom-control-input" id="user-active" name="user-active">
+                                                <label class="custom-control-label" for="user-active">Utente attivo</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="form-group row">
+                                        <label for="fileupload" class="col-2 col-form-label">Avatar</label>
+                                        <div class="col-10">
+                                            <input type="file" id="fileupload" name="fileupload" class="dropify" />
+                                        </div>
+                                    </div> -->
+
+                                    <div class="form-group row">
+                                        <label for="fileupload" class="col-2 col-form-label">Avatar</label>
+                                        <div class="col-10" id="dpz-container">
+                                            <div id="fileupload" class="dropzone"></div>
+                                            <!-- <input type="file" id="fileupload" name="fileupload" /> -->
+                                        </div>
+                                        <div class="col-2" id="img-container"></div>
+                                    </div>
+
+                                    <h5 class="divider-title">Dettagli aziendali</h5>
+                                    % if( $user->{user_sys_admin} == 1 ){
+                                    <div class="form-group row">
+                                        <label for="new-user-portal" class="col-2 col-form-label">Portale di riferimento</label>
+                                        <div class="col-10">
+                                            <select class="custom-select col-12" id="new-user-portal" name="new-user-portal">
+                                                <option value="-1">Seleziona...</option>
+                                                % foreach my $portal (@{$portals}){
+                                                    <option value="<%= $portal->{'portal_id'} %>"><%= $portal->{'portal_name'} %></option>
+                                                % }
+                                            </select>
+                                        </div>
+                                        <!-- <div class="col-2">
+                                            <a id="selected-azienda-detail" href="#info-portale" role="button" data-toggle="modal" class="info-box"><i class="icon-info"></i> Info portale</a>
+                                        </div> -->
+                                    </div>
+                                    % }
+
+                                    <div class="form-group row">
+                                        <label for="new-user-comp" class="col-2 col-form-label">Azienda di appartenenza</label>
+                                        <div class="col-8">
+                                            <select class="custom-select col-12" id="new-user-comp" name="new-user-comp">
+                                                <option value="1">Seleziona...</option>
+                                                % foreach my $comp (@{$comps}){
+                                                    <option value="<%= $comp->{'comp_id'} %>"><%= $comp->{'comp_name'} %></option>
+                                                % }
+                                            </select>
+                                        </div>
+                                        <div class="col-2">
+                                            <a id="selected-azienda-detail" href="#info-azienda" role="button" data-toggle="modal" class="info-box"><i class="icon-info"></i> Info azienda</a>
+                                        </div>
+                                    </div>
+                                    <h5 class="divider-title">Avanzate</h5>
+                                    <div class="form-group row">
+                                        <label for="new-user-groups" class="col-2 col-form-label">Associa ai seguenti gruppi <span class="text-danger">*</span></label>
+                                        <div class="col-8">
+                                            <select id="new-user-groups" name="new-user-groups" class="select2 m-b-10 select2-multiple" style="width: 100%" multiple="multiple" data-placeholder="Seleziona...">
+                                            </select>
+                                        </div>
+                                        <div class="col-2">
+                                            <a id="selected-group-detail" href="#info-gruppi" role="button" class="info-box" data-toggle="modal"><i class="icon-info"></i> Info gruppi</a>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="new-user-session" class="col-2 col-form-label">Scadenza sessione login</label>
+                                        <div class="col-5">
+                                            <select class="form-control custom-select col-12" id="new-user-session" name="new-user-session" placeholder="">
+                                                <option value="86400">1 Giorno</option>
+                                                <option value="259200">3 Giorni</option>
+                                                <option value="604800">1 Settimana</option>
+                                                % if ($user->{user_sys_admin} == 1 ){
+                                                <option value="2147483647">Mai</option>
+                                                % }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <hr class="m-t-30">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-info" name="invio_report" id="invio_report"> <i class="ti-save"></i> Salva</button>
+                                            <button type="button" class="btn btn-inverse" name="annulla_report" id="annulla_report">Annulla</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                        <!-- end Tab panes -->
+
+                        <div class="modal" id="info-azienda" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog modal-full modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title text-primary">Informazioni sull'azienda selezionata</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body" id="info-azienda-result">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">CHIUDI</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="info-portale" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog modal-full modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title text-primary">Informazioni sul portale selezionato</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body" id="info-portale-result">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">CHIUDI</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane p-20" id="page-tab" role="tabpanel">
+                        <h4 class="tab-title">Pagine da visualizzare</h4>
+                        <h6 class="tab-subtitle">Seleziona per ogni gruppo di utenti quali pagine può visualizzare</h6>
+                        <div class="row m-b-10 row-filter">
+                            <div class="col-lg-6">
+                                <select class="custom-select col-12" id="filter-group-pages" name="filter-group-pages">
+                                </select>
+                            </div>
+                            <div class="col-lg-6">
+                                <a id="pages-group-detail" href="#info-gruppi" role="button" class="info-box" data-toggle="modal"><i class="icon-info"></i> Informazioni visibilità gruppo</a>
+                            </div>
+                        </div>
+                        <div class="pages-table like-head">
+                            <div class="pages-head">Pagina</div>
+                            <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
+                            <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
+                            <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
+                            <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div id="accordion-as-table">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pages-table like-head">
+                            <div class="pages-head">Pagina</div>
+                            <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
+                            <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
+                            <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
+                            <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane p-20" id="station-tab" role="tabpanel">
+                        <h4 class="tab-title">Stazioni da visualizzare</h4>
+                        <h6 class="tab-subtitle">Seleziona per ogni gruppo di utenti quali stazioni può visualizzare</h6>
+                        <div class="row m-b-10 row-filter">
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="filter-group-stations" name="filter-group-stations">
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="filter-province-stations" name="filter-province-stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <select class="custom-select col-12" id="filter-network-stations" name="filter-network-stations">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $net (@{$networks}){
+                                        <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row" id="table-switch-network-row">
+                            <div class="col-lg-12">
+                                <h5 class="text-info m-t-10">Seleziona i permessi di tutte le stazioni visualizzate</h5>
+                                <hr class="m-t-0 m-b-10">
+                                <table id="table-switch-network" class="table bt-switch">
+                                    <thead>
+                                        <tr>
+                                            <!-- <th>Per : <strong class="text-success">Tutte le province</strong></th> -->
+                                            <th></th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare ovunque i dati della stazione"></i></th>
+                                            <th>Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di inserire i dati correlati alla stazione"></i></th>
+                                            <th>Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di modificare i dati correlati alla stazione"></i></th>
+                                            <th>Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eliminare i dati correlati alla stazione"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><h6>Tutte le stazioni</h6></td>
+                                            <td class="sho"><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android"></td>
+                                            <td class="ins"><span class="hide-el"><input type="checkbox" class="mody-st" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android"></span></td>
+                                            <td class="mod"><span class="hide-el"><input type="checkbox" class="mody-st" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android"></span></td>
+                                            <td class="del"><span class="hide-el"><input type="checkbox" class="mody-st" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android"></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="table-switch-stations-row">
+                            <div class="col-lg-12">
+                                <h5 class="text-info m-t-10">Seleziona i permessi per ogni singola stazione</h5>
+                                <hr class="m-t-0 m-b-10">
+                                <table id="table-switch-stations" class="table table-striped table-hover bt-switch">
+                                    <thead>
+                                        <tr>
+                                            <th>ST&nbsp;ID</th>
+                                            <th>Stazione</th>
+                                            <th>Rete</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare ovunque i dati della stazione"></i></th>
+                                            <th>Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di inserire i dati correlati alla stazione"></i></th>
+                                            <th>Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di modificare i dati correlati alla stazione"></i></th>
+                                            <th>Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eliminare i dati correlati alla stazione"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>ST&nbsp;ID</th>
+                                            <th>Stazione</th>
+                                            <th>Rete</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare ovunque i dati della stazione"></i></th>
+                                            <th>Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di inserire i dati correlati alla stazione"></i></th>
+                                            <th>Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di modificare i dati correlati alla stazione"></i></th>
+                                            <th>Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eliminare i dati correlati alla stazione"></i></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane p-20" id="other-tab" role="tabpanel">
+                        <h4 class="tab-title">Altri permessi</h4>
+                        <h6 class="tab-subtitle">Seleziona per ogni gruppo di utenti i permessi personalizzati</h6>
+                        <div class="row m-b-10 row-filter">
+                            <div class="col-lg-6">
+                                <select class="custom-select col-12" id="filter-group-other" name="filter-group-other">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row other-row">
+                            <div class="col-lg-5">
+                                <h4 class="ttl-main">Reti</h4>
+                                <h6 class="ttl-sub">Seleziona per ogni gruppo di utenti i permessi per vedere le reti</h6>
+                                <table id="table-switch-nets" class="table table-striped table-hover tbl-oneshot">
+                                    <thead>
+                                        <tr>
+                                            <th>Rete</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la rete"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Rete</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la rete"></i></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <!-- <div class="col-lg-4">
+                                <h4 class="ttl-main">Parametri</h4>
+                                <h6 class="ttl-sub">Seleziona per ogni gruppo di utenti i permessi dei parametri</h6>
+                                <table id="table-switch-params" class="table table-striped table-hover tbl-oneshot">
+                                    <thead>
+                                        <tr>
+                                            <th>Gruppo parametro</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la rete in questione"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-id="10">
+                                            <td>Meteo</td>
+                                            <td><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" checked></td>
+                                        </tr>
+                                        <tr data-id="20">
+                                            <td>Chimico</td>
+                                            <td><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" checked></td>
+                                        </tr>
+                                        <tr data-id="30">
+                                            <td>Pippo</td>
+                                            <td><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" checked></td>
+                                        </tr>
+                                        <tr data-id="40">
+                                            <td>Pluto</td>
+                                            <td><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" checked></td>
+                                        </tr>
+                                        <tr data-id="50">
+                                            <td>Paperino</td>
+                                            <td><input type="checkbox" class="view-st" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android"></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Canale</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare ovunque i dati della stazione"></i></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div> -->
+                            <div class="col-lg-7">
+                                <h4 class="ttl-main">Telegram</h4>
+                                <h6 class="ttl-sub">Modifica i permessi dei canali Telegram</h6>
+                                <table id="table-switch-telegram" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Canale</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare i messaggi del canale"></i></th>
+                                            <th>Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di inserire i messaggi sul canale"></i></th>
+                                            <th>Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eliminare i messaggi dal canale"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Canale</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare i messaggi del canale"></i></th>
+                                            <th>Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di inserire i messaggi sul canale"></i></th>
+                                            <th>Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eliminare i messaggi dal canale"></i></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                        </div>
+                        <div class="row other-row">
+
+                            <div class="col-lg-6">
+                                <h4 class="ttl-main">Widget Homepage</h4>
+                                <h6 class="ttl-sub">Permetti ai tuoi utenti di vedere i widget per l'Homepage</h6>
+                                <table id="table-switch-widgets" class="table table-striped table-hover tbl-oneshot">
+                                    <thead>
+                                        <tr>
+                                            <th>Widget</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare il widget nelle impostazioni utente"></i></th>
+                                            <th class="col-centered">Destinazione</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Widget</th>
+                                            <th>Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare il widget nelle impostazioni utente"></i></th>
+                                            <th class="col-centered">Destinazione</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <h4 class="ttl-main">Validazione finale</h4>
+                                <h6 class="ttl-sub">Permetti ai tuoi utenti di validare i vari livelli relativi alla pagina "Validazione multilivello"</h6>
+                                <table id="table-final-validation" class="table table-striped table-hover tbl-oneshot">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Livello</th>
+                                            <th colspan="2">Valida <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di utilizzare il livello di validazione finale"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th>Livello</th>
+                                            <th colspan="2">Valida <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di utilizzare il livello di validazione finale"></i></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal" id="info-gruppi" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-full modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-info">Informazioni sui gruppi di appartenenza</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="result">
+
+                                <!-- Nav tabs -->
+                                <ul class="nav nav-tabs customtab litte-nav" role="tablist">
+                                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#menuser" role="tab"><span class="hidden-sm-up"><i class="ti-user"></i></span> <span class="hidden-xs-down">Menu e permessi</span></a> </li>
+                                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#statuser" role="tab"><span class="hidden-sm-up"><i class="ti-home"></i></span> <span class="hidden-xs-down">Stazioni</span></a> </li>
+                                </ul>
+                                <!-- Tab panes -->
+                                <div class="tab-content litte-tab">
+                                    <div class="tab-pane p-10 active" id="menuser" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <h5 class="text-success p-t-10 p-b-5">Di seguito il <strong>menu principale</strong> che verrà visualizzato dall'utente che stai inserendo con i relativi permessi</h5>
+                                                <div id="user-menu-list" class="usr-list">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <h5 class="text-success p-t-10 p-b-5">Di seguito il <strong>menu utente</strong> che gli verrà mostrato con i relativi permessi</h5>
+                                                <div id="user-secondary-menu-list" class="usr-list">
+                                                    <ul>
+                                                        <li id="show-admin"><strong>Admin</strong>
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Aggiunta nuovi elementi"> <i class=" icon-plus text-info"></i> </a>
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Modifica degli elementi"> <i class="icon-pencil text-info"></i> </a>
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Eliminazione degli elementi"> <i class="icon-trash text-danger"></i> </a>
+                                                        </li>
+                                                        <li>Impostazioni
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Aggiunta nuovi elementi"> <i class=" icon-plus text-info"></i> </a>
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Modifica degli elementi"> <i class="icon-pencil text-info"></i> </a>
+                                                        </li>
+                                                        <li>Profilo
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Aggiunta nuovi elementi"> <i class=" icon-plus text-info"></i> </a>
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Modifica degli elementi"> <i class="icon-pencil text-info"></i> </a>
+                                                        </li>
+                                                        <li>Mappa portale</li>
+                                                        <li class="text-danger">Esci</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane p-10" id="statuser" role="tabpanel">
+                                        <h4>Di seguito le stazioni che verranno visualizzate dall'utente che stai inserendo</h4>
+
+                                        <table class="table table-striped table-compressed" id="table-user-stations" style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nome</th>
+                                                    <th>Provincia</th>
+                                                    <th>Rete</th>
+                                                    <th>Attiva</th>
+                                                    <th>Permessi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">CHIUDI</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane" id="ig-tab" role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab p-t-5" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#validation-tab" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-shield-check"></i></span> <span class="hidden-xs-down">Validazione</span></a> </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content" id="main-tab">
+                    <div class="tab-pane p-20 active" id="group-tab" role="tabpanel">
+
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <h4 class="tab-title">Codici di validazione<strong class="text-danger">*</strong></h4>
+                                <h6 class="tab-subtitle">Imposta i codici ed i livelli di validazione che vuoi attuare sul tuo sistema.</h6>
+                                <table id="table-val-codes" class="table table-striped table-hover tbl-oneshot m-b-0">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Codice</th>
+                                            <th>Attivo</th>
+                                            <th>Colore</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        % my $cnt = 0;
+                                        % foreach my $code (@{$codes}){
+                                            % if($code->{'fvc_code_id'} == 0){
+                                            %     next;
+                                            % }
+
+                                            % $cnt++;
+                                        <tr>
+                                            <td style="width: 50px;"><%= $cnt %></td>
+                                            <td style="width: 70%;"><input type="text" class="form-control" id="cod-txt-<%= $code->{'fvc_code_id'} %>" name="cod-txt" value="<%= $code->{'fvc_code_desc'} %>"></td>
+                                            <td style="width: 10%;"><input type="checkbox" id="cod-active-<%= $code->{'fvc_code_id'} %>" name="cod-active" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" checked class="cod-active"></td>
+                                            <td style="width: 10%;"><div class="valid-level code-<%= $code->{'fvc_code_id'} %>"></div></td>
+                                        </tr>
+                                        <!-- <tr>
+                                            <td style="width: 50px;">2</td>
+                                            <td><input type="text" class="form-control" id="cod-txt-2" name="cod-txt" disabled></td>
+                                            <td><input type="checkbox" id="cod-active-2" name="cod-active" data-onstyle="info" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android" class="cod-active"></td>
+                                            <td><div class="valid-level code-2 dis"></div></td>
+                                        </tr> -->
+                                        % }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th>Codice</th>
+                                            <th>Attivo</th>
+                                            <th>Colore</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <h4 class="tab-title m-t-25">Data conclusione modifica dati<strong class="text-danger">*</strong></h4>
+                                <h6 class="tab-subtitle">Le operazioni di validazione sono bloccate <strong>prima della seguente data</strong> (il giorno selezionato <strong>è escluso dal blocco</strong>).</h6>
+                                <div class="row">
+                                    <div class="input-group col-md-12">
+                                        <input type="text" class="form-control clear-input flag-el" id="data-conclusion" name="data-conclusion" placeholder="mm/dd/yyyy">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="icon-calender"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="tab-title m-t-25">Reset validazione finale<strong class="text-danger">*</strong></h4>
+                                <h6 class="tab-subtitle">
+                                    Se l'<strong>utente modifica i dati dopo la validazione finale</strong>, vuoi che i livelli vengano resettati?&nbsp;&nbsp;
+                                    <input type="checkbox" id="validation-reset" name="cod-active" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android" class="cod-active">
+                                </h6>
+
+                            </div>
+                            <div class="col-lg-7">
+                                <h4 class="tab-title">Parametri da validare<strong class="text-danger">*</strong></h4>
+                                <h6 class="tab-subtitle">Scegli quali parametri vuoi visualizzare in "Validazione multilivello"</h6>
+                                <hr class="m-t-20 m-b-10">
+                                <!-- <table id="table-val-params" class="table table-striped table-hover tbl-oneshot">
+                                    <thead>
+                                        <tr>
+                                            <th>Parametro</th>
+                                            <th>Unità</th>
+                                            <th>Tipo</th>
+                                            <th>Attivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Parametro</th>
+                                            <th>Unità</th>
+                                            <th>Tipo</th>
+                                            <th>Attivo</th>
+                                        </tr>
+                                    </tfoot>
+                                </table> -->
+
+                                <div class="form-group row multi-sel-group">
+                                    <div class="col-sm-5">
+                                        <h6 class="m-t-10">Tutti i parametri</h6>
+                                        <select name="from[]" id="multiselect1" class="form-control multi-style" size="15" multiple="multiple">
+                                            % my $type = '';
+                                            % foreach my $param (@{$params}){
+
+                                                % if ($type eq ''){
+                                                    <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                                    <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                                % }else{
+                                                    % if ($type eq $param->{'parameter_type_id'}){
+                                                        <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $param->{'parameter_type_desc'} %>">
+                                                        <option value="<%= $param->{'parameter_id'} %>"><%= $param->{'parameter_name'} %> [<%= $param->{'parameter_unit'} %>]</option>
+                                                    % }
+                                                % }
+                                                % $type = $param->{'parameter_type_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-sm-2 m-t-85">
+                                        <button type="button" id="multiselect1_rightAll" class="btn btn-block"><i class="fa fa-angle-double-right"></i></button>
+                                        <button type="button" id="multiselect1_rightSelected" class="btn btn-block"><i class="fa fa-angle-right"></i></button>
+                                        <button type="button" id="multiselect1_leftSelected" class="btn btn-block"><i class="fa fa-angle-left"></i></button>
+                                        <button type="button" id="multiselect1_leftAll" class="btn btn-block"><i class="fa fa-angle-double-left"></i></button>
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <h6 class="m-t-10">Parametri selezionati</h6>
+                                        <select name="validation-params[]" id="validation-params" class="form-control multi-style" size="15" multiple="multiple"></select>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <button type="button" id="multiselect1_move_up" class="btn btn-block"><i class="fa fa-angle-up"></i></button>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <button type="button" id="multiselect1_move_down" class="btn btn-block"><i class="fa fa-angle-down"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <hr class="m-t-20 m-b-10">
+                        <div class="saving-section">
+                            <button type="button" class="btn btn-info" name="save-code" id="save-code"><i class="icon-magic-wand"></i> Salva modifiche</button>
+                            <button type="button" class="btn btn-inverse" name="cancel-code" id="cancel-code"><i class="fa-solid fa-eraser"></i> Annulla</button>
+                        </div>
+                        <h6 class="tab-subtitle m-t-10"> <strong class="text-danger font-20">*</strong>Ricordati di <strong>cliccare "<i class="fa-solid fa-floppy-disk"></i> Salva"</strong> dopo le modifiche.</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL DESTINAZIONE WIDGET -->
+<div class="modal fade" id="widget-destination" tabindex="-1" role="dialog" aria-labelledby="widget-destination" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary">Modifica la destinazione finale del link di approfondimento per i widget che hai attivato</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="form" id="form-link-widget">
+                <div class="modal-body">
+                    <div class="box-widget-links">
+                        <h5 class="text-info m-b-5">Allerta VDA</h5>
+                        <h6 class="font-italic m-b-10 ttl-links">Vista rapida sul Bollettino di Criticità Meteorologica, Idrogeologica e Nivologica Regionale.</h6>
+                        <p class="font-bold">Seleziona un'opzione:</p>
+                        <input type="hidden" id="widget-id" name="widget-id" class="clear-input" value="">
+                        <div class="custom-control custom-radio m-t-5">
+                            <input type="radio" id="link-default" name="add-link" class="custom-control-input" value="default" checked>
+                            <label class="custom-control-label" for="link-default">Link di default</label>
+                        </div>
+                        <div class="custom-control custom-radio m-t-5">
+                            <input type="radio" id="link-page" name="add-link" class="custom-control-input" value="page">
+                            <label class="custom-control-label" for="link-page">Seleziona una pagina</label>
+                        </div>
+                        <div class="m-l-25" id="link-page-selection">
+                            <div class="form-group m-b-5">
+                                <input type="text" id="link-page-title" name="link-page-title" class="form-control clear-input" placeholder="Inserisci un titolo...">
+                            </div>
+                            <div class="form-group m-b-5">
+                                <select id="link-page-select" name="link-page-select" class="custom-select col-12 clear-select" placeholder="Inserisci una pagina....">
+                                    <option value="-1">Seleziona pagina....</option>
+                                    % my $nlevel = 2;
+                                    % my $user_closed = 0;
+                                    % my $submenu_closed = 0;
+
+                                    <optgroup label="Menu utente">
+
+                                    % foreach my $page (@{$pages}){
+
+                                        % # chiudo optgroup Menu utenti
+                                        % if ($page->{'menu_type'} ne 'usernav' && $user_closed == 0){
+                                            </optgroup>
+                                            % $user_closed = 1;
+                                        % }
+
+                                        % # passaggio ad un livello superiore, chiudo optgroup precedente
+                                        % if ($nlevel > $page->{'nlevel'}){
+                                            % $submenu_closed = 1;
+                                            </optgroup>
+                                        % }
+
+                                        % if (!defined $page->{'page_id'}){
+                                            % $submenu_closed = 0;
+                                            <optgroup label="<%= $page->{'mp_name'} %>">
+                                        % }
+                                        % else{
+                                            <option value="<%= $page->{'page_id'} %>" data-link="<%= $page->{'page_href'} %>"><%= $page->{'mp_name'} %></option>
+                                        % }
+
+                                        % $nlevel = $page->{'nlevel'}
+                                    % }
+
+                                    % if ($submenu_closed == 0){
+                                    </optgroup>
+                                    % }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="custom-control custom-radio m-t-5">
+                            <input type="radio" id="link-external" name="add-link" class="custom-control-input" value="external">
+                            <label class="custom-control-label" for="link-external">Seleziona link esterno</label>
+                        </div>
+                        <div class="m-l-25" id="link-external-selection">
+                            <div class="form-group m-b-5">
+                                <input type="text" id="link-external-title" name="link-external-title" class="form-control clear-input" placeholder="Inserisci un titolo...">
+                            </div>
+                            <div class="form-group m-b-5">
+                                <textarea id="link-external-link" name="link-external-link" rows="3" class="form-control clear-input" placeholder="Inserisci un link...."></textarea>
+                                <small class="text-danger font-italic">Incolla qui sopra il link alla pagina esterna</small>
+                            </div>
+                        </div>
+                        <div class="custom-control custom-radio m-t-5">
+                            <input type="radio" id="link-none" name="add-link" class="custom-control-input" value="none">
+                            <label class="custom-control-label" for="link-none">Nessun link</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" name="form-link-widget-save" id="form-link-widget-save"> <i class="fa-thin fa-floppy-disks"></i> Salva</button>
+                    <button type="button" class="btn btn-inverse" name="form-link-widget-cancel" id="form-link-widget-cancel">Annulla</button>
+                    <button type="button" class="btn btn-link text-danger" data-dismiss="modal" id="form-link-widget-close"><i class="ti-close"></i> Chiudi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

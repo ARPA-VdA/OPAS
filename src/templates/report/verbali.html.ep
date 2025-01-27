@@ -1,0 +1,215 @@
+% layout 'default';
+% title 'Verbali';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/report/verbali.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Visualizza i VERBALI inseriti</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo report che vuoi visualizzare</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#report-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Report</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="report-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-6">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class=" col-md-6">
+                                <select class="custom-select col-12" id="provinces" name="provinces">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <table id="report-table" class="display responsive table table-hover table-striped tbl-va-center" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Verbalizzante</th>
+                                    <th>Ora inizio</th>
+                                    <th>Ora fine</th>
+                                    <th>Titolo</th>
+                                    <th>Prov.</th>
+                                    <th>Località</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Data</th>
+                                    <th>Verbalizzante</th>
+                                    <th>Ora inizio</th>
+                                    <th>Ora fine</th>
+                                    <th>Titolo</th>
+                                    <th>Prov.</th>
+                                    <th>Località</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo VERBALE</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="report-form" name="report-form">
+                            <input type="hidden" class="clear-input" id="report-id" name="report-id" value="">
+                            <div class="form-group row">
+                                <label for="report-verbalizer" class="col-md-2 col-form-label">Verbalizzante <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12 flag-el"  id="report-verbalizer" name="report-verbalizer">
+                                        <option value="-1">Verbalizzante...</option>
+                                        <% foreach my $comp (@{$compilers}){
+                                            my $class = '';
+                                            if($comp->{'user_id'} == $self->session('it.ecometer.bobo')){
+                                                $class = 'selected';
+                                            }
+                                        %>
+                                            <option value="<%= $comp->{user_id} %>" <%= $class %> ><%= $comp->{'user_fullname'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="report-date" class="col-md-2 col-form-label">Data <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input flag-el" id="report-date" name="report-date" placeholder="mm/dd/yyyy">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="report-time-start" class="col-md-2 col-form-label">Ora inizio <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input flag-el" id="report-time-start" name="report-time-start" placeholder="HH:MM">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="report-time-end" class="col-md-2 col-form-label">Ora fine <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input flag-el" id="report-time-end" name="report-time-end" placeholder="HH:MM">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-10 offset-md-2 text-info">
+                                    Durata tot. riunione: <strong class="duration">--</strong>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="report-prov" class="col-md-2 col-form-label">Provincia <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12 flag-el" id="report-prov" name="report-prov">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % $region = '';
+                                        % foreach my $province (@{$provinces}){
+
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <label for="report-locality" class="col-md-2 col-form-label">Località <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control clear-input flag-el" id="report-locality" name="report-locality" placeholder="Località...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="report-participants" class="col-md-2 col-form-label">Partecipanti</label>
+                                <div class="col-md-10">
+                                    <select class="custom-select clear-select col-md-12 flag-el" id="report-participants" name="report-participants" multiple>
+                                        <option value="-1">Seleziona...</option>
+                                        % foreach my $comp (@{$compilers}){
+                                            <option value="<%= $comp->{'user_id'} %>"><%= $comp->{'user_fullname'} %></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <h5 class="divider-title" >Dettagli verbale</h5>
+                            <div class="form-group row">
+                                <label for="report-title" class="col-md-2 col-form-label">Oggetto <span class="text-danger">*</span></label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control clear-input flag-el" id="report-title" name="report-title" placeholder="Oggetto...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="report-text" class="col-md-2 col-form-label">Testo verbale <span class="text-danger">*</span></label>
+                                <div class="col-md-10">
+                                    <div class="summernote" id="report-text" name="report-text" required></div>
+                                </div>
+                            </div>
+                            <!-- @TODO DA ATTIVARE -->
+                            <!-- <h5 class="divider-title hide-edit" >Invio del verbale</h5>
+                            <div class="row m-b-30 hide-edit">
+                                <div class="col-md-10 offset-md-2">
+                                    <input type="checkbox" checked class="js-switch" data-color="#79a030" id="send-email" name="send-email" />
+                                    Invia <strong>mail riassuntiva</strong> ai partecipanti
+                                </div>
+                            </div> -->
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="btn-report-form" id="btn-report-form"> <i class="ti-save"></i> Inserisci</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-report-form" id="cancel-report-form">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

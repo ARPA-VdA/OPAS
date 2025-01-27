@@ -1,0 +1,189 @@
+<h1 id="impostazioni-rete---campagne">IMPOSTAZIONI RETE - CAMPAGNE</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Impostazioni rete&quot;, posta nel menu principale di sinistra, ed in seguito cliccare sull'elemento &quot;Campagne&quot;.</p>
+<h3>
+    > Impostazioni rete<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Campagne</span>
+</h3>
+<p>Da questa pagina è possibile visualizzare tutte le campagne, aggiungerne di nuove oppure posizionarle in vari punti appartenenti alla propria rete..</p>
+<p><img src="/bobo-help/cnf_campagne/img/[10]_index.png" alt="10" title="Tabella dei siti"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li><u>Siti</u>: elenco dei/degli siti/stanziamenti inseriti nel database;</li>
+<li><u>Sito</u>: scheda d'inserimento di un nuovo sito;</li>
+<li><u>Stanziamento</u>: scheda d'inserimento di un nuovo stanziamento;</li>
+</ul>
+</li>
+<li>
+<p>Interruttore per passare dalla visualizzazione dei siti a quella degli stanziamenti:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_campagne/img/pulsico/sito.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_campagne/img/[11]_siti.png" alt="11" title="Siti"></p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_campagne/img/pulsico/stanziamento.png" height="45px"></img></p>
+<p><img src="/bobo-help/cnf_campagne/img/[12]_stanziamenti.png" alt="12" title="Stanziamenti"></p>
+</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>
+<p>Periodo temporale: (SOLO nella visualizzazione degli Stanziamenti)</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei report.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/cnf_campagne/img/[13]_calendar_date.png" alt="13" title="Calendario"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+</ul>
+<ol start="3">
+<li>Selezionare la <u>rete</u> (filtro tabella);</li>
+<li>Selezionare la <u>provincia</u> (filtro tabella);</li>
+</ol>
+<ul>
+<li>Selezionare il <u>laboratorio</u> (filtro tabella - SOLO nella visualizzazione degli Stanziamenti);</li>
+<li>Selezionare la <u>campagna</u> (filtro tabella - SOLO nella visualizzazione degli Stanziamenti);</li>
+</ul>
+<ol start="5">
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco degli strumenti/stanziamenti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne della tabella;</p>
+</li>
+<li>
+<p>Tabella degli strumenti;</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><u>Visualizza sito</u> <img src="/bobo-help/cnf_campagne/img/pulsico/visualizza.png" height="50px"></img>:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[20]_visualizza_dettaglio.png" alt="20" title="Visualizza dettaglio sito"></p>
+<p>Qualora siano stanziati dei mezzi nel sito selezionato, verrà visualizzata la sezione &quot;Mezzi attualmente stanziati in questa location&quot; con le informazioni relative ai mezzi stanziati.</p>
+<p><img src="/bobo-help/cnf_campagne/img/[21]_mezzi_attuali.png" alt="21" title="Mezzi attualmente stanziati in questa location"></p>
+<p>Inoltre, se in passato sono già stati stanziati uno o più mezzi, verrà visualizzata la sezione &quot;Storico dei mezzi stanziati in questa location&quot; con un elenco cronologico dei mezzi; se invece lo non è stato ancora stanziato alcun mezzo nel sito visualizzato, questa sezione non verrà visualizzata.</p>
+<p><img src="/bobo-help/cnf_campagne/img/[22]_storico_mezzi.png" alt="22" title="Mezzi attualmente stanziati in questa location"></p>
+</li>
+<li>
+<p><u>Modifica sito</u> <img src="/bobo-help/cnf_campagne/img/pulsico/modifica.png" height="50px"></img>: verrà aperta la scheda per modificare i dati del sito selezionato (stessi campi presenti in &quot;Inserisci nuovo sito&quot;);</p>
+</li>
+<li>
+<p><u>Scarica PDF</u> <img src="/bobo-help/cnf_campagne/img/pulsico/scarica-pdf.png" height="50px"></img> : verrà scaricato il PDF del dettaglio del sito selezionato;</p>
+</li>
+<li>
+<p><u>Elimina tutto</u> <img src="/bobo-help/cnf_campagne/img/pulsico/elimina.png" height="50px"></img>: cliccare questo pulsante per eliminare il sito (il pulsante verrà visualizzato SOLO se, in quel momento, non è associato alcun mezzo al sito); verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[30]_elimina_sito.png" alt="30" title="Elimina sito"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+<li>
+<p><u>Modifica stanziamento</u> <img src="/bobo-help/cnf_campagne/img/pulsico/modifica_stanziamento.png" height="50px"></img> : verrà aperta la scheda per modificare i dati dello stanziamento selezionato (stessi campi presenti in &quot;Inserisci nuovo stanziamento di uno o più mezzi&quot;);</p>
+</li>
+<li>
+<p><u>Chiudi stanziamento</u> <img src="/bobo-help/cnf_campagne/img/pulsico/chiudi_stanziamento.png" height="40px"></img> : cliccare questo pulsante per chiudere lo stanziamento del sito selezionato; verrà visualizzato il seguente messaggio di conferma:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[40]_chiudi_stanziamento.png" alt="40" title="Chiudi stanziamento"></p>
+<p>Cliccare &quot;Si, elimina&quot; per effettuare l'eliminazione.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-sito">Inserisci nuovo sito</h2>
+<p><img src="/bobo-help/cnf_campagne/img/[50]_nuovo_sito.png" alt="40" title="Inserisci nuovo sito"></p>
+<ol>
+<li>
+<p><u>Nome</u> del sito (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Selezionare una o più <u>Reti di appartenenza</u> (<span style="color:red">*</span>obbligatorio):</p>
+<p><img src="/bobo-help/cnf_campagne/img/[51]_reti.png" alt="51" title="Chiudi stanziamento"></p>
+</li>
+<li>
+<p>Inserire allegati al sito: al click verrà visualizzata la finestra di sistema per scegliere i file;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p><u>Dati geografici</u>: in questa sezione è possibile inserire i dati geografici del sito; è possibile effettuare l'inserimento in due modi: compilare manualmente i campi presenti (quelli contrassegnati da <span style="color:red">*</span> sono OBBLIGATORI), oppure cliccare il pulsante <img src="/bobo-help/cnf_campagne/img/pulsico/scegli_da_mappa.png" height="40px"></img>;</p>
+<p>Una volta cliccato il pulsante, verrà visualizzata la mappa: per inserire i dati, cliccare sulla mappa nel punto in cui si vuole definire il &quot;sito&quot; e spostare il cursore per migliorarne la precisione. Tutti i campi della geolocalizzazione si compileranno automaticamente.</p>
+</li>
+<li>
+<p>Interruttore <u>Aggiungi un mezzo in questa location</u>:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/cnf_campagne/img/pulsico/off.png" height="50px" width="80px"></img> --&gt; No Location;</p>
+</li>
+<li>
+<p><img src="/bobo-help/cnf_campagne/img/pulsico/on.png" height="50px" width="80px"></img> --&gt; Aggiungi location;</p>
+<p>Se selezionato &quot;Aggiungi un mezzo in questa location&quot;, si dovranno inserire i seguenti campi aggiuntivi (per il dettaglio dei campi, vedere &quot;Inserisci nuovo stanziamento di uno o più mezzi&quot;):</p>
+<p><img src="/bobo-help/cnf_campagne/img/[53]_aggiungi_location.png" alt="53" title="Inserisci mezzo per questa location"></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento del nuovo sito, oppure il pulsante &quot;Annulla&quot; per ritornare alla scheda &quot;Siti&quot;;</p>
+</li>
+</ol>
+<h2 id="inserisci-nuovo-stanziamento-di-uno-o-pi%C3%B9-mezzi">Inserisci nuovo stanziamento di uno o più mezzi</h2>
+<p><img src="/bobo-help/cnf_campagne/img/[60]_nuovo_stanziamento.png" alt="60" title="Inserisci nuovo stanziamento"></p>
+<ol>
+<li>
+<p>Selezionare il <u>Sito</u> a cui si vuole associare lo stanziamento del mezzo mobile: nell'elenco saranno presenti i siti creati che non hanno alcun mezzo mobile stanziato e quelli di cui si è effettuata la chiusura di uno stanziamento precedente;</p>
+</li>
+<li>
+<p>Selezionare il <u>Laboratorio mobile</u> che si vuole stanziare: verranno visualizzati i laboratori di cui si ha il premesso di visualizzazione all'interno del portale;</p>
+</li>
+<li>
+<p>Selezionare la <u>Campagna</u>;</p>
+</li>
+<li>
+<p>Link <img src="/bobo-help/cnf_campagne/img/pulsico/gestisci_campagne.png" height="20px"></img> : verrà visualizzato un form in cui è possibile gestire le campagne:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[61]_gestisci_campagne.png" alt="61" title="Gestisci campagne"></p>
+<p>      a. Pulsanti:</p>
+<p>            * <u>Modifica campagna</u> <img src="/bobo-help/cnf_campagne/img/pulsico/modifica.png" height="50px"></img> : verranno recuperati nome e reti di appartenenza della campagna e sarà possibile modificarli nei due campi sottostanti; Cliccare il pulsante &quot;Modifica&quot; per rendere effettiva la modifica, oppure &quot;Annulla&quot; per ripulire i campi;</p>
+<p>            * <u>Abilita/Disabilita campagna</u> :</p>
+<p>                        * <img src="/bobo-help/cnf_campagne/img/pulsico/disabilita.png" height="50px"></img> --&gt; disabilita campagna (non verrà visualizzata nell'elenco dell'inserimento/modifica dello stanziamento)</p>
+<p>                           Verrà visualizzato il seguente messaggio:</p>
+<p>                           <img src="/bobo-help/cnf_campagne/img/[62]_alert_diasbilita_campagna.png" alt="62" title="Messaggio allerta campagna disabilitata"></p>
+<p>                           Cliccare &quot;Sono sicuro&quot; per confermare.</p>
+<p>                           Se una campagna è disabilitata, verrà visualizzata così sull'elenco:</p>
+<p>                           <img src="/bobo-help/cnf_campagne/img/[63]_campagna_disabilitata.png" alt="63" title="Campagna disabilitata"></p>
+<p>                        * <img src="/bobo-help/cnf_campagne/img/pulsico/riabilita.png" height="50px"></img> --&gt; riabilita campagna</p>
+<p>            * <u>Elimina campagna</u> <img src="/bobo-help/cnf_campagne/img/pulsico/elimina.png" height="50px"></img></p>
+<p>                           Verrà visualizzato il seguente messaggio:</p>
+<p>                           <img src="/bobo-help/cnf_campagne/img/[64]_elimina_campagna.png" alt="64" title="Campagna disabilitata"></p>
+<p>                           Cliccare &quot;Si, elimina&quot; per confermare.</p>
+</li>
+<li>
+<p><u>Data/ora</u> inizio (<span style="color:red">*</span>obbligatorio) e fine (non obbligatorio - se non impostata verrà inserito il valore &quot;Infinito&quot;): verrà visualizzato il seguente form per la selezione della data e dell'ora:</p>
+<p>Data:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[65]_data.png" alt="65" title="Selezione data"></p>
+<p>      a. Mese precedente;</p>
+<p>      b. Mese successivo;</p>
+<p>      c. Anno precedente;</p>
+<p>      d. Anno successivo;</p>
+<p>      e. Scelta del giorno;</p>
+<p>      f. Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></p>
+<p>Ora:</p>
+<p><img src="/bobo-help/cnf_campagne/img/[66]_ora1.png" alt="66" title="Selezione ora">
+<img src="/bobo-help/cnf_campagne/img/[67]_ora2.png" alt="67" title="Selezione minuti"></p>
+<p>Per impostare l'ora e i minuti, cliccare sui numeri presenti nell'orologio visualizzato e premere 'OK'; si imposterà prima l'ora e dopo i minuti;</p>
+</li>
+<li>
+<p>Eventuali note;</p>
+</li>
+<li>
+<p>Pulsanti <u>Inserisci</u> e <u>Annulla</u> : cliccare il pulsante &quot;Inserisci&quot; per effettuare l'inserimento del nuovo stanziamento, oppure il pulsante Annulla per ritornare alla scheda &quot;Siti&quot;;</p>
+</li>
+</ol>

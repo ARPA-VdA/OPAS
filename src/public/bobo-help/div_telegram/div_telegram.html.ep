@@ -1,0 +1,105 @@
+<h1 id="telegram">TELEGRAM</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Divulgazione&quot; posta nel menu principale di sinistra e cliccare sull'elemento &quot;Telegram&quot;.</p>
+<h3>
+    > Divulgazione<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Telegram</span>
+</h3>
+<p>Attraverso questo strumento è possibile gestire l'invio e le eventuali eliminazioni dei messaggi sui canali presenti sull'applicativo 'Telegram'.</p>
+<p><img src="/bobo-help/div_telegram/img/[20]_telegram.png" alt="20" title="Telegram"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Inviati: visualizza la tabella dei messaggi caricati e inviati sul canale;</li>
+<li>Nuovo: creazione di un nuovo messaggio;</li>
+</ul>
+</li>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/div_telegram/img/[00]_calendar_date.png" alt="00" title="Calendario - Periodo temporale"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p><u>Seleziona canale...</u>: menu a tendina in cui si può filtrare la tabella sottostante visualizzando un certo canale scelto tra quelli a disposizione; verranno mostrati solamente i canali relativi ai gruppi di appartenenza a cui l'utente è associato;</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei bollettini sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei messaggi;</p>
+</li>
+<li>
+<p><u>Esplorazione delle pagine</u>;</p>
+</li>
+</ol>
+<h2 id="invio-nuovo-messaggio-telegram">Invio nuovo messaggio Telegram</h2>
+<p>In questa scheda è possibile creare un nuovo messaggio da caricare su uno dei canali Telegram.</p>
+<p><img src="/bobo-help/div_telegram/img/[40]_insert_new_msg.png" alt="40" title="Inserisci nuovo messaggio Telegram"></p>
+<ol>
+<li>
+<p><u>Seleziona canale...</u>: menu a tendina in cui si può filtrare la tabella sottostante visualizzando un certo canale scelto tra quelli a disposizione; verranno mostrati solamente i canali relativi ai gruppi di appartenenza a cui l'utente è associato;</p>
+</li>
+<li>
+<p>Campo d'inserimento testo;</p>
+</li>
+<li>
+<p><u>Vademecum</u>: indicazioni per compilare il campo d'inserimento del testo;</p>
+</li>
+<li>
+<p>Pulsante <u>Invia messaggio sul CANALE SCELTO</u>: cliccare su questo pulsante per generare il messaggio che verrà caricato successivamente sul canale scelto. Al click del pulsante, come ulteriore conferma, verrà richiesta una password, che verrà comunicata, per effettuare l'invio;</p>
+<p><img src="/bobo-help/div_telegram/img/[41]_conf_send_msg.png" alt="41" title="Inserisci nuovo messaggio Telegram"></p>
+</li>
+<li>
+<p>Pulsante <u>Annulla</u>: ritorna alla scheda dei messaggi inviati;</p>
+</li>
+</ol>
+<h2 id="tabella-dei-messaggi">Tabella dei messaggi</h2>
+<p>In questa tabella vengono visualizzati i messaggi caricati/inviati dei vari canali che l'utente può vedere.</p>
+<p><img src="/bobo-help/div_telegram/img/[60]_msgs_table.png" alt="60" title="Tabella dei messaggi"></p>
+<ol>
+<li>
+<p>Visualizza/Elimina messaggio;</p>
+<p>Cliccando sul pulsante Visualizza <img src="/bobo-help/div_telegram/img/[212]_pulsante_visual.png" height="50px" width="50px"></img> è possibile visualizzarne le informazioni relative al messaggio;</p>
+<p><img src="/bobo-help/div_telegram/img/[70]_msgs_visual.png" alt="70" title="Messaggio Telegram inviato"></p>
+<p>Cliccando sul pulsante Elimina <img src="/bobo-help/div_telegram/img/[213]_pulsante_elimina.png" height="50px" width="50px"></img> è possibile eliminare il relativo messaggio dal canale Telegram;<br>
+Come per l'invio di un nuovo messaggio, verrà richiesta, come ulteriore conferma, una password per effettuare l'eliminazione.<br>
+Quest'ultima avverrà automaticamente entro qualche minuto.
+Si consiglia di verificare la corretta eliminazione del messaggio sul canale Telegram;</p>
+</li>
+<li>
+<p>Data d'inserimento del messaggio;</p>
+</li>
+<li>
+<p>Canale Telegram su cui è stato inviato il messaggio;</p>
+<p>Posso esserci due valori:</p>
+<ul>
+<li><u>ID</u> : identificativo numerico -&gt; indica un <u>CANALE PRIVATO</u>;</li>
+<li>@ : identificativo pubblico del canale -&gt; indica un <u>CANALE PUBBLICO</u>;</li>
+</ul>
+<p>Se un canale è PRIVATO, esso non avrà un identificativo pubblico con la @;
+Viceversa, se un canale è PUBBLICO, esso presenterà sia il proprio identificativo pubblico per essere trovato nell app di Telegram, sia un identificativo numerico.</p>
+</li>
+<li>
+<p>Tag: identifica la lingua del bollettino meteo; Il tag serve per verificare se il bollettino meteo è già stato inviato sul canale in quella lingua ('Bollettino_Meteo_It' / 'Bollettino_Meteo_Fr' / 'Bollettino_Meteo_En'). Qualora sia stato già inviato il sistema avviserà l'utente della presenza del messaggio sul relativo canale e chiederà se lo si vuole inviare nuovamente;</p>
+</li>
+<li>
+<p>Tipo: indica la tipologia del messaggio inviato sul canale: tipo 'Message' per i messaggi di testo e 'Photo' per i messaggi che presentano delle immagini;</p>
+</li>
+<li>
+<p>Messaggio: indica il contenuto del messaggio; (i messaggi di tipo 'Photo' presentano il link relativo all'immagine)</p>
+</li>
+<li>
+<p>Inviato: quest'icona <img src="/bobo-help/div_telegram/img/[214]_pulsante_inviato.png" height="50px" width="50px"></img> identifica i messaggi che sono stati inviati sul canale; se non presente, significa che il messaggio è stato generato, ma non è stato ancora inviato. La procedura di invio è automatica, quindi verificare l'invio del messaggio direttamente dall'app di Telegram.</p>
+</li>
+</ol>

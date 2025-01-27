@@ -1,0 +1,151 @@
+% layout 'default';
+% title 'Faq';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utilities/faq.js'))%>" type="text/javascript"></script>
+
+<script type="text/javascript">
+    var flag_tech = '<%= $faq_tech %>';
+</script>
+<!-- Row -->
+<div class="row" id="questions">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="card-title">Seleziona argomento</h4>
+                        <h6 class="card-subtitle">Seleziona l'argomento di cui vuoi vedere le FAQ</h6>
+                        <div class="input-group select-group">
+                            <div class="input-group-prepend">
+                                % if( $user_grants->{user_insert} ){
+                                    <span class="input-group-text" id="add-page" data-toggle="tooltip" data-original-title="Aggiungi argomento" title="Aggiungi argomento"><i class="mdi mdi-library-plus" data-toggle="modal" data-target="#page-modal"></i></span>
+                                % }
+                            </div>
+                            <select class="select2 form-control custom-select" id="select-arg" style="width: 100%; height:36px;">
+                                <option value="-1">Seleziona...</option>
+                                <% my $last_arg_id = 0;
+                                    foreach my $search_element (@{$search_arguments}){
+                                        if($search_element->{'faq_page_id'} != $last_arg_id){
+                                            $last_arg_id = $search_element->{'faq_page_id'};
+                                %>
+                                </optgroup>
+                                <optgroup label="<%= $search_element->{'faq_page_name'} %>">
+                                <% } %>
+                                    <option value="<%= $search_element->{'faq_arg_id'} %>"><%= $search_element->{'faq_arg_title'} %></option>
+                                <% } %>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="card-title">Cerca parola chiave</h4>
+                        <h6 class="card-subtitle">Cerca la parola chiave nella documentazione</h6>
+                        <div class="row">
+                            <div class="input-group col-12">
+                                <input type="text" class="form-control" placeholder="Scrivi..." aria-label="Scrivi" aria-describedby="basic-addon2" id="input-keyword">
+                                <div class="input-group-append">
+                                    <button type="submit" class="input-group-text ig-submit" id="search-keyword"><i class="fa fa-search"></i>&nbsp;Cerca</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ./Row -->
+
+<!-- row -->
+<div class="row" id="faqs-titles">
+    <div class="col-md-12">
+        <h2 class="faq-title m-b-15" id="faq-title">
+            <%= $first_page_arguments->{'faq_page_name'} %>
+            % if( $user_grants->{user_insert} ){
+                <a href="#" class="add-notes" data-toggle="tooltip" data-original-title="Aggiungi nota" title="Aggiungi nota"><i class="mdi mdi-comment-plus-outline" data-toggle="modal" data-target="#responsive-modal"></i></a>
+            % }
+        </h2>
+    </div>
+</div>
+
+<div id="responsive-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="new-faq-form" name="new-faq-form">
+                <div class="modal-header">
+                    <h4 class="modal-title text-primary">Inserisci nuova FAQ</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Argomento</label>
+                        <select class="custom-select col-12" id="new-faq-page" name="new-faq-page">
+                            <option value="-1">Seleziona...</option>
+                            <%  foreach my $faq_page (@{$faq_pages}){ %>
+                                <option value="<%= $faq_page->{'faq_page_id'} %>"><%= $faq_page->{'faq_page_name'} %></option>
+                            <%  }   %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Titolo</label>
+                        <input type="text" class="form-control" id="new-faq-title" name="new-faq-title">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">Testo</label>
+                        <!--# <textarea class="form-control" name="new-faq-text" id="new-faq-text"></textarea> -->
+                        <div class="form-control txt-element" contenteditable="true" name="new-faq-text" id="new-faq-text"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal" id="new-faq-cancel">Annulla</button>
+                    <button type="submit" class="btn btn-info waves-effect waves-light" id="new-faq-submit">Inserisci</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="page-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="new-page-form" name="new-page-form">
+                <div class="modal-header">
+                    <h4 class="modal-title text-primary">Inserisci nuovo Argomento</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Argomento</label>
+                        <input type="text" class="form-control" id="new-page-title" name="new-page-title">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal" id="new-page-cancel">Annulla</button>
+                    <button type="submit" class="btn btn-info waves-effect waves-light" id="new-page-submit">Inserisci</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="answers">
+    <div class="col-lg-3 col-xlg-2 col-md-4">
+        <div class="stickyside">
+            <div class="list-group" id="top-menu">
+                <a href="#<%= $first_page_arguments->{'faq_arg_id'} %>" class="list-group-item active"><%= $first_page_arguments->{'faq_arg_title'} %></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9 col-xlg-10 col-md-8">
+        <div class="card">
+            <div class="card-body" id="args-container">
+                <h4 class="card-title" id="<%= $first_page_arguments->{'faq_arg_id'} %>"><%= $first_page_arguments->{'faq_arg_title'} %></h4>
+                <p><%== $first_page_arguments->{'faq_arg_desc'} %></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+

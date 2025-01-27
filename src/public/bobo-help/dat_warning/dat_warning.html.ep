@@ -1,0 +1,70 @@
+<h1 id="dati---warning-strumenti">WARNING STRUMENTI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Warning strumenti&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Warning strumenti</span>
+</h3>
+<p>Questa pagina permette di visualizzare i warning degli strumenti suddivisi per CATEGORIA e poi per STAZIONE.</p>
+<p><img src="/bobo-help/dat_warning/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/dat_warning/img/[31]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+<p><img src="/bobo-help/dat_warning/img/[25]_prov.png" alt="25" title="Menu"></p>
+</li>
+<li>
+<p>Elenco stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/dat_warning/img/[23]_stazioni.png" alt="23" title="Menu"></p>
+</li>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Strumenti <u>SWAM</u>;</li>
+<li>Strumenti <u>TECORA</u>;</li>
+</ul>
+</li>
+<li>
+<p>Pulsanti <u>Espandi tutti</u> e <u>Chiudi tutti</u>:</p>
+<ul>
+<li><img src="/bobo-help/dat_warning/img/[21]_pulsante_espandi-tutti.png" height="40px" width="150px"></img> : apre i dettagli di tutti i warning visualizzati nella tabella sottostante;</li>
+<li><img src="/bobo-help/dat_warning/img/[22]_pulsante_chiudi-tutti.png" height="40px" width="140px"></img> : chiude tutti i dettagli rimasti aperti dei warning visualizzati nella tabella sottostante;</li>
+</ul>
+</li>
+<li>
+<p>Numero di elementi della tabella per pagina;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Pulsante di espansione del dettaglio dello warning ( <img src="/bobo-help/dat_warning/img/[30]_icona_espandi_dettaglio.png" height="30px" width="30px"></img> ) :</p>
+<p><img src="/bobo-help/dat_warning/img/[20]_dettagli_warning.png" alt="20" title="Dettagli warning"></p>
+<p>Premere l'icona <img src="/bobo-help/dat_warning/img/[24]_icona_chiudi_dettaglio.png" height="30px" width="30px"></img> per richiudere il singolo dettaglio;</p>
+</li>
+<li>
+<p>Tabella dei warning: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>Data/ora;</li>
+<li>Provincia;</li>
+<li>Stazione;</li>
+<li>Linea (solo per gli SWAM);</li>
+<li>Numero di warning;</li>
+<li>Codice del warning;</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

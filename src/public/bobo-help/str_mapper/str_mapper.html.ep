@@ -1,0 +1,156 @@
+<h1 id="strumenti---mapper">MAPPER</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sulla voce &quot;Strumenti&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Mapper&quot;.</p>
+<h3>
+    > Strumenti<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Mapper</span>
+</h3>
+<p>Verrà visualizzata la schermata principale dello strumento Mapper.</p>
+<p><img src="/bobo-help/str_mapper/img/[20]_map.png" alt="20" title="Mapper"></p>
+<ol>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+<p><img src="/bobo-help/str_mapper/img/[30]_selez_prov.png" alt="30" title="Selezione province"></p>
+</li>
+<li>
+<p>Elenco/ricerca stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/str_mapper/img/[40]_cerca_staz.png" alt="40" title="Cerca stazioni"></p>
+</li>
+<li>
+<p>Pulsante <u>Aggiorna</u>: una volta selezionato la provincia e/o la stazione, premere il pulsante per aggiornare la mappa;</p>
+</li>
+<li>
+<p>Pulsante <u>Reset</u>: resetta la mappa ricaricando quella iniziale (visualizzazione di tutte le stazioni disponibili sul portale);</p>
+</li>
+<li>
+<p>Filtro di selezione delle reti disponibili sul portale: cliccare su una delle reti per nasconderne i marcatori sulla mappa. Cliccando nuovamente si riattiverà la visualizzazione dei marcatori;</p>
+<ul>
+<li>
+<p>Tutte le reti selezionate (Default):</p>
+<p><img src="/bobo-help/str_mapper/img/[21]_filtro_all_selez.png" alt="21" title="Filtro di selezione delle reti"></p>
+</li>
+<li>
+<p>Nessuna rete selezionata (dopo aver cliccato &quot;Deseleziona tutti&quot;):</p>
+<p><img src="/bobo-help/str_mapper/img/[22]_filtro_not_selez.png" alt="22" title="Filtro di selezione delle reti"></p>
+<p>Cliccando su &quot;Seleziona tutti&quot; si tornerà allo stato precedente.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Mappa;</p>
+</li>
+<li>
+<p>Zoom +/- della mappa (è possibile zoomare in avanti e indietro anche utilizzando la rotella del mouse);</p>
+</li>
+<li>
+<p>Mappa a schermo intero;</p>
+</li>
+<li>
+<p>Filtro della mappa</p>
+<p>Attraverso questo filtro è possibile modificare la visualizzazione della mappa:</p>
+<p><img src="/bobo-help/str_mapper/img/[50]_filtro.png" alt="50" title="Filtro della mappa"></p>
+<p>      a. Tipologia della mappa</p>
+<p>      b. Reti disponibili sul portale</p>
+<p>Gli elementi <u>SELEZIONATI</u> e <u>ATTIVI</u> sono quelli in <u>BLU</u>, mentre quelli in <u>BIANCO</u> sono <u>DISATTIVATI</u>.</p>
+<p>Seguono alcuni esempi di filtro:</p>
+<p>Formato mappa: STANDARD</p>
+<p><img src="/bobo-help/str_mapper/img/[51]_map_standard.png" alt="51" title="Esempio mappa 1"></p>
+<p>Formato mappa: SATELLITE</p>
+<p><img src="/bobo-help/str_mapper/img/[52]_map_satellite.png" alt="52" title="Esempio mappa 2"></p>
+<p>Formato mappa: TOPOGRAFIA</p>
+<p><img src="/bobo-help/str_mapper/img/[53]_map_topografica.png" alt="53" title="Esempio mappa 3"></p>
+</li>
+<li>
+<p>Marcatori stazioni disponibili sul portale;</p>
+<p>L'indicatore <img src="/bobo-help/str_mapper/img/pulsico/staz_sospesa.png" height="40px"></img> identifica le stazione attive, ma SOSPESE sul portale.</p>
+</li>
+<li>
+<p>Informazioni sul proprietario del portale;</p>
+</li>
+</ol>
+<h2 id="marcatori-stazioni-disponibili-sul-portale">Marcatori stazioni disponibili sul portale</h2>
+<p>Una volta individuata la stazione interessata, cliccando sul marcatore corrispondente, verrà visualizzata la finestra relativa contenente le informazioni e i links alle pagine di anagrafica, sinottico e dati in real time.</p>
+<p><img src="/bobo-help/str_mapper/img/[60]_map_popup.png" alt="60" title="Mappa con marcatori"></p>
+<ol>
+<li>
+<p>Schede della pagina:</p>
+<ul>
+<li>Mappa: schermata visualizzata in questo momento;</li>
+<li>Eventuali schede <u>Anagrafica</u> <img src="/bobo-help/str_mapper/img/pulsico/anagrafica.png" height="40px"></img>, <u>Sinottico</u> <img src="/bobo-help/str_mapper/img/pulsico/sinottico.png" height="40px"></img> e <u>Real Time</u> <img src="/bobo-help/str_mapper/img/pulsico/realtime.png" height="40px"></img> delle stazioni selezionate;</li>
+</ul>
+</li>
+<li>
+<p>Finestra informativa della stazione selezionata;</p>
+</li>
+<li>
+<p>Links:</p>
+<h3 id="scheda-%22anagrafica%22">Scheda &quot;Anagrafica&quot;</h3>
+<p>In questa sezione è possibile visualizzare i dati anagrafici della stazione selezionata in precedenza:</p>
+<p><img src="/bobo-help/str_mapper/img/[70]_anagr_staz.png" alt="70" title="Anagrafica stazione"></p>
+<ol>
+<li>Immagine della stazione;</li>
+<li>Dati anagrafici della stazione.</li>
+</ol>
+<h3 id="scheda-%22sinottico%22">Scheda &quot;Sinottico&quot;</h3>
+<p>In questa sezione è possibile visualizzare i grafici degli strumenti presenti sulla stazione di un certo periodo temporale impostato dall'utente.</p>
+<p><img src="/bobo-help/str_mapper/img/[80]_sinott_staz.png" alt="80" title="Sinottico stazione"></p>
+<ol>
+<li>
+<p>Pulsante <u>Aggiorna con i dati attuali</u>: aggiorna i grafici sottostantc con gli ultimi dati aggiornati;</p>
+</li>
+<li>
+<p>Periodo temporale;</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/str_mapper/img/[31]_calendar_date.png" alt="31" title="Calendario"></p>
+<p>      a. Data d'inizio;</p>
+<p>      b. Data di fine;</p>
+<p>      c. Pulsante <u>Applica</u>;</p>
+<p>      d. Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e. Calendario mese precedente;</p>
+<p>      f. Calendario mese corrente.</p>
+</li>
+<li>
+<p>Pulsante <u>Conversione dati</u>: attivando la conversione dei dati, il sistema applicherà il fattore di conversione impostato per i parametri presenti sulla stazione selezionata:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/str_mapper/img/pulsico/no.png" height="50px" width="80px"></img> --&gt; Parametri non convertiti</p>
+</li>
+<li>
+<p><img src="/bobo-help/str_mapper/img/pulsico/si.png" height="50px" width="80px"></img> --&gt; Parametri convertiti</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Grafici dei parametri presenti sulla stazione;</p>
+<p>Cliccando sul pulsante <img src="/bobo-help/str_mapper/img/pulsico/menu_grafico.png" height="40px" width="40px"></img> dei grafici è possibile visualizzare a schermo intero il grafico, stamparlo, estrarne i dati e salvarli in formato CSV, oppure salvarlo in formato JPEG o PDF.</p>
+<p><img src="/bobo-help/str_mapper/img/[81]_sinott_grafico_1.png" alt="81" title="Grafici sinottico"></p>
+<ol>
+<li>
+<p><u>Menu del grafico</u>;</p>
+</li>
+<li>
+<p><u>Filtro dei valori del grafico</u>;</p>
+<p>Inoltre, è possibile modificare il grafico impostando quali valori visualizzare e quali no cliccando sulle scritte presenti:</p>
+<p><img src="/bobo-help/str_mapper/img/[82]_sinott_grafico_2.png" alt="82" title="Grafici sinottico"></p>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="scheda-%22realtime%22">Scheda &quot;Realtime&quot;</h3>
+<p>In questa sezione è possibile osservare, in tempo reale, i dati che arrivano dagli strumenti presenti nella stazione selezionata:</p>
+<p><img src="/bobo-help/str_mapper/img/[90]_rt_staz.png" alt="90" title="Grafici sinottico"></p>
+<ol>
+<li>
+<p>Pulsante <img src="/bobo-help/str_mapper/img/pulsico/ulteriori_dettagli.png" height="40px"></img>: cliccando qui si verrà reindirizzati alla pagina &quot;Dati&quot; &gt; &quot;Dati istantanei&quot; dove saranno visualizzati i dati istantanei dei parametri, con i relativi strumenti a cui sono associati,0 in formato tabellare e suddivisi per tipologia di parametro (Chimici, Polveri, Diagnostici, ...);</p>
+</li>
+<li>
+<p>Barra di progressione dei dati istantanei e data/ora dell'ultimo dato ricevuto;</p>
+</li>
+<li>
+<p>Grafici dei dati;</p>
+<p><img src="/bobo-help/str_mapper/img/[91]_rt_grafico.png" alt="91" title="Grafici sinottico"></p>
+</li>
+</ol>
+</li>
+</ol>

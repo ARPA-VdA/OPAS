@@ -1,0 +1,80 @@
+﻿<h1 id="faq">FAQ</h1>
+<p>Per poter accedere a questa sezione è necessario cliccare sull'elemento "FAQ" presente nel menù a sinistra.</p>
+<h3>
+    > <span style="color:red">FAQ</span>
+</h3>
+<p>Le FAQ (Frequently Asked Questions) sono state create per consentire ai singoli utenti di realizzare un piccolo manuale personale condiviso con tutti gli altri utenti del portale.</p>
+<p><img src="/bobo-help/faq/img/[20]_faq_list.png" alt="20" title="Lista delle FAQ"></p>
+<ol>
+<li>Pulsante <u>Aggiungi argomento</u>;</li>
+<li>Lista degli argomenti e delle relative FAQ;</li>
+<li><u>Cerca parola chiave</u> nel testo delle FAQ;</li>
+<li>Pulsante <u>Cerca</u>;</li>
+<li>Titolo argomento selezionato dalla lista (punto 2);</li>
+<li>Pulsante <u>Inserisci nuova FAQ</u>;</li>
+<li>Elenco dei titoli delle FAQ associate all'argomento selezionato: al click su una delle FAQ la pagina scorrerà fino a visualizzare la domanda scelta;</li>
+<li>Visualizzazione FAQ relative all'argomento selezionato;</li>
+<li>Pulsante <u>Modifica</u>;</li>
+<li>Pulsante <u>Elimina</u>;</li>
+</ol>
+<h2 id="pulsante-aggiungi-argomento">Pulsante Aggiungi argomento</h2>
+<p>Premendo questo pulsante è possibile inserire un nuovo argomento digitando nel relativo campo il titolo che gli si vuole assegnare e premendo il pulsante "Inserisci" per confermare l'operazione.</p>
+<p><img src="/bobo-help/faq/img/[31]_insert_new_arg.png" alt="31" title="Inserisci nuovo Argomento"></p>
+<ol>
+<li>Campo inserimento testo;</li>
+<li>Pulsante <u>Annulla</u>;</li>
+<li>Pulsante <u>Inserisci</u>;</li>
+</ol>
+<h2 id="lista-degli-argomenti-e-delle-relative-faq">Lista degli argomenti e delle relative FAQ</h2>
+<p>In questa sezione viene visualizzata la lista di tutti gli argomenti inseriti e le relative FAQ.</p>
+<p><img src="/bobo-help/faq/img/[30]_tend_faqs.png" alt="30" title="Menu a tendina delle FAQ"></p>
+<ol>
+<li>Campo inserimento testo;</li>
+<li>Elenco dei titoli degli argomenti e delle relative FAQ;</li>
+</ol>
+<p>Inoltre, è possibile effettuare una ricerca dei titoli degli argomenti e delle FAQ inserendo una parola/lettera chiave nel campo di ricerca.</p>
+<p><img src="/bobo-help/faq/img/[40]_tend_faqs2.png" alt="40" title="Menu a tendina delle FAQ"></p>
+<h2 id="cerca-parola-chiave-nel-testo-delle-faq">Cerca parola chiave nel testo delle FAQ</h2>
+<p>È possibile effettuare ricerche anche direttamente nel testo delle FAQ presenti sul portale. Una volta inserita la parola chiave, cliccare sul pulsante "Cerca"; verranno visualizzati i risultati della ricerca con, in particolare, l'evidenziazione delle parole cercate.</p>
+<p><img src="/bobo-help/faq/img/[50]_keysearch.png" alt="50" title="Ricerca FAQ tramite parole chiave"></p>
+<ol>
+<li>Campo inserimento testo;</li>
+<li>Pulsante <u>Cerca</u>;</li>
+<li>Risultati ricerca;</li>
+</ol>
+<h2 id="pulsante-inserisci-nuova-faq">Pulsante Inserisci nuova FAQ</h2>
+<p>Attraverso questo pulsante è possibile creare una nuova FAQ inserendo l'argomento a cui sarà associata (selezionare dal menù a tendina), il titolo e il testo. Una volta inseriti tutti i campi. Premere il pulsante "Inserisci" per confermare l'operazione.</p>
+<p>Prestare attenzione che <u>OGNI CAMPO È OBBLIGATORIO</u> (<span style="color:red">*</span>).</p>
+<p><img src="/bobo-help/faq/img/[60]_insert_new.png" alt="60" title="Inserisci nuova FAQ"></p>
+<ol>
+<li>Menu a tendina <u>Argomento</u>(<span style="color:red">*</span>obbligatorio);</li>
+<li>Campo <u>Titolo</u>(<span style="color:red">*</span>obbligatorio);</li>
+<li>Campo <u>Testo</u>(<span style="color:red">*</span>obbligatorio);</li>
+<li>Pulsante <u>Annulla</u>;</li>
+<li>Pulsante <u>Inserisci</u>;</li>
+</ol>
+<p>Premere il pulsante "Inserisci" per confermare l'operazione:</p>
+<p><img src="/bobo-help/faq/img/[70]_succes_insert.png" alt="70" title="Inserimento riuscito"></p>
+<h2 id="pulsante-modifica">Pulsante Modifica</h2>
+<p>Premendo questo pulsante <img src="/bobo-help/faq/img/[80]_puls_edit.png" height="50px" width="50px"></img>, è possibile modificare titolo e testo della FAQ corrispondente.</p>
+<p><img src="/bobo-help/faq/img/[81]_modify_faq.png" alt="80" title="Modifica FAQ"></p>
+<ol>
+<li>
+<p>Campo modifica titolo;</p>
+</li>
+<li>
+<p>Pulsanti <u>Salva</u>, <u>Annulla</u> e <u>Elimina</u> (vedi "Pulsante Elimina") <u>FAQ</u>;</p>
+<p><img src="/bobo-help/faq/img/[82]_save+annul.png" alt="82" title="Icone"></p>
+<p>a. Salva le modifiche apportate alla FAQ;
+b. Annulla le modifiche e torna alla semplice visualizzazione della FAQ;</p>
+</li>
+<li>
+<p>Campo modifica testo;</p>
+</li>
+</ol>
+<h2 id="pulsante-elimina">Pulsante Elimina</h2>
+<p>Premendo questo pulsante <img src="/bobo-help/faq/img/[83]_puls_del.png" height="50px" width="50px"></img>, è possibile eliminare la FAQ corrispondente.</p>
+<p>Verrà richiesta un'ulteriore conferma dell'eliminazione:</p>
+<p><img src="/bobo-help/faq/img/[90]_del_faq.png" alt="90" title="Elimina FAQ"></p>
+<p>Premete il pulsante Elimina per confermare l'operazione:</p>
+<p><img src="/bobo-help/faq/img/[100]_deleted.png" alt="100" title="Eliminazione effettuata"></p>

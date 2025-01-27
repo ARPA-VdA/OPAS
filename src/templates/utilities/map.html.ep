@@ -1,0 +1,52 @@
+% layout 'default';
+% title 'Mappa del portale';
+
+<!-- Row -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Mappa del portale</h4>
+                <h6 class="card-subtitle">Visualizzazione completa delle sezioni del portale</h6>
+                <div class="well no-padding">
+                <!-- Livello 1 root dell'albero non visualizzata, si parte da livello 2:
+                    > Se livello attuale uguale a livello precedente aggiungo solo elemento;
+                    > Se livello attuale maggiore del precedente annido un altro menu e aggiungo elemento;
+                    > Se livello attuale minore del precedente chiudo le N liste annidate
+                    (con N = differenza tra ultimo livello e livello corrente) e aggiungo elemento.
+
+                Finito di ciclare sulle voci del menu devo chiudere tutte liste rimaste aperte. -->
+                <ul id="map-nav">
+                <%
+                    my $last_level = 2;
+                    foreach my $menu_element (@{$sidebar_usermenu}) {
+
+                        if ($menu_element->{'menu_page_level'} == $last_level) { %>
+
+                            <li><%= $menu_element->{'page_name'} %></li>
+                    <%  } elsif ($menu_element->{'menu_page_level'} > $last_level){ %>
+
+                            <ul>
+                                <li><%= $menu_element->{'page_name'} %></li>
+                    <%  } else {
+
+                            for(my $i= $last_level; $i > $menu_element->{'menu_page_level'}; $i--){ %>
+
+                                </ul>
+                    <%      } %>
+
+                            <li><%= $menu_element->{'page_name'} %></li>
+                    <%  }
+
+                        $last_level = $menu_element->{'menu_page_level'};
+                    }
+
+                    for(; $last_level >= 2; $last_level--){ %>
+                        </ul>
+                <%  } %>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

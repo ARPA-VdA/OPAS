@@ -1,0 +1,9 @@
+% layout 'default';
+% title 'Demo';
+
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/demo.js'))%>" type="text/javascript"></script>
+
+<div>
+    Lorem ipsum...   
+</div>

@@ -1,0 +1,338 @@
+% layout 'default';
+% title 'Planning - attività';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/planning/attivita.js'))%>" type="text/javascript"></script>
+<script type="text/javascript">
+    var isCompAdmin = '<%= $company_admin %>';
+    var userComp = '<%= $user->{company_id} %>';
+
+    console.log('isCompAdmin: '+isCompAdmin);
+    console.log('userComp: '+userComp);
+</script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4 class="card-title">Visualizza le attività inserite nel PLANNING</h4>
+                        <h6 class="card-subtitle">Clicca sul singolo ticket per visualizzare l'attività che è stata inserita. Aggiungi e pianifica tutte le attività inerenti alla tua rete.</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#task-list" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-view-grid"></i></span> <span class="hidden-xs-down">Attività</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new" id="new-report" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-library-plus"></i></span> <span class="hidden-xs-down" id="inner-new-report">Nuovo</span></a> </li>
+                    % }
+                    <!-- <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#taskXX" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down" id="inner-new-report">Visualizza</span></a> </li> -->
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="task-list" role="tabpanel">
+                        <div class="row m-b-10 show-space-between-med">
+                            <div class="input-group col-md-3">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <select class="custom-select col-12" id="companies" name="companies">
+                                    % if( $company_admin == 1){
+                                    <option value="-1">Tutte le società</option>
+                                    % }
+                                    % foreach my $company (@{$companies}){
+                                        % if ($company->{'comp_id'} != 1){
+                                        <option value="<%= $company->{'comp_id'} %>"><%= $company->{'comp_name'}%></option>
+                                        % }
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="custom-select col-12" id="provinces" name="provinces" data-dest="stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                    % my $region = '';
+                                    % foreach my $province (@{$provinces}){
+
+                                        % if ($region eq ''){
+                                            <optgroup label="<%= $province->{'region_name'} %>">
+                                            <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                        % }else{
+                                            % if ($region eq $province->{'region_id'}){
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % } else {
+                                                </optgroup>
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }
+                                        % }
+                                        % $region = $province->{'region_id'};
+                                    % }
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="checkbox" id="hide-closed" name="hide-closed" class="js-switch" data-color="#79a030" checked/>
+                                <label for="hide-closed">Nascondi <b>chiusi</b></label>
+                            </div>
+                        </div>
+                        <table id="activities-table" class="display responsive table table-hover table-striped tbl-va-center resp-plus" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th>Creatore</th>
+                                    <th>Scadenza</th>
+                                    <th>Priorità</th>
+                                    <th>In&nbsp;carico</th>
+                                    <th>Chiusura</th>
+                                    <th>Assegnato</th>
+                                    <th>Tipo</th>
+                                    <th>Categoria</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Titolo</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th>Creatore</th>
+                                    <th>Scadenza</th>
+                                    <th>Priorità</th>
+                                    <th>In&nbsp;carico</th>
+                                    <th>Chiusura</th>
+                                    <th>Assegnato</th>
+                                    <th>Tipo</th>
+                                    <th>Categoria</th>
+                                    <th>Stazione</th>
+                                    <th>Strumento</th>
+                                    <th>Titolo</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo TICKET</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form class="form form-medium" id="newtic-form" name="newtic-form">
+                            <input type="hidden" class="clear-input" id="newtic-id" name="newtic-id" value="">
+                            <input type="hidden" class="clear-input" id="newtic-objtype" name="newtic-objtype" value="">
+                            <div class="form-group row">
+                                <label for="newtic-type" class="col-md-2 col-form-label">Tipo <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-type" name="newtic-type">
+                                        <option value="-1">Seleziona tipo...</option>
+                                        % foreach my $type (@{$types}){
+                                            <option value="<%= $type->{'tt_id'} %>"><%= $type->{'tt_desc'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="newtic-category" class="col-md-2 col-form-label">Categoria <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-category" name="newtic-category">
+                                        <option value="-1">Seleziona categoria...</option>
+                                        % foreach my $category (@{$categories}){
+                                            <option value="<%= $category->{'tc_id'} %>"><%= $category->{'tc_desc'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="newtic-urgency" class="col-md-2 col-form-label">Urgenza <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-urgency" name="newtic-urgency">
+                                        <option value="-1">Seleziona urgenza...</option>
+                                        % foreach my $urgency (@{$urgencies}){
+                                            <option value="<%= $urgency->{'tu_id'} %>"><%= $urgency->{'tu_desc'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="newtic-insdate" class="col-md-2 col-form-label mod-label hide-el">Inserito il <span class="text-danger">*</span></label>
+                                <div class="input-group col-md-4 hide-el">
+                                    <input type="text" class="form-control clear-input" id="newtic-insdate" name="newtic-insdate" placeholder="DD/MM/YYYY HH:mm" disabled>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row hide-el">
+                                <label for="newtic-expdate" class="col-md-2 col-form-label hide-exp">Scadenza il</label>
+                                <div class="input-group col-md-4 hide-exp">
+                                    <input type="text" class="form-control clear-input" id="newtic-expdate" name="newtic-expdate" placeholder="DD/MM/YYYY">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Specifiche del ticket</h5>
+                            <div class="form-group row">
+                                <label for="newtic-prov" class="col-md-2 col-form-label">Provincia</label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-prov" name="newtic-prov" data-dest="newtic-station">
+                                        <option value="-1">Seleziona provincia...</option>
+                                        % $region = '';
+                                        % foreach my $province (@{$provinces}){
+
+                                            % if ($region eq ''){
+                                                <optgroup label="<%= $province->{'region_name'} %>">
+                                                <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                            % }else{
+                                                % if ($region eq $province->{'region_id'}){
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % } else {
+                                                    </optgroup>
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }
+                                            % }
+                                            % $region = $province->{'region_id'};
+                                        % }
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <label for="newtic-station" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-station" name="newtic-station">
+                                        <option value="-1">Seleziona stazione..</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="newtic-equipment" class="col-md-2 col-form-label">Equipaggiamento</label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-equipment" name="newtic-equipment">
+                                        <option value="-1">Seleziona equipaggiamento...</option>
+                                    </select>
+                                </div>
+                                <label for="newtic-assigned" class="col-md-2 col-form-label">Assegnato a <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-assigned" name="newtic-assigned">
+                                        <option value="-1">Seleziona società..</option>
+                                        % foreach my $company (@{$companies}){
+                                            % if ($company->{'comp_id'} != 1){
+                                            <option value="<%= $company->{'comp_id'} %>"><%= $company->{'comp_name'}%></option>
+                                            % }
+                                        % }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="newtic-repeat" class="col-md-2 col-form-label">Ripetizione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-repeat" name="newtic-repeat">
+                                        <option value="-1">Seleziona ripetizione..</option>
+                                        % foreach my $frequency (@{$frequencies}){
+                                            <option value="<%= $frequency->{'tf_id'} %>"><%= $frequency->{'tf_desc'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <label for="newtic-repeat-dateto" class="col-md-2 col-form-label">Ripeti fino a</label>
+                                <div class="input-group col-md-4">
+                                    <input type="text" class="form-control clear-input" id="newtic-repeat-dateto" name="newtic-repeat-dateto" placeholder="DD/MM/YYYY">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Dettaglio ticket</h5>
+                            <div class="form-group row">
+                                <label for="newtic-title" class="col-md-2 col-form-label">Titolo <span class="text-danger">*</span></label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control clear-input" id="newtic-title" name="newtic-title" placeholder="Titolo...">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="newtic-body" class="col-md-2 col-form-label">Descrizione <span class="text-danger">*</span></label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control clear-input" rows="6" id="newtic-body" name="newtic-body"></textarea>
+                                </div>
+                            </div>
+                            <h5 class="divider-title">Notifiche via email</h5>
+                            <div class="form-group row">
+                                <label for="newtic-email" class="col-md-2 col-form-label">Mailing Lists</label>
+                                <div class="col-md-4 m-b-15">
+                                    <select class="custom-select clear-select col-md-12" id="newtic-email" name="newtic-email" multiple>
+                                        % foreach my $list (@{$lists}){
+                                            <option data-comp="<%= $list->{'comp_id'} %>" data-desc="<%= $list->{'ml_description'} %>" value="<%= $list->{'ml_id'} %>"><%= $list->{'ml_name'}%></option>
+                                        % }
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="text-info m-b-10">Dettaglio Mailing Lists</h5>
+                                    <h6 class="card-subtitle">Di seguito il dettaglio delle mailing lists selezionate</h6>
+                                    <ul class="spaced-list" id="ml-details">
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr class="m-t-30">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-info" name="confirm-newtic-form" id="confirm-newtic-form"> <i class="ti-save"></i> Inserisci ticket</button>
+                                    <button type="button" class="btn btn-primary" name="clear-newtic-form" id="clear-newtic-form"> <i class="ti-share-alt"></i> Svuota campi</button>
+                                    <button type="button" class="btn btn-inverse" name="cancel-newtic-form" id="cancel-newtic-form">Annulla</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL CAMBIO STATO -->
+<div class="modal fade" id="ticket-comment" tabindex="-1" role="dialog" aria-labelledby="ticket-comment" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"><i class="icon-speech"></i> Modifica ticket</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="form" id="changestatus-form" name="changestatus-form">
+                <div class="modal-body">
+                    <h5 class="divider-title m-t-20 m-b-20">Aggiungi una <strong>nota al ticket</strong></h5>
+                    <input type="hidden" id="changestatus-id" name="changestatus-id" value="">
+                    <input type="hidden" id="changestatus-status" name="changestatus-status" value="taken charge">
+                    <div class="form-group row">
+                        <label for="changestatus-maintenance" class="col-md-2 col-form-label">Manutenzione</label>
+                        <div class="col-md-10">
+                            <select class="custom-select col-md-12" id="changestatus-maintenance" name="changestatus-maintenance">
+                                <option value="-1">Seleziona manutenzione..</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="changestatus-note" class="col-md-2 col-form-label">Note</label>
+                        <div class="col-md-10">
+                            <textarea class="form-control clear-input changestatus-note" rows="6" id="changestatus-note" name="changestatus-note"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirm-changestatus" name="confirm-opentic" id="confirm-opentic"><i class="ti-back-left"></i> Riapri ticket</button>
+                    <button type="button" class="btn btn-info confirm-changestatus" name="confirm-closetic" id="confirm-closetic"><i class="ti-back-right"></i> Chiudi ticket</button>
+                    <button type="button" class="btn btn-link" data-dismiss="modal" id="changestatus-cancel"><i class="ti-close"></i> Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,137 @@
+<h1 id="statistiche---reportistica">STATISTICHE - REPORTISTICA</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Statistiche&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Reportistica&quot;.</p>
+<h3>
+    > Statistiche<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Reportistica</span>
+</h3>
+<p>La pagina è suddivisa in due macro sezioni:</p>
+<p><img src="/bobo-help/stat_reportistica/img/[10]_schede.png" alt="10" title="Schede"></p>
+<h2 id="genera-pdf">Genera PDF</h2>
+<p>In questa sezione è possibile calcolare le statistiche giornaliere, mensili o annuali di una determinata zona della propria rete di appartenenza e generare il relativo PDF con la possibilità di effettuarne il download.</p>
+<p><img src="/bobo-help/stat_reportistica/img/[20]_calcolo_e_pdf.png" alt="20" title="Calcolo e PDF"></p>
+<ol>
+<li>
+<p>Selezione della tipologia di statistiche (<span style="color:red">*</span>obbligatorio);</p>
+<p><img src="/bobo-help/stat_reportistica/img/[21]_selez_tipologia.png" alt="21" title="Seleziona tipologia"></p>
+<p>In base alla tipologia scelta verranno visualizzati ulteriori campi da compilare:</p>
+<ul>
+<li>
+<p>Giornaliere</p>
+<p><img src="/bobo-help/stat_reportistica/img/[22]_giornaliere.png" alt="22" title="Campi giornaliere"></p>
+<p>Verrà visualizzato il seguente form per la selezione della data:</p>
+<p><img src="/bobo-help/stat_reportistica/img/[60]_data.png" alt="60" title="Selezione data"></p>
+<ol>
+<li>Mese precedente;</li>
+<li>Mese successivo;</li>
+<li>Anno precedente;</li>
+<li>Anno successivo;</li>
+<li>Scelta del giorno;</li>
+<li>Pulsanti 'Annulla' (ritorna alla schermata precedente) e 'OK' (imposta la data selezionata);<br><br></li>
+</ol>
+</li>
+<li>
+<p>Mensili</p>
+<p><img src="/bobo-help/stat_reportistica/img/[23]_mensili.png" alt="23" title="Campi mensili"></p>
+<ol>
+<li>Selezione del mese (<span style="color:red">*</span>obbligatorio);</li>
+<li>Selezione dell'inquinante (<span style="color:red">*</span>obbligatorio);</li>
+<li>Eventuali note;</li>
+</ol>
+</li>
+<li>
+<p>Annuali</p>
+<p><img src="/bobo-help/stat_reportistica/img/[24]_annuali.png" alt="24" title="Campi annuali"></p>
+<ol>
+<li>Selezione dell'anno (<span style="color:red">*</span>obbligatorio);</li>
+<li>Selezione dell'inquinante (<span style="color:red">*</span>obbligatorio);</li>
+<li>Eventuali note;</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p>Selezione della zona (<span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Eventuali note, OPPURE selezionare l'utente <u>Firmatario</u> del report (disponibile se si seleziona la tipologia 'Mensili' o 'Annuali' - campo <span style="color:red">*</span>obbligatorio);</p>
+</li>
+<li>
+<p>Pulsanti:</p>
+<ul>
+<li>
+<p><img src="/bobo-help/stat_reportistica/img/pulsico/verifica-stato.png" height="50px"></img> : tramite questo pulsante vengono verificati i dati delle stazioni relative a periodo, zona e inquinante selezionati. I controlli che vengono effettuati sono:</p>
+<ul>
+<li>presenza di dati negativi;</li>
+<li>presenza di dati non &quot;visti&quot; dal validatore;</li>
+</ul>
+<p>Una volta completati i controlli verrà visualizzato uno dei seguenti messaggi in base al risultato delle operazioni di verifica:</p>
+<ul>
+<li>Tutto OK:</li>
+</ul>
+<p><img src="/bobo-help/stat_reportistica/img/[22-2]_msg_controllo_completato.png" alt="22-2" title="Controllo completato - OK"></p>
+<ul>
+<li>Qualora risultino problemi durante il controllo, questi verranno elencati permettendo all'utente di verificare i dati prima di riprovare ad effettuare l'operazione:</li>
+</ul>
+<p><img src="/bobo-help/stat_reportistica/img/[22-3]_alert_controllo_completato.png" alt="22-3" title="Controllo completato - KO"></p>
+</li>
+<li>
+<p><img src="/bobo-help/stat_reportistica/img/pulsico/calcola-stat.png" height="50px"></img> : tramite questo pulsante verrà effettuata la richiesta di calcolo delle statistiche relative a tipologia, periodo, e zona e scelti dall'utente, al sistema. Le statistiche verranno calcolate per <u>TUTTI</u> gli inquinanti analizzati dalle stazioni associate alla zona scelta.</p>
+<p>Verrà visualizzato il seguente messaggio:</p>
+<p><img src="/bobo-help/stat_reportistica/img/[22-4]_msg_richiesta_inoltrata.png" alt="22-4" title="Richiesta inoltrata"></p>
+<p>A questo punto l'utente può continuare ad utilizzare il portale anche cambiando la pagina visualizzata poiché, una volta terminato il calcolo delle statistiche, il sistema invierà una notifica, posta in alto a destra sullo schermo:</p>
+<p><img src="/bobo-help/stat_reportistica/img/[22-5]_successo.png" alt="22-5" title="Calcolo avvenuto con successo"></p>
+</li>
+<li>
+<p><img src="/bobo-help/stat_reportistica/img/pulsico/genera-pdf.png" height="50px"></img> : tramite questo pulsante verrà generato il file PDF del report relativo alle statistiche appena calcolate. A differenza del calcolo delle statistiche, la generazione del PDF riguarda <u>SOLAMENTE</u> l'inquinante scelto dall'utente in fase di compilazione del form di calcolo.</p>
+<p>Se l'operazione è andata buon fine, verrà visualizzato il seguente messaggio e il file richiesto sarà presente nella tabella sottostante:</p>
+<p><img src="/bobo-help/stat_reportistica/img/[22-6]_pdf_successo.png" alt="22-6" title="Genera PDF"></p>
+</li>
+<li>
+<p><img src="/bobo-help/stat_reportistica/img/pulsico/annulla.png" height="50px"></img> : tramite questo pulsante è possibile ripulire l'intero form;</p>
+</li>
+</ul>
+<p>L'utilizzo dei tre pulsanti principali (quindi 'Annulla' escluso) è sequenziale: bisogna procedere in ordine logico da sinistra a destra e completare ogni passaggio prima di &quot;sbloccare&quot; il successivo.</p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei report sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella dei report;</p>
+<p>Nella seconda colonna è presente l'indicazione della tipologia del report:</p>
+<ul>
+<li><img src="/bobo-help/stat_reportistica/img/pulsico/giornaliera.png" height="40px"></img></li>
+<li><img src="/bobo-help/stat_reportistica/img/pulsico/mensile.png" height="40px"></img></li>
+<li><img src="/bobo-help/stat_reportistica/img/pulsico/annuale.png" height="40px"></img></li>
+</ul>
+</li>
+<li>
+<p>Pulsante  <img src="/bobo-help/stat_reportistica/img/pulsico/scarica-pdf.png" height="40px"></img> : tramite questo pulsante è possibile effettuare il download del pdf scelto dall'elenco di quelli disponibili;</p>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>
+<h2 id="statistiche-tabellari">Statistiche tabellari</h2>
+<p>In questa sezione è possibile visualizzare le statistiche precedentemente calcolate, impostando un periodo temporale specifico, una determinata zona e, per quanto riguarda quelle giornaliere, la stazione da visualizzare, mentre, per quanto riguarda quelle mensili ed annuali, l'inquinante da visualizzare.</p>
+<p><img src="/bobo-help/stat_reportistica/img/[30]_stat_tabellari.png" alt="30" title="Calcolo e PDF"></p>
+<p>Per impostare il periodo temporale:</p>
+<p>Una volta compilati i filtri verrà generata la seguente tabella:</p>
+<ul>
+<li>
+<p>Statistiche GIORNALIERE</p>
+<p><img src="/bobo-help/stat_reportistica/img/[31]_giornaliere.png" alt="31" title="Giornaliere"></p>
+</li>
+<li>
+<p>Statistiche MENSILI/ANNUALI</p>
+<p><img src="/bobo-help/stat_reportistica/img/[32]_mensili_annuali.png" alt="32" title="Mensili / Annuali"></p>
+</li>
+</ul>
+<p>All'interno delle tabelle possono essere presenti, oltre alle semplici statistiche in colore nero:</p>
+<ul>
+<li><em>nr</em> -&gt; dato non rilevato</li>
+<li><em>nd</em> -&gt; dato non disponibile</li>
+<li>dato in <span style="color:red">rosso</span> -&gt; superamento del relativo limite</li>
+</ul>

@@ -1,0 +1,73 @@
+<h1 id="dati---allarmi">ALLARMI</h1>
+<p>Per poter accedere a questa sezione occorre cliccare sulla voce &quot;Dati&quot; posta nel menu principale di sinistra ed in seguito cliccare sull'elemento &quot;Allarmi&quot;.</p>
+<h3>
+    > Dati<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i>o</i> <span style="color:red">Allarmi</span>
+</h3>
+<p>Questa pagina permette di visualizzare gli allarmi riferiti alle stazioni e filtrali in base alle proprie esigenze.</p>
+<p><img src="/bobo-help/dat_allarmi/img/[10]_home.png" alt="10" title="Home"></p>
+<ol>
+<li>
+<p>Periodo temporale:</p>
+<p>Attraverso questo strumento è possibile impostare il periodo temporale per la visualizzazione dei dati.</p>
+<p>È importante ricordare che, per impostare il periodo, è SEMPRE NECESSARIO CLICCARE DUE VOLTE, una per il giorno d'inizio e una per il giorno di fine.</p>
+<p>Una volta selezionato il periodo, premere il pulsante Applica per completare l'operazione.</p>
+<p><img src="/bobo-help/dat_allarmi/img/[31]_calendar_date.png" alt="31" title="Calendario - Periodo temporale"></p>
+<p>      a.  Data d'inizio;</p>
+<p>      b.	Data di fine;</p>
+<p>      c.	Pulsante <u>Applica</u>;</p>
+<p>      d.	Pulsante <u>Annulla</u>: chiude la finestra del periodo temporale;</p>
+<p>      e.	Calendario mese precedente;</p>
+<p>      f.	Calendario mese corrente.</p>
+</li>
+<li>
+<p>Elenco reti disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco province disponibili sul portale;</p>
+</li>
+<li>
+<p>Elenco stazioni disponibili sul portale;</p>
+<p><img src="/bobo-help/dat_allarmi/img/[27]_stazioni.png" alt="27" title="Seleziona stazione"></p>
+</li>
+<li>
+<p>Pulsante <u>Nascondi Porta Aperta</u>: se attivato, gli allarmi di tipo &quot;Porta Aperta&quot; non verranno visualizzati nella tabella sottostante:</p>
+<p>Attivo -&gt; <img src="/bobo-help/dat_allarmi/img/[50]_interr_attivo.png" height="40px"></img></p>
+<p>Disattivo -&gt; <img src="/bobo-help/dat_allarmi/img/[51]_interr_disattivo.png" height="40px"></img></p>
+</li>
+<li>
+<p>Pulsanti <u>CSV</u> - <u>PDF</u> - <u>STAMPA</u> : è possibile scaricare l'elenco dei dissesti sottostanti in due formati, CSV e PDF, oppure stamparlo direttamente;</p>
+</li>
+<li>
+<p><u>Filtro di ricerca nella tabella</u>: la ricerca viene effettuata su tutte le colonne;</p>
+</li>
+<li>
+<p>Tabella degli allarmi: verranno visualizzate le seguenti informazioni:</p>
+<ul>
+<li>
+<p>Data/ora;</p>
+</li>
+<li>
+<p>Stazione;</p>
+</li>
+<li>
+<p>Tipo di allarme:</p>
+<ul>
+<li><img src="/bobo-help/dat_allarmi/img/[20]_allarme_porta.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[21]_allarme_flusso.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[61]_allarme_gas_co.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[22]_allarme_temp_alta.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[62]_allarme_temperatura_sonda.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[23]_allarme_tensione.png" height="40px"></img></li>
+<li><img src="/bobo-help/dat_allarmi/img/[60]_allarme_alimentazione.png" height="40px"></img></li>
+</ul>
+</li>
+<li>
+<p>Se l'allarme è rientrato oppure no: Rientrato -&gt; <img src="/bobo-help/dat_allarmi/img/[25]_allarme_rientrato.png" height="30px"></img> | Non rientrato -&gt; <img src="/bobo-help/dat_allarmi/img/[24]_allarme_non_rientrato.png" height="30px"></img>;</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Esplorazione delle pagine;</p>
+</li>
+</ol>

@@ -1,0 +1,75 @@
+-- ----------------------------------------------------------------------------------
+-- curl
+-- ----------------------------------------------------------------------------------
+http://askubuntu.com/questions/299870/http-post-and-get-using-curl-in-linux
+
+-- ----------------------------------------------------------------------------------
+-- cygwin
+-- ----------------------------------------------------------------------------------
+perl-JSON-PP | perl-json_pp
+
+
+-- ----------------------------------------------------------------------------------
+-- online via GET
+-- ----------------------------------------------------------------------------------
+
+-- 1 <-> 1
+curl "https://presidi2.regione.vda.it/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_param\[\]=1" > data1.zip
+
+-- 1 <-> 2
+curl "https://presidi2.regione.vda.it/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_param\[\]=1&duallistbox_param\[\]=7" > data2.zip
+curl "https://presidi2.regione.vda.it/str_dataview_get_data?dateFrom=2020-10-01&dateTo=2020-10-19%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_param\[\]=209&duallistbox_param\[\]=30" > data2a.zip
+curl "https://presidi2.regione.vda.it/str_dataview_get_data?dateFrom=2020-10-01&dateTo=2020-10-19%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1320&duallistbox_param\[\]=209&duallistbox_param\[\]=30" > data2b.zip
+
+
+-- 2 <-> 2
+curl "https://presidi2.regione.vda.it/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_stat\[\]=3000&duallistbox_param\[\]=1&duallistbox_param\[\]=7" > data3.zip
+
+
+-- test CSRF protection
+curl --data "prid=1" --data "aggr=hh" http://192.168.168.54:3000/str_dataview_get_map_last_data
+{"res":"ERROR csrf check failed","status":403}
+curl --data "prid=1" http://192.168.168.54:3000/str_dataview_get_allparams_data
+curl --data "prid=1" http://192.168.168.54:3000/str_dataview_get_allparams_data_tbl
+curl --data "prid=1" http://192.168.168.54:3000/str_dataview_get_windrose_data
+
+
+
+
+-- ----------------------------------------------------------------------------------
+-- localhost
+-- ----------------------------------------------------------------------------------
+curl "http://127.0.0.1:3000/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_param\[\]=1" > data1.zip
+curl "http://127.0.0.1:3000/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_param\[\]=1&duallistbox_param\[\]=7" > data2.zip
+curl "http://127.0.0.1:3000/str_dataview_get_data?dateFrom=2019-11-01&dateTo=2019-11-02%2023:59:59&dw-temp=1&dw-reason=1&duallistbox_stat\[\]=1000&duallistbox_stat\[\]=3000&duallistbox_param\[\]=1&duallistbox_param\[\]=7" > data3.zip
+
+
+:: -- ----------------------------------------------------------------------------------
+:: -- localhost POST - NOT USED
+:: -- ----------------------------------------------------------------------------------
+:: -- 1 <-> 1
+:: curl --data "dateFrom=2019-11-01" --data "dateTo=2019-11-01 23:59:59" \
+::     --data "stidArr=[1000]" --data "pridArr=[1]" \
+::     http://127.0.0.1:3000/str_dataview_get_data \
+::     > data.zip
+::
+:: -- 1 <-> 2
+:: curl --data "dateFrom=2019-11-01" --data "dateTo=2019-11-01 23:59:59" \
+::     --data "stidArr=[1000]" --data "pridArr=[1,7]" \
+::     http://127.0.0.1:3000/str_dataview_get_data \
+::     > data.zip
+::
+:: -- 2 <-> 2
+:: curl --data "dateFrom=2019-11-01" --data "dateTo=2019-11-01 23:59:59" \
+::     --data "stidArr=[1000, 1020]" --data "pridArr=[1,7]" \
+::     http://127.0.0.1:3000/str_dataview_get_data \
+::     > data.zip
+
+
+
+
+-- ----------------------------------------------------------------------------------
+-- FAQ
+-- ----------------------------------------------------------------------------------
+curl --data "id=12" --data "title=Bollettino Rai" --data "text=Test" https://presidi2.regione.vda.it/faq_tech
+

@@ -1,0 +1,68 @@
+% layout 'default';
+% title 'Notifiche delle stazioni';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/divulgazione/notifiche.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Gestione delle notifiche</h4>
+                <h6 class="card-subtitle">Gestisci le notifiche che vuoi ricevere relativamente alle stazioni di tua competenza</h6>
+
+                <div id="multi-notify" class="m-b-20">
+                    <div class="row">
+                        <div class="col-md-6 m-t-5">
+                            <strong class="font-italic">Gestisci le notifiche</strong> per tutte le stazioni che hai selezionato.
+                        </div>
+                        <div class="col-md-3 email">
+                            Email: <input type="checkbox" data-notify="email" class="mody-st" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android">
+                        </div>
+                        <div class="col-md-3 telegram">
+                            Telegram: <input type="checkbox" data-notify="telegram" class="mody-st" data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="sm" data-style="android">
+                        </div>
+                    </div>
+                </div>
+
+                <table id="stations-notify" class="display responsive table table-striped table-hover table-compressed-middle v-middle" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>ID stazione</th>
+                            <th>Stazione</th>
+                            <th>Rete</th>
+                            <th>Prov.</th>
+                            <th>Email</th>
+                            <th>Telegram</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th></th>
+                            <th>ID stazione</th>
+                            <th>Stazione</th>
+                            <th>Rete</th>
+                            <th>Prov.</th>
+                            <th>Email</th>
+                            <th>Telegram</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
