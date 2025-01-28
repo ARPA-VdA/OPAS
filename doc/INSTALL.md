@@ -11,7 +11,7 @@
 * ### Installare il sistema operativo (OS) "Ubuntu 24.04.1 LTS" tramite l'immagine (ISO) da scaricare al seguente link:
 
     https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso
-## AGGIUNGERE DETTAGLI SU PARAMETRI DI INSTALLAZIONE DI Ubuntu (Ex. pacchetti, layout tastiera e lingua)
+
 ## POST INSTALLAZIONE
 
 * ### Accesso alla macchina virtuale appena creata tramite *SSH*

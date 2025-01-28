@@ -1,4 +1,5 @@
-# PROGETTO OPAS
+# OPAS
+PROGETTO OPAS: OPen Air System
 
 Il sistema OPAS è composto da un insieme di componenti Hardware e Software che vanno a formare un'infrastruttura atta alla gestione di molteplici reti di monitoraggio dati sia chimici che meteo.
 
@@ -29,4 +30,4 @@ Via shell:
 $ git clone ...
 ```
 
-Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzione del file *INSTALL.md*.
+Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzione del file in doc/*INSTALL.md*.
