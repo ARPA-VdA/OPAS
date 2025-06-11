@@ -74,13 +74,63 @@ $(document).ready(function() {
         "dom": '<"row"<"col-6" B><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
         // 'copy', 'csv', 'excel', 'pdf', 'print'
         "buttons": [
-            'csv',
             'pdf',
             {
                 "extend": 'print',
                 "text"  : 'STAMPA'
-            }
+            },
+            {
+                // text: '<i class="fa-solid fa-arrow-down-to-line fa-lg" aria-hidden="true"></i>',
+                text: '<i class="fa-solid fa-file-excel"></i> CSV',
+                className: 'btn-custom',
+                extend: 'csv',
+                action: function ( ) {
+                    $('.inner-preloader').show();
+
+                    this.processing(false);
+                    
+                    // get selected data
+                    var prid  = $( "#provinces" ).val();
+                    var stid  = $( "#stations" ).val();
+                    var pack  = $( "#analytics" ).val();
+                    
+                    // download url
+                    var url = "/rep_alims_get_csv_reports"; 
+                    /*http://johnculviner.com/category/jquery-file-download/*/
+                    // GET per poter eseguire il download da smartphone
+                    $.fileDownload(url, {
+                        httpMethod: 'POST',
+                        data: {
+                            from : dateFrom,
+                            to   : dateTo,
+                            prid : prid,
+                            stid : stid,
+                            pack : pack
+                        },
+                        successCallback: function(url) {
+
+                            // console.dir(result);
+                            console.log('csv scaricato ...');
+                            $('.inner-preloader').hide();
+
+                            swal("Perfetto!", "File CSV creato e scaricato con successo. Lo puoi trovare nella cartella dei downloads", "success");
+
+                        },
+                        failCallback: function(responseHtml, url, error) {
+
+                            console.log('il file csv non è stato creato oppure errore durante lo scarico.');
+                            $('.inner-preloader').hide();
+                            swal("Errore!", "Ops! Qualcosa è andato storto.", "error");
+                        }
+                    });
+
+                    console.log('End download');
+
+                    return false; //this is critical to stop the click event which will trigger a normal file download!
+                }
+            },
         ],
+        processing: false,
         responsive: {
             details: {
                 type: 'column',
@@ -1326,7 +1376,7 @@ $(document).ready(function() {
             var filters = result.filters;
 
             // add link for the new tab
-            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#rep'+rpid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+el.rep_number+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-report" data-close="rep'+rpid+'"></i></a></li>';
+            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#rep'+rpid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+el.rep_number+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-report" data-close="rep'+rpid+'"></i></a></li>';
             $('.nav').append(html);
 
             // variable for dinamically building the html

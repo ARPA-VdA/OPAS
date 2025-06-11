@@ -314,7 +314,9 @@ $(document).ready(function() {
         $('#form-shortcut-icons .clear-select').trigger('change');
     });
 }
+});
 
+// GLOBAL FUNCTIONS
     // UTILITIES
     //////////////////////////////////////////////////////////
     /**
@@ -329,9 +331,7 @@ $(document).ready(function() {
             switchElement.handleOnchange(true);
         }
     }
-});
 
-// GLOBAL FUNCTIONS
 // MAIN
 //////////////////////////////////////////////////////////
 

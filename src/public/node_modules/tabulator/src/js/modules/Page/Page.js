@@ -2,7 +2,12 @@ import Module from '../../core/Module.js';
 
 import defaultPageCounters from './defaults/pageCounters.js';
 
-class Page extends Module{
+export default class Page extends Module{
+
+	static moduleName = "page";
+
+	//load defaults
+	static pageCounters = defaultPageCounters;
 	
 	constructor(table){
 		super(table);
@@ -38,6 +43,7 @@ class Page extends Module{
 		// this.registerTableOption("paginationDataSent", {}); //pagination data sent to the server
 		// this.registerTableOption("paginationDataReceived", {}); //pagination data received from the server
 		this.registerTableOption("paginationAddRow", "page"); //add rows on table or page
+		this.registerTableOption("paginationOutOfRange", false); //reset the current page when the last page < this.page, values: false|function|any value accepted by setPage()
 		
 		this.registerTableOption("progressiveLoad", false); //progressive loading
 		this.registerTableOption("progressiveLoadDelay", 0); //delay between requests
@@ -178,7 +184,7 @@ class Page extends Module{
 	
 	userSetPageToRow(row){
 		if(this.table.options.pagination){
-			row = this.rowManager.findRow(row);
+			row = this.table.rowManager.findRow(row);
 			
 			if(row){
 				return this.setPageToRow(row);
@@ -797,7 +803,7 @@ class Page extends Module{
 	}
 	
 	_parseRemoteData(data){
-		var margin;
+		var margin, paginationOutOfRange;
 		
 		if(typeof data.last_page === "undefined"){
 			console.warn("Remote Pagination Error - Server response missing '" + (this.options("dataReceiveParams").last_page || "last_page") + "' property");
@@ -844,6 +850,17 @@ class Page extends Module{
 				
 				return false;
 			}else{
+
+				if(this.page > this.max){
+					console.warn( "Remote Pagination Error - Server returned last page value lower than the current page" );
+
+					paginationOutOfRange = this.options('paginationOutOfRange');
+
+					if(paginationOutOfRange){
+						return this.setPage(typeof paginationOutOfRange === 'function' ? paginationOutOfRange.call(this, this.page, this.max) :	paginationOutOfRange);
+					}
+				}
+
 				// left = this.table.rowManager.scrollLeft;
 				this.dispatchExternal("pageLoaded",  this.getPage());
 				// this.table.rowManager.scrollHorizontal(left);
@@ -872,10 +889,3 @@ class Page extends Module{
 		}
 	}
 }
-
-Page.moduleName = "page";
-
-//load defaults
-Page.pageCounters = defaultPageCounters;
-
-export default Page;

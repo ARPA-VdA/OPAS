@@ -405,6 +405,18 @@ sub get_highcharts_data_by_dates {
             my $decimals = $param->{'decimals'};
             my $formule  = $param->{'formule'};
             my $stprid   = $param->{'st_pr_id'};
+            my $prid     = $param->{'param_id'};
+            my $table;
+
+            # check if stprid greater than 0
+            # if true then it's a normal station-parameter
+            # otherwise it is a parameter linked to an allocated MM
+            if( $stprid > 0){
+                $table = 'metadata.stations_parameters';
+            }
+            else{
+                $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+            }
 
             $formule =~ s/y=//;
             # $formule =~ s/x/tbl.measure_value/;
@@ -413,9 +425,9 @@ sub get_highcharts_data_by_dates {
             my $max  = $formule;
 
             if ($param->{'converted'}) {
-                $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-                $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-                $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+                $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+                $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+                $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
             }
             else {
                 $mean =~ s/x/tbl.measure_value/g;
@@ -456,7 +468,7 @@ sub get_highcharts_data_by_dates {
                                 ELSE NULL
                             END
                         ] AS measure_max
-                    FROM clients.f_data_extraction(?::integer, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl
+                    FROM clients.f_data_extraction(?, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl
             };
 
             if ($hide_nulls eq 'true') {
@@ -467,7 +479,7 @@ sub get_highcharts_data_by_dates {
                 ),
                 a AS (
                     SELECT
-                        ?::integer AS stpr_id,
+                        ?::bigint AS stpr_id,
                         ARRAY(SELECT measure_value FROM d) AS station_param_values,
                         ARRAY(SELECT measure_min FROM d)   AS station_min_values,
                         ARRAY(SELECT measure_max FROM d)   AS station_max_values
@@ -498,7 +510,7 @@ sub get_highcharts_data_by_dates {
                     END AS station_max_values
                 FROM
                     a
-                    LEFT JOIN metadata.stations_parameters sp USING (stpr_id)
+                    LEFT JOIN $table sp USING (stpr_id)
                     LEFT JOIN metadata.parameters p USING (param_id)
                     LEFT JOIN metadata.stations s USING (station_id)
             };
@@ -539,6 +551,18 @@ sub get_highcharts_moving_average {
     my $decimals = $param->{'decimals'};
     my $formule = $param->{'formule'};
     my $stprid  = $param->{'st_pr_id'};
+    my $prid    = $param->{'param_id'};
+    my $table;
+
+    # check if stprid greater than 0
+    # if true then it's a normal station-parameter
+    # otherwise it is a parameter linked to an allocated MM
+    if( $stprid > 0){
+        $table = 'metadata.stations_parameters';
+    }
+    else{
+        $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+    }
 
     $formule =~ s/y=//;
     # $formule =~ s/x/tbl.measure_value/;
@@ -548,9 +572,9 @@ sub get_highcharts_moving_average {
     my $max  = $formule;
 
     if ($param->{'converted'}) {
-        $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-        $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-        $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+        $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+        $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+        $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
     }
     else {
         $mean =~ s/x/tbl.measure_value/g;
@@ -584,7 +608,7 @@ sub get_highcharts_moving_average {
                         ELSE NULL
                     END
                 ] AS measure_max
-            FROM clients.f_sldavg_data_extraction(?::integer, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::text, $window ::integer) tbl
+            FROM clients.f_sldavg_data_extraction(?::bigint, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::text, $window ::integer) tbl
     };
 
     if ($hide_nulls eq 'true') {
@@ -595,7 +619,7 @@ sub get_highcharts_moving_average {
         ),
         a AS (
             SELECT
-                ?::integer AS stpr_id,
+                ?::bigint AS stpr_id,
                 ARRAY(SELECT measure_value FROM d) AS station_param_values,
                 ARRAY(SELECT measure_min FROM d)   AS station_min_values,
                 ARRAY(SELECT measure_max FROM d)   AS station_max_values
@@ -626,7 +650,7 @@ sub get_highcharts_moving_average {
             END AS station_max_values
         FROM
             a
-            LEFT JOIN metadata.stations_parameters sp USING (stpr_id)
+            LEFT JOIN $table sp USING (stpr_id)
             LEFT JOIN metadata.parameters p USING (param_id)
             LEFT JOIN metadata.stations s USING (station_id)
     };
@@ -679,6 +703,18 @@ sub get_highcharts_representative_data_by_dates {
         my $decimals = $param->{'decimals'};
         my $formule = $param->{'formule'};
         my $stprid  = $param->{'st_pr_id'};
+        my $prid    = $param->{'param_id'};
+        my $table;
+
+        # check if stprid greater than 0
+        # if true then it's a normal station-parameter
+        # otherwise it is a parameter linked to an allocated MM
+        if( $stprid > 0){
+            $table = 'metadata.stations_parameters';
+        }
+        else{
+            $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+        }
 
         $formule =~ s/y=//;
         # $formule =~ s/x/tbl.measure_value/;
@@ -686,7 +722,7 @@ sub get_highcharts_representative_data_by_dates {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -700,7 +736,7 @@ sub get_highcharts_representative_data_by_dates {
                     EXTRACT('$extract' from tbl.measure_date_time) as measure_group,
                     TO_CHAR(tbl.measure_date_time, '$format') as measure_category,
                     $mean AS measure_value
-                FROM clients.f_data_extraction(?::integer, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, ?::text) tbl
+                FROM clients.f_data_extraction(?::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, ?::text) tbl
                 ORDER BY tbl.measure_date_time
             ),
             d AS (
@@ -715,7 +751,7 @@ sub get_highcharts_representative_data_by_dates {
             ),
             a AS (
                 SELECT
-                    ?::integer AS stpr_id,
+                    ?::bigint AS stpr_id,
                     ARRAY(SELECT measure_value FROM d) AS station_param_values
             )
             SELECT
@@ -736,12 +772,12 @@ sub get_highcharts_representative_data_by_dates {
                 END AS station_param_values
             FROM
                 a
-                LEFT JOIN metadata.stations_parameters sp USING (stpr_id)
+                LEFT JOIN $table sp USING (stpr_id)
                 LEFT JOIN metadata.parameters p USING (param_id)
                 LEFT JOIN metadata.stations s USING (station_id)
         };
 
-        $self->app->log->debug($sql, $param->{'st_pr_id'}, $from, $to, $validity_code);
+        # $self->app->log->debug($sql, $param->{'st_pr_id'}, $from, $to, $validity_code);
 
         $res = $self->pg->db->query($sql, $param->{'st_pr_id'}, $from, $to, $validity_code, $param->{'st_pr_id'} )->hash();
         # my $res = $self->pg->db->query($sql, $from, $to, $percent, $param->{'st_pr_id'})->hash();
@@ -801,6 +837,18 @@ sub get_highcharts_data_per_year {
         my $decimals = $param->{'decimals'};
         my $formule = $param->{'formule'};
         my $stprid  = $param->{'st_pr_id'};
+        my $prid    = $param->{'param_id'};
+        my $table;
+
+        # check if stprid greater than 0
+        # if true then it's a normal station-parameter
+        # otherwise it is a parameter linked to an allocated MM
+        if( $stprid > 0){
+            $table = 'metadata.stations_parameters';
+        }
+        else{
+            $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+        }
 
         $formule =~ s/y=//;
         # $formule =~ s/x/tbl.measure_value/;
@@ -808,7 +856,7 @@ sub get_highcharts_data_per_year {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -841,12 +889,12 @@ sub get_highcharts_data_per_year {
 
                 FROM
                     m
-                    LEFT JOIN clients.f_data_extraction(?::integer, '$year-01-01 00:00:00'::timestamp, '$year-12-31 23:59:59'::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl ON( TO_CHAR(m.measure_date_time, 'DD-MM HH24:MI') = TO_CHAR(tbl.measure_date_time, 'DD-MM HH24:MI') )
+                    LEFT JOIN clients.f_data_extraction(?::bigint, '$year-01-01 00:00:00'::timestamp, '$year-12-31 23:59:59'::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl ON( TO_CHAR(m.measure_date_time, 'DD-MM HH24:MI') = TO_CHAR(tbl.measure_date_time, 'DD-MM HH24:MI') )
                 ORDER BY m.measure_date_time
             ),
             a AS (
                 SELECT
-                    ?::integer AS stpr_id,
+                    ?::bigint AS stpr_id,
                     ARRAY(SELECT measure_value FROM d) AS station_param_values
             )
             SELECT
@@ -868,7 +916,7 @@ sub get_highcharts_data_per_year {
                 END AS station_param_values
             FROM
                 a
-                LEFT JOIN metadata.stations_parameters sp USING (stpr_id)
+                LEFT JOIN $table sp USING (stpr_id)
                 LEFT JOIN metadata.parameters p USING (param_id)
                 LEFT JOIN metadata.stations s USING (station_id)
         };
@@ -910,6 +958,18 @@ sub get_highcharts_query {
         my $formule = $param->{'formule'};
         my $stprid  = $param->{'st_pr_id'};
         my $pr_name = $param->{'legend'};
+        my $prid    = $param->{'param_id'};
+        my $table;
+
+        # check if stprid greater than 0
+        # if true then it's a normal station-parameter
+        # otherwise it is a parameter linked to an allocated MM
+        if( $stprid > 0){
+            $table = 'metadata.stations_parameters';
+        }
+        else{
+            $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+        }
 
         $formule =~ s/y=//;
         # $formule =~ s/x/tbl.measure_value/;
@@ -921,9 +981,9 @@ sub get_highcharts_query {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -963,7 +1023,7 @@ sub get_highcharts_query {
                             ELSE NULL
                         END
                     ] AS measure_max
-                FROM clients.f_data_extraction( $stprid , '$from'::timestamp, '$to'::timestamp, '$aggregation'::metadata.e_aggregations, '$treatment'::metadata.e_treatments, '$validity_code'::text) tbl
+                FROM clients.f_data_extraction( ($stprid)::bigint , '$from'::timestamp, '$to'::timestamp, '$aggregation'::metadata.e_aggregations, '$treatment'::metadata.e_treatments, '$validity_code'::text) tbl
         };
 
         if ($hide_nulls eq 'true') {
@@ -974,12 +1034,23 @@ sub get_highcharts_query {
             ),
             a AS (
                 SELECT
+                    ($stprid)::bigint AS stpr_id,
                     ARRAY(SELECT measure_value FROM d) AS station_param_values,
                     ARRAY(SELECT measure_min FROM d)   AS station_min_values,
                     ARRAY(SELECT measure_max FROM d)   AS station_max_values
             )
             SELECT
-                ( $stprid )::text AS station_param_id,
+                sp.stpr_id AS station_param_id,
+                sp.station_id,
+                sp.param_id,
+                sp.stpr_table_id,
+                s.station_name,
+                s.station_schema||'.'||COALESCE(s.station_prefix, '')|| s.station_table AS station_fulltable,
+                p.param_name || COALESCE(' - ' || sp.stpr_note, '') AS parameter_name,
+                p.param_unit        AS parameter_unit,
+                p.param_conv        AS parameter_conv,
+                p.param_unit_conv   AS parameter_unit_conv,
+                p.param_decimals    AS parameter_decimals,
                 CASE
                     WHEN TRUE = ALL (select unnest(a.station_param_values) is null) THEN ARRAY[ ARRAY[ NULL, NULL ] ]::numeric[]
                     ELSE a.station_param_values
@@ -992,7 +1063,11 @@ sub get_highcharts_query {
                     WHEN TRUE = ALL (select unnest(a.station_max_values) is null) THEN ARRAY[ ARRAY[ NULL, NULL ] ]::numeric[]
                     ELSE a.station_max_values
                 END AS station_max_values
-            FROM a ;
+            FROM
+                a
+                LEFT JOIN $table sp USING (stpr_id)
+                LEFT JOIN metadata.parameters p USING (param_id)
+                LEFT JOIN metadata.stations s USING (station_id);
         };
     }
 
@@ -1047,8 +1122,8 @@ sub get_windrose_data_bydates {
                     WHEN t1.measure_value NOTNULL AND t2.measure_value IS NULL THEN 0.0::numeric
                     ELSE round(cast( t2.measure_value  as numeric), 1)
                 END AS wind_dir
-            FROM clients.f_data_extraction( $stprid1, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t1
-            LEFT JOIN clients.f_data_extraction( $stprid2, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t2 USING (measure_date_time)
+            FROM clients.f_data_extraction( ($stprid1)::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t1
+            LEFT JOIN clients.f_data_extraction( ($stprid2)::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t2 USING (measure_date_time)
             ORDER BY measure_date_time
         )
     };
@@ -1161,8 +1236,8 @@ sub get_windrose_query {
                     WHEN t1.measure_value NOTNULL AND t2.measure_value IS NULL THEN 0.0::numeric
                     ELSE round(cast( t2.measure_value  as numeric), 1)
                 END AS wind_dir
-            FROM clients.f_data_extraction( $stprid1, '$from'::timestamp, '$to'::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t1
-            LEFT JOIN clients.f_data_extraction( $stprid2, '$from'::timestamp, '$to'::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t2 USING (measure_date_time)
+            FROM clients.f_data_extraction( ($stprid1)::bigint, '$from'::timestamp, '$to'::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t1
+            LEFT JOIN clients.f_data_extraction( ($stprid2)::bigint, '$from'::timestamp, '$to'::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t2 USING (measure_date_time)
             ORDER BY measure_date_time
         )
     };
@@ -1264,6 +1339,7 @@ sub get_datatable_data_by_dates {
         my $decimals = $param->{'decimals'};
         my $formule = $param->{'formule'};
         my $is_limit = $param->{'is_limit'};
+        my $prid    = $param->{'param_id'};
 
         my $window = 8;
 
@@ -1281,9 +1357,9 @@ sub get_datatable_data_by_dates {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1363,12 +1439,12 @@ sub get_datatable_data_by_dates {
             }
 
             $inner_query .= qq{
-                FROM clients.f_sldavg_data_extraction($stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, $validity, $window ::integer) tbl
+                FROM clients.f_sldavg_data_extraction( ($stprid)::bigint, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, $validity, $window ::integer) tbl
             };
         }
         else {
             $inner_query .= qq{
-                FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
+                FROM clients.f_data_extraction( ($stprid)::bigint, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
             };
         }
 
@@ -1441,6 +1517,7 @@ sub get_datatable_representative_data_by_dates {
         my $decimals = $param->{'decimals'};
         my $formule = $param->{'formule'};
         my $is_limit = $param->{'is_limit'};
+        my $prid    = $param->{'param_id'};
 
         my $window = 8;
 
@@ -1454,7 +1531,7 @@ sub get_datatable_representative_data_by_dates {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1479,7 +1556,7 @@ sub get_datatable_representative_data_by_dates {
                     EXTRACT(''$extract'' FROM tbl.measure_date_time) as measure_group,
                     TO_CHAR(tbl.measure_date_time, ''$format'') as measure_category,
                     $mean AS measure_value
-                FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''hh''::metadata.e_aggregations, ''avg''::metadata.e_treatments, $validity) tbl
+                FROM clients.f_data_extraction( ($stprid)::bigint, ''$from''::timestamp, ''$to''::timestamp, ''hh''::metadata.e_aggregations, ''avg''::metadata.e_treatments, $validity) tbl
                 ORDER BY tbl.measure_date_time
             )
             GROUP BY measure_group, measure_category
@@ -1528,6 +1605,7 @@ sub get_datatable_query {
         my $formule = $param->{'formule'};
         my $is_limit = $param->{'is_limit'};
         my $pr_name = $param->{'legend'};
+        my $prid    = $param->{'param_id'};
 
         # my $validity = '';
         # if (defined $validity_code) {
@@ -1548,9 +1626,9 @@ sub get_datatable_query {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1595,7 +1673,7 @@ sub get_datatable_query {
                         END,
                         COALESCE(measure_perc||''%'', ''--'')
                     ] AS values
-                FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
+                FROM clients.f_data_extraction( ($stprid)::bigint, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
             };
         }
         else { # recupero solo i valori
@@ -1621,7 +1699,7 @@ sub get_datatable_query {
                         END,
                         COALESCE(measure_perc||''%'', ''--'')
                     ]
-                FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
+                FROM clients.f_data_extraction( ($stprid)::bigint, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
             };
         }
 
@@ -1665,6 +1743,18 @@ sub get_csv_header {
     my @data;
 
     for my $param ( @{$params_array} ){
+        my $table;
+
+        # check if stprid greater than 0
+        # if true then it's a normal station-parameter
+        # otherwise it is a parameter linked to an allocated MM
+        if( $param->{'st_pr_id'} > 0){
+            $table = 'metadata.stations_parameters';
+        }
+        else{
+            $table = 'metadata.f_get_view_sites_parameters('. $param->{'st_pr_id'} .'::bigint)';
+        }
+
         my $sql = qq {
             SELECT
                 sp.stpr_id AS station_param_id,
@@ -1683,7 +1773,7 @@ sub get_csv_header {
                 COALESCE( si.st_info_lon_wgs84::text, '--' ) AS station_lon_wgs84,
                 COALESCE( si.st_info_altitude ::text, '--' ) AS station_altitude
             FROM
-                metadata.stations_parameters sp
+                $table sp
                 LEFT JOIN metadata.parameters p USING (param_id)
                 LEFT JOIN metadata.stations s USING (station_id)
                 LEFT JOIN metadata.stations_info si USING (station_id)
@@ -1730,6 +1820,7 @@ sub get_csv_data_by_dates {
             my $decimals = $param->{'decimals'};
             my $formule = $param->{'formule'};
             my $is_limit = $param->{'is_limit'};
+            my $prid    = $param->{'param_id'};
 
             my $validity = qq{'< 2147483647'::text};
             if (defined $validity_code) {
@@ -1740,7 +1831,7 @@ sub get_csv_data_by_dates {
             # $formule =~ s/x/tbl.measure_value/g;
 
             if ($param->{'converted'}) {
-                $formule =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_stprid( $stprid, tbl.measure_date_time ) )::numeric/g;
+                $formule =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
             }
             else {
                 $formule =~ s/x/tbl.measure_value/g;
@@ -1775,7 +1866,7 @@ sub get_csv_data_by_dates {
                             ELSE ''
                         END AS measure_value
                     FROM
-                        clients.f_data_extraction( $stprid, '$from'::timestamp, '$to'::timestamp, '$aggregation'::metadata.e_aggregations, '$treatment'::metadata.e_treatments, $validity) tbl
+                        clients.f_data_extraction( ($stprid)::bigint, '$from'::timestamp, '$to'::timestamp, '$aggregation'::metadata.e_aggregations, '$treatment'::metadata.e_treatments, $validity) tbl
                     ORDER BY
                         tbl.measure_date_time
                 );
@@ -3275,7 +3366,6 @@ sub get_public_data_station {
     };
 
     my $res = $self->pg->db->query($sql, $station_id)->hash;
-    $res = undef;
 
     if (defined $res) { # mm located in a site
         my $station_override = $res->{'station_override_id'};
@@ -3314,7 +3404,7 @@ sub get_public_data_station {
                         ARRAY[
                             EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                             CASE
-                                WHEN tbl.measure_perc >= 75 THEN ROUND(( $formule )::numeric, p.param_decimals)
+                                WHEN tbl.measure_perc >= 75 THEN ROUND(( $formule )::numeric, parameter_decimals)
                                 ELSE NULL::numeric
                             END
                         ]
@@ -3326,7 +3416,7 @@ sub get_public_data_station {
                     WHEN (sp.parameter_object->'general'->>'treatment' = 'sum') THEN
                         ARRAY(
                                 SELECT
-                                    ARRAY[EXTRACT(EPOCH FROM tbl.measure_date_time)*1000, ROUND( (SUM( $formule ) OVER (ORDER BY tbl.measure_date_time))::numeric, p.param_decimals)]
+                                    ARRAY[EXTRACT(EPOCH FROM tbl.measure_date_time)*1000, ROUND( (SUM( $formule ) OVER (ORDER BY tbl.measure_date_time))::numeric, parameter_decimals)]
                                 FROM
                                     clients.f_data_extraction(sp.stpr_id, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, (sp.parameter_object-> 'general'->>'treatment')::metadata.e_treatments) tbl
                                 ORDER BY tbl.measure_date_time
@@ -3340,7 +3430,7 @@ sub get_public_data_station {
                 LEFT JOIN metadata.measures_cadence mc ON mc.measure_cadence_id = sp.station_param_cadence
             WHERE
                 station_id = ?
-                AND stpr_active IS TRUE
+                AND station_param_active IS TRUE
                 AND param_id IN (
                     SELECT parameter_id
                     FROM metadata.view_parameters_info
@@ -3472,7 +3562,6 @@ sub get_ordered_params_by_station {
     };
 
     my $res = $self->pg->db->query($sql, $station_id)->hash;
-    $res = undef;
 
     if (defined $res) { # mm located in a site
         my $station_override = $res->{'station_override_id'};
@@ -3480,10 +3569,10 @@ sub get_ordered_params_by_station {
         my $fullname;
 
         if ($converted) {
-            $fullname = "parameter_name||' ['|| param_unit_conv ||']'";
+            $fullname = "parameter_name||' ['|| parameter_unit_conv ||']'";
         }
         else {
-            $fullname = "parameter_name||' ['|| param_unit ||']'";
+            $fullname = "parameter_name||' ['|| parameter_conv ||']'";
         }
 
         $sql = qq{
@@ -3519,6 +3608,8 @@ sub get_ordered_params_by_station {
             )
             ORDER BY stpr_table_id;
         };
+
+        $station_id = $station_override;
     }
     else {
         my $converted = 1;
@@ -3638,7 +3729,7 @@ sub get_public_data_station_table {
     };
 
     # log
-    $self->app->log->debug($final_query);
+    # $self->app->log->debug($final_query);
 
     # return data
     return $self->pg->db->query($final_query)->hashes();
@@ -3847,191 +3938,6 @@ sub get_station_wind_rose_data {
 
 1;
 
-# !! OLD
-# sub get_last_page {
-#     my ( $self, $inttime, $from, $to, $size ) = @_;
-
-#     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_last_page");
-
-
-#     # eventually in perl
-#     my $sql;
-#     my $num;
-#     if ($inttime eq '30min' || $inttime eq 'hh') {
-
-#         my $min = $inttime eq '30min' ? 30 : 60;
-
-#         $sql = qq{
-#             SELECT
-#                 ((EXTRACT(EPOCH FROM (?::timestamp - ?::timestamp))/($min*60))/?+1)::integer
-#             AS num
-#         };
-#         $num = $self->pg->db->query($sql, $to, $from, $size)->hash()->{num};
-#     }
-#     else {
-
-#         if ($inttime eq 'yy'){
-#             $sql = qq { SELECT ((DATE_PART('year', ?::timestamp) - DATE_PART('year', ?::timestamp))/?+1)::integer AS num; };
-#             $num = $self->pg->db->query($sql, $to, $from, $size)->hash()->{num};
-#         }
-#         elsif ($inttime eq 'mm'){
-#             $sql = qq { SELECT (((DATE_PART('year', ?::timestamp) - DATE_PART('year', ?::timestamp)) * 12 + DATE_PART('month', ?::timestamp) - DATE_PART('month', ?::timestamp))/?+1)::integer AS num; };
-#             $num = $self->pg->db->query($sql, $to, $from, $to, $from, $size)->hash()->{num};
-#         }
-#         elsif ($inttime eq 'dd'){
-#             $sql = qq { SELECT ((DATE_PART('day', ?::timestamp - ?::timestamp))/?+1)::integer AS num; };
-#             $num = $self->pg->db->query($sql, $to, $from, $size)->hash()->{num};
-#         }
-#         else {
-#             $sql = qq { SELECT (((DATE_PART('day', ?::timestamp - ?::timestamp)) * 24 + DATE_PART('hour', ?::timestamp - ?::timestamp ))/?+1)::integer AS num; };
-#             $num = $self->pg->db->query($sql, $to, $from, $to, $from, $size)->hash()->{num};
-#         }
-#     }
-
-#     return $num;
-# }
-
-# sub get_datatable_progressive_data_by_dates_page{
-#     my ( $self, $from, $to, $hide_nulls, $macro, $page, $size ) = @_;
-#     # my ( $self, $from, $to, $hide_nulls, $macro) = @_;
-
-#     # log
-#     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_datatable_data_by_dates");
-
-
-#     my $aggregation  = $macro->{macro}{aggregation};
-#     my $percent_data = $macro->{macro}{percent_data};
-#     my $validity_code = $macro->{macro}{validity_code};
-
-#     my $ext_fields   = 'fulldate::timestamp';
-#     my $ext_conditions = '';
-#     my $inner_fields = 'fulldate text';
-#     my $inner_query  = '';
-#     my $count = 0;
-
-#     for my $param (@{$macro->{params}}){
-
-#         my $stprid = $param->{'st_pr_id'};
-#         my $treatment = $param->{'treatment'};
-#         my $decimals = $param->{'decimals'};
-#         my $formule = $param->{'formule'};
-#         my $is_limit = $param->{'is_limit'};
-
-
-#         my $validity = qq{''< 2147483647''::text};
-#         if (defined $validity_code) {
-#             $validity = qq{ ''$validity_code''::text};
-#         }
-
-
-#         $formule =~ s/y=//;
-#         my $mean = $formule;
-#         my $min  = $formule;
-#         my $max  = $formule;
-#         $mean =~ s/x/tbl.measure_value/;
-#         $min  =~ s/x/tbl.measure_min/;
-#         $max  =~ s/x/tbl.measure_max/;
-
-#         if ($treatment eq 'cum') {
-#             $mean = qq{SUM( $mean ) OVER (ORDER BY tbl.measure_date_time)};
-#             $min  = qq{SUM( $min  ) OVER (ORDER BY tbl.measure_date_time)};
-#             $max  = qq{SUM( $max  ) OVER (ORDER BY tbl.measure_date_time)};
-#             $treatment = 'sum';
-#         }
-
-#         if ($count != 0) {
-#             $inner_query .= 'UNION ALL ';
-#         }
-
-#         if ($aggregation eq 'hh'){ # recupero anche il codice di validazione
-
-
-#             $ext_fields .= ", field".$count."[1] AS field_".$count.", field".$count."[2] AS min_".$count.", field".$count."[3] AS max_".$count.", field".$count."[4] AS code_".$count.", field".$count."[5] AS perc_".$count;
-#             $inner_fields .= qq{, field$count text[]};
-#             $inner_query .= qq{
-#                 SELECT
-#                     measure_date_time::text,
-#                     ''field$count''::text AS field_name,
-#                     ARRAY[
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $mean , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $min , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $max , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(post_validity_code::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         COALESCE(measure_perc||''%'', ''--'')
-#                     ] AS values
-#                 FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
-#             };
-#         }
-#         else { # recupero solo i valori
-#             $ext_fields .= ", field".$count."[1] AS field_".$count.", field".$count."[2] AS min_".$count.", field".$count."[3] AS max_".$count.", field".$count."[4] AS perc_".$count;
-#             $inner_fields .= qq{, field$count text[]};
-
-#             $inner_query .= qq{
-#                 SELECT
-#                     measure_date_time::text,
-#                     ''field$count''::text AS field_name,
-#                     ARRAY[
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $mean , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $min , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         CASE
-#                             WHEN measure_perc >= $percent_data THEN COALESCE(( ROUND( $max , $decimals ) )::text, ''--'')
-#                             ELSE ''--''
-#                         END,
-#                         COALESCE(measure_perc||''%'', ''--'')
-#                     ]
-#                 FROM clients.f_data_extraction( $stprid, ''$from''::timestamp, ''$to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, $validity) tbl
-#             };
-#         }
-
-#         if ($hide_nulls eq 'true' && $is_limit == 0) {
-#             if ($ext_conditions eq '') {
-#                 $ext_conditions .= "WHERE field".$count."[1] NOT LIKE '--' ";
-#             }
-#             else {
-#                 $ext_conditions .= "OR field".$count."[1] NOT LIKE '--' ";
-#             }
-#         }
-
-
-#         $count++;
-#     }
-
-#     my $final_query = qq{
-#         SELECT
-#             $ext_fields
-#         FROM crosstab('
-#             SELECT * FROM (
-#                 $inner_query
-#             ) t ORDER BY measure_date_time, SUBSTRING(field_name FROM ''([0-9]+)'')::integer ASC
-#         ') AS horiz_table( $inner_fields )
-#         $ext_conditions
-#         LIMIT ? OFFSET ?;
-#     };
-#     #
-
-#     # $self->app->log->debug("$final_query");
-#     # return data
-#     return $self->pg->db->query($final_query, $size, ($page-1)*$size)->hashes();
-#     # return $self->pg->db->query($final_query)->hashes();
-# }
 
 =head1 get_data_station
 

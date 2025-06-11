@@ -1734,7 +1734,7 @@ $(document).ready(function() {
             }
 
             // add link for the new tab
-            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#cy'+cyid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+fullname+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="cy'+cyid+'"></i></a></li>';
+            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#cy'+cyid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+fullname+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="cy'+cyid+'"></i></a></li>';
             $('.nav').append(html);
 
             // variable for dinamically building the html

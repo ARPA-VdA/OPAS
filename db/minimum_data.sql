@@ -1,8 +1,8 @@
 -- +----------------------------------------------------------------------------------------------+
--- | - Script Name : minimum_data.sql                                                             |
--- | - Author      : Ecometer s.n.c.                                                              |
--- | - Create Date : 2024-12-31                                                                   |
--- | - Description : Script to insert PostgreSQL 'opas' database minimum data.                    |
+-- | - Script Name   : minimum_data.sql                                                           |
+-- | - Author        : Ecometer s.n.c.                                                            |
+-- | - Creation Date : 2025-03-31                                                                 |
+-- | - Description   : Script to insert PostgreSQL 'opas' database minimum data.                  |
 -- +----------------------------------------------------------------------------------------------+
 
 
@@ -303,10 +303,11 @@
         (64, 'Immagini Horiba'         , '/dat_horiba'          , 'fa-regular fa-diagram-venn'                      ),
         (65, 'Stazioni'                , '/ang_stazioni'        , 'fa-regular fa-house-signal'                      ),
         (67, 'Parametri di stazione'   , '/cnf_parametri'       , 'fa-regular fa-signal-stream'                     ),
-        (69, 'Notifiche'               , '/div_notifiche'       , 'fa-regular fa-message-lines'                     )
+        (69, 'Notifiche'               , '/div_notifiche'       , 'fa-regular fa-message-lines'                     ),
+        (70, 'System Admin'            , '/usr_sysadmin'        , 'fa-regular fa-user-astronaut'                    )
     RETURNING page_id;
 
-    SELECT setval('bobo.pages_page_id_seq', 69, true);
+    SELECT setval('bobo.pages_page_id_seq', 70, true);
 
     -- ------------------------------------------------------------------------------------------------
     -- RELATION GROUP PAGES WITH GRANTS
@@ -377,7 +378,8 @@
         (3, 64, '111'),
         (3, 65, '111'),
         (3, 67, '111'),
-        (3, 69, '111')
+        (3, 69, '111'),
+        (3, 70, '111')
     ON CONFLICT ON CONSTRAINT bobo_group_pages_ukey DO NOTHING;
 
     -- ------------------------------------------------------------------------------------------------
@@ -410,9 +412,9 @@
         (11, 2,    7, 'FAQ tecnica'             , 'sidebar2.faq_tech'                  ,   4),
         (12, 2,    8, 'Esci'                    , 'sidebar2.logout'                    ,   5),
         (13, 3, NULL, 'User'                    , 'user'                               ,   1),
-        (14, 3,    9, 'Profilo'                 , 'user.profile'                       ,   2),
-        (15, 3,   10, 'Admin'                   , 'user.admin'                         ,   3),
-        (16, 3,   11, 'Impostazioni'            , 'user.options'                       ,   4),
+        (14, 3,    9, 'Profilo'                 , 'user.profile'                       ,   3),
+        (15, 3,   10, 'Admin'                   , 'user.admin'                         ,   4),
+        (16, 3,   11, 'Impostazioni'            , 'user.options'                       ,   5),
         (17, 3,    8, 'Esci'                    , 'user.logout'                        ,   6),
         (18, 4, NULL, 'Notifications'           , 'notifications'                      ,   1),
         (19, 4,   12, 'Reports'                 , 'notifications.reports'              ,   2),
@@ -468,10 +470,11 @@
         (79, 1,   64, 'Immagini Horiba'         , 'sidebar1.dat.horiba'                , 160),
         (80, 1,   65, 'Stazioni'                , 'sidebar1.anagrafica.stazioni'       , 453),
         (82, 1,   67, 'Parametri di stazione'   , 'sidebar1.conf.parametri'            , 402),
-        (84, 1,   69, 'Notifiche'               , 'sidebar1.divulgazione.notifiche'    , 704)
+        (84, 1,   69, 'Notifiche'               , 'sidebar1.divulgazione.notifiche'    , 704),
+        (85, 3,   70, 'System Admin'            , 'user.sysadmin'                      ,   2)   
     RETURNING mp_id;
 
-    SELECT setval('bobo.menu_pages_mp_id_seq', 84, true);
+    SELECT setval('bobo.menu_pages_mp_id_seq', 85, true);
 
     INSERT INTO bobo.menu_css
         (menu_css_id, mp_id, menu_css_class, menu_css_expanded, menu_css_icon, menu_css_blank, menu_css_beta)
@@ -486,6 +489,7 @@
         (38, 10, 'waves-effect waves-dark'          , false, 'fa-regular fa-circle text-success'  , false, false),
         (39, 11, 'waves-effect waves-dark'          , false, 'fa-regular fa-circle text-success'  , false, false),
         (40, 12, 'waves-effect waves-dark'          , false, 'fa-regular fa-power-off text-danger', false, false),
+        (81, 85, NULL                               , NULL , 'ti-panel'                           , false, false),
         (41, 14, NULL                               , NULL , 'ti-user'                            , false, false),
         (42, 15, NULL                               , NULL , 'fa-light fa-rocket'                 , false, false),
         (43, 16, NULL                               , NULL , 'ti-settings'                        , false, false),
@@ -545,7 +549,7 @@
         (78, 82, NULL                               , true , NULL                                 , false, false),
         (80, 84, NULL                               , true , NULL                                 , false, false);
 
-    SELECT setval('bobo.menu_css_menu_css_id_seq', 80, true);
+    SELECT setval('bobo.menu_css_menu_css_id_seq', 81, true);
 
     -- ----------------------------------------------------------------------------------------------
     -- FAQ
@@ -620,6 +624,22 @@
         (pm_unit_id, pm_unit_desc)
     VALUES
         (0, '--');
+
+    INSERT INTO metadata.parameters
+        (param_id, param_name, param_unit, param_unit_conv, param_decimals)
+    VALUES 
+        (0, 'Param. generico', '--', '--', 0);
+
+
+    INSERT INTO metadata.parameters_info
+        (param_id, pm_info_shortname, pm_info_type_fk)
+    VALUES 
+        (0, 'Generico', 1);
+
+    INSERT INTO metadata.parameters_conversions
+        (param_id, pc_conv, pc_from_fulldate, pc_to_fulldate)
+    VALUES 
+        (0, 1, '-infinity', 'infinity');
 
     INSERT INTO metadata.stations_roaming_type
         (st_roaming_id, st_roaming_desc, st_roaming_info)

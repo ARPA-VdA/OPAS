@@ -46,6 +46,24 @@ $(document).ready(function() {
     });
 
     /**
+     * Load stations on province/network filter change.
+     */
+    $( "#provinces, #networks" ).on( "change", function(e, stid) {
+        e.preventDefault();
+
+        // if network change then reset province
+        if($(this).attr('id') == 'networks'){
+            $("#provinces").val(-1);
+        }
+
+        var province = parseInt($("#provinces").val());
+        var network = parseInt($("#networks").val());
+
+        // load list of stations
+        loadStations(province, network, stid);
+    });
+
+    /**
      * Load diagnostics data on station filter change.
      */
     $( "#stations" ).on("change", function(e){
@@ -73,30 +91,7 @@ $(document).ready(function() {
         $('.inner-preloader').show();
         loadData(dateFrom, dateTo, stid);
     });
-
-    /**
-     * Load stations on province/network filter change.
-     */
-    $( "#provinces, #networks" ).on( "change", function(e) {
-        e.preventDefault();
-
-        // if network change then reset province
-        if($(this).attr('id') == 'networks'){
-            $("#provinces").val(-1);
-        }
-
-        var province = parseInt($("#provinces").val());
-        var network = parseInt($("#networks").val());
-
-        // load list of stations
-        loadStations(province, network);
-    });
-
-    /**
-     * Select option -1 and load all stations.
-     */
-    $( "#networks" ).trigger("change"); //
-
+    
     /**
      * Download the diagnostics table in .csv format.
      */
@@ -117,13 +112,26 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
+    // check if stid from server (url) is defined
+    if(stid != null && stid != ''){
+        console.log('stid from server');
+        // select option -1 and load all stations
+        // pre-select stid from server
+        $( "#networks" ).trigger("change", stid);
+    }
+    else{
+        // select option -1 and load all stations
+        $( "#networks" ).trigger("change");
+    }
+
     /**
      * Function that retrieves the stations of a given network of a given province.
      *
      * @param {integer} province Province ID.
      * @param {integer} network Network ID.
+     * @param {integer} stid Station ID
      */
-    function loadStations(province, network){
+    function loadStations(province, network, stid){
 
         console.log('loadStations: '+province+' '+network);
 
@@ -213,7 +221,10 @@ $(document).ready(function() {
                 $('#stations').append(opts);
                 $('#stations').append('</optgroup>');
 
-                $('#stations').val(-1);
+                if( stid != null )
+                    $('#stations').val(stid).trigger('change');
+                else
+                    $('#stations').val(-1);
             }
             else{
                 // error message

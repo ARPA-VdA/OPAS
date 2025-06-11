@@ -2,8 +2,16 @@ import Module from '../../core/Module.js';
 
 import defaultPasteActions from './defaults/pasteActions.js';
 import defaultPasteParsers from './defaults/pasteParsers.js';
+import extensions from './extensions/extensions.js';
 
-class Clipboard extends Module{
+export default class Clipboard extends Module{
+
+	static moduleName = "clipboard";
+	static moduleExtensions = extensions;
+
+	//load defaults
+	static pasteActions = defaultPasteActions;
+	static pasteParsers = defaultPasteParsers;
 
 	constructor(table){
 		super(table);
@@ -142,6 +150,7 @@ class Clipboard extends Module{
 		var sel, textRange;
 		this.blocked = false;
 		this.customSelection = false;
+	
 
 		if (this.mode === true || this.mode === "copy") {
 
@@ -209,7 +218,7 @@ class Clipboard extends Module{
 	paste(e){
 		var data, rowData, rows;
 
-		if(this.checkPaseOrigin(e)){
+		if(this.checkPasteOrigin(e)){
 
 			data = this.getPasteData(e);
 
@@ -246,10 +255,11 @@ class Clipboard extends Module{
 	}
 
 
-	checkPaseOrigin(e){
+	checkPasteOrigin(e){
 		var valid = true;
+		var blocked = this.confirm("clipboard-paste", [e]);
 
-		if(e.target.tagName != "DIV" || this.table.modules.edit.currentCell){
+		if(blocked || !["DIV", "SPAN"].includes(e.target.tagName)){
 			valid = false;
 		}
 
@@ -270,11 +280,3 @@ class Clipboard extends Module{
 		return data;
 	}
 }
-
-Clipboard.moduleName = "clipboard";
-
-//load defaults
-Clipboard.pasteActions = defaultPasteActions;
-Clipboard.pasteParsers = defaultPasteParsers;
-
-export default Clipboard;

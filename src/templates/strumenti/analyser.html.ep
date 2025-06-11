@@ -147,7 +147,6 @@
                         <option class="disabled-peryear" value="rep_year">Anno tipo</option>
                     </optgroup>
                 </select>
-                <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: -14px"><i class="fa-solid fa-sparkle"></i></span>
                 <button id="update-data" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Aggiorna i tab sulla base delle date e della fascia temporale richiesta">
                     <i class="icon-refresh"></i> Aggiorna
                 </button>
@@ -292,7 +291,6 @@
                 <label class="btn btn-secondary ml-1 disabled-table-opacity disabled-windrose-opacity disabled-multi-opacity" data-toggle-second="tooltip" data-placement="left" title="Ripartisce i dati sugli anni selezionati">
                     <input class="disabled-table disabled-windrose disabled-multi" name="chart-per-year" id="chart-per-year" type="checkbox" autocomplete="off"> Grafico per anno
                 </label>
-                <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)"><i class="fa-solid fa-sparkle"></i></span>
             </div>
             <!-- <div class="btn-set"> -->
                 <!-- <label class="switch">
@@ -384,6 +382,16 @@
                                                     <input type="checkbox" name="visible-altitude" id="visible-altitude">
                                                     <span class="slider round"></span>
                                                 </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="visible-allocations" class="col-sm-4 col-form-label">Visualizza STANZIAMENTI mezzi mobili</label>
+                                            <div class="col-sm-8 pt-1">
+                                                <label class="switch">
+                                                    <input type="checkbox" name="visible-allocations" id="visible-allocations">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                                <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
                                             </div>
                                         </div>
                                         <div class="form-group row">

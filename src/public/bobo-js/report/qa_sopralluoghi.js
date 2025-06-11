@@ -932,7 +932,7 @@ $(document).ready(function() {
                 var attachments = result.attachments;
 
                 // add link for the new tab
-                var html = '<li class="nav-item" data-id="'+rpid+'"> <a class="nav-link" data-toggle="tab" href="#rep'+rpid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+el.insp_locality+' - '+moment(el.insp_fulldate).format('DD/MM/YYYY')+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-report" data-close="rep'+rpid+'"></i></a></li>';
+                var html = '<li class="nav-item" data-id="'+rpid+'"> <a class="nav-link" data-toggle="tab" href="#rep'+rpid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+el.insp_locality+' - '+moment(el.insp_fulldate).format('DD/MM/YYYY')+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-report" data-close="rep'+rpid+'"></i></a></li>';
                 $('.nav').append(html);
 
                 // variable for dinamically building the html

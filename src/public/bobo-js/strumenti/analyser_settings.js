@@ -62,6 +62,7 @@ $(document).ready(function() {
                     // lista stazioni
                     stidEnabled: false,
                     altitudeEnabled: true,
+                    allocationsEnabled: true,
                     limitsValueEnabled: true,
                     // lista macro
                     paramsEnabled: false,
@@ -1022,12 +1023,15 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment().utc().format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
 
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
         // - start date and end date not in the future
         validDates(dateFrom, $("#date-end").val(), 'date-start');
+
     });
 
     /**
@@ -1040,6 +1044,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').format('01/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1057,6 +1064,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').format('01/01/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1074,6 +1084,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment().format('01/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1091,6 +1104,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment().format('01/01/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1108,6 +1124,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(-1, 'day').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1125,6 +1144,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(-1, 'month').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1142,6 +1164,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(-1, 'years').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1159,6 +1184,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(+1, 'day').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1176,6 +1204,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(+1, 'month').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1193,6 +1224,9 @@ $(document).ready(function() {
         // retrieve dates
         dateFrom = moment(dateFrom, 'DD/MM/YYYY HH:mm').add(+1, 'years').format('DD/MM/YYYY 00:00');
         $("#date-start").inputmask("setvalue", dateFrom);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1210,6 +1244,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment().utc().format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1235,6 +1272,9 @@ $(document).ready(function() {
             dateTo = t.format('DD/MM/YYYY 23:59');
 
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1252,6 +1292,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').endOf('month').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1269,6 +1312,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').format('31/12/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1286,6 +1332,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(-1, 'day').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1303,6 +1352,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(-1, 'month').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1320,6 +1372,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(-1, 'years').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1337,6 +1392,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(+1, 'day').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1354,6 +1412,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(+1, 'month').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -1371,6 +1432,9 @@ $(document).ready(function() {
         // retrieve dates
         dateTo = moment(dateTo, 'DD/MM/YYYY HH:mm').add(+1, 'years').format('DD/MM/YYYY 23:59');
         $("#date-end").inputmask("setvalue", dateTo);
+        // refresh node with MM allocations
+        $('#ext-json').jstree(true).refresh_node("-9999");
+
         // check range validity -> include/common/global.js
         // - correct format of dates
         // - end date equal or greater than start date
@@ -2723,6 +2787,7 @@ function loadOptions(){
                     // lista stazioni
                     stidEnabled: false,
                     altitudeEnabled: true,
+                    allocationsEnabled: true,
                     limitsValueEnabled: true,
                     // lista parametri
                     paramsEnabled: false,
@@ -2774,6 +2839,7 @@ function loadOptions(){
                     // lista stazioni
                     stidEnabled:  options.general.stidEnabled == null ? false : options.general.stidEnabled,
                     altitudeEnabled: options.general.altitudeEnabled == null ? true : options.general.altitudeEnabled,
+                    allocationsEnabled: options.general.allocationsEnabled == null ? true : options.general.allocationsEnabled,
                     limitsValueEnabled: options.general.limitsValueEnabled == null ? true : options.general.limitsValueEnabled,
                     // lista macro
                     paramsEnabled: options.general.paramsEnabled == null ? false : options.general.paramsEnabled,
@@ -3391,7 +3457,8 @@ function initializeElements(){
         }
     }).on('keyup', function(){
         // at change event, check for dates validity
-        validDates($("#date-start").val(), $("#date-end").val(), 'date-start');
+        if( validDates($("#date-start").val(), $("#date-end").val(), 'date-start') )
+            $('#ext-json').jstree(true).refresh_node("-9999");
     });
 
     dateFrom = moment().utc().add('-7','days').format('DD/MM/YYYY 00:00');
@@ -3407,7 +3474,8 @@ function initializeElements(){
         }
     }).on('keyup', function(){
         // at change event, check for dates validity
-        validDates($("#date-start").val(), $("#date-end").val(), 'date-end');
+        if( validDates($("#date-start").val(), $("#date-end").val(), 'date-end') )
+            $('#ext-json').jstree(true).refresh_node("-9999");
     });
 
     dateTo = moment().utc().format('DD/MM/YYYY 23:59');
@@ -3426,22 +3494,31 @@ function initializeElements(){
                     // different routes depending on the node level
                     if (node.id === '#')
                     {
-                        url = "str_ana_get_analyser_groups";
+                        url = "/str_ana_get_analyser_groups";
                     }
                     else
                     {
                         switch (node.li_attr.type) {
                             case 'group':
-                                url = "str_ana_get_group_stations";
+                                url = "/str_ana_get_group_stations";
                                 break;
                             case 'group-limits':
-                                url = "str_ana_get_limits";
+                                url = "/str_ana_get_limits";
                                 break;
                             case 'station':
-                                url = "str_ana_get_station_params";
+                                url = "/str_ana_get_station_params";
                                 break;
                             case 'param':
-                                url = "str_ana_get_params_type";
+                                url = "/str_ana_get_params_type";
+                                break;
+                            case 'sites':
+                                url = "/str_ana_get_allocations";
+                                break;
+                            case 'site_params':
+                                url = "/str_ana_get_allocation_params";
+                                break;
+                            case 'site_params_type':
+                                url = "/str_ana_get_allocation_params_type";
                                 break;
                             default:
                                 break;
@@ -3450,14 +3527,19 @@ function initializeElements(){
 
                     console.log(url);
                     return url;
-                },
+                }, 
                 // 'type': "get",
                 'contentType': "application/json",
                 'dataType': 'JSON',
                 data: function (node) {
                     // different data sent to server depending on the node level
                     if( node.id === "#"){
-                        return;
+                        return {"options": JSON.stringify(analyserOptions)};
+                    }
+                    else if( node.li_attr.type === 'sites' ){
+                        var from = moment(dateFrom, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD 00:00');
+                        var to = moment(dateTo, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD 23:59');
+                        return {"nodeid": node.id, "id": node.li_attr.id, "from": from, "to": to};
                     }
                     else{
 
@@ -3518,7 +3600,7 @@ function initializeElements(){
             console.dir(node);
             // show log message
             // different message based on node type
-            if(node.li_attr.type == 'station'){
+            if(node.li_attr.type == 'station' || node.li_attr.type == 'site_params'){
                 var stationName = node.text.replace(/<span .*<\/span>/g, '');
                 text = ' -> '+node.li_attr.table+', <strong>station_id:</strong> '+node.li_attr.id;
                 // write a info message in the log container
@@ -3527,7 +3609,7 @@ function initializeElements(){
             else if(node.li_attr.type == 'param'){
                 var parent = data.instance.get_node(node.parent);
                 // if it is a parameter grouped by type then go up one more level to the station
-                if(parent.li_attr.type != 'station'){
+                if(parent.li_attr.type != 'station' && parent.li_attr.type != 'site_params'){
                     parent = data.instance.get_node(parent.parent);
                 }
                 text = ' -> '+parent.li_attr.table+', <strong>station_id:</strong> '+parent.li_attr.id+', <strong>stpr_id:</strong> '+node.li_attr.stprid+', <strong>param_id:</strong> '+ node.li_attr.prid +', <strong>stpr_table_id:</strong> '+node.li_attr.tbid;
@@ -3632,6 +3714,7 @@ function setOptions(){
     // lista stazioni
     $("#visible-stid").attr("checked", analyserOptions.general.stidEnabled);
     $("#visible-altitude").attr("checked", analyserOptions.general.altitudeEnabled);
+    $("#visible-allocations").attr('checked', analyserOptions.general.allocationsEnabled);
     $("#visible-limit-value").attr("checked", analyserOptions.general.limitsValueEnabled);
     // lista macro
     $("#visible-params").attr("checked", analyserOptions.general.paramsEnabled);
@@ -3683,6 +3766,7 @@ function applyOptions(){
             // lista stazioni
             stidEnabled: $("#visible-stid").is(":checked"),
             altitudeEnabled: $("#visible-altitude").is(":checked"),
+            allocationsEnabled: $("#visible-allocations").is(":checked"),
             limitsValueEnabled: $("#visible-limit-value").is(":checked"),
             // lista macro
             paramsEnabled: $("#visible-params").is(":checked"),

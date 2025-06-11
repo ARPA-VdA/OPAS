@@ -885,7 +885,7 @@ $(document).ready(function() {
                 var el = result.list;
 
                 // add link for the new tab
-                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#mlist'+mlid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+el.ml_name+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="mlist'+mlid+'"></i></a></li>';
+                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#mlist'+mlid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+el.ml_name+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="mlist'+mlid+'"></i></a></li>';
                 $('.customtab').append(html);
 
                 // variable for dinamically building the html

@@ -134,10 +134,9 @@
     <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_simple.min.css'))%>" rel="stylesheet">
     <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/tabulator.js'))%>"></script>
 
-
-    <link href="<%=url_for('/node_modules/DataTables-v2.0.7/datatables.min.css')%>" rel="stylesheet">
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v2.0.7/datatables.min.js')%>"></script>
-
+    <!-- DataTables plugin v2.2.2 -->
+    <link href="<%=url_for('/node_modules/DataTables/datatables.min.css')%>" rel="stylesheet">
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables/datatables.min.js')%>"></script>
 
     <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/datetime-moment.js')%>"></script>
 
@@ -145,7 +144,7 @@
     <script src="<%=url_for('/node_modules/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js')%>"></script>
     <link href="<%=url_for('/node_modules/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css')%>" rel="stylesheet">
 
-    <!-- Highstock -->
+    <!-- Highstock v12.1.2-->
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/map.js'))%>"></script>
@@ -615,6 +614,7 @@
 
         <footer class="footer">
             © Copyright <%= $tm->strftime("%Y"); %> <%= $user->{'portal_footer_text'} %> - developed by <a href="http://www.ecometer.it/" target="_blank" title="www.ecometer.it">Ecometer S.n.c</a>
+            <span class="pull-right release-txt font-bold text-info" data-toggle="modal" data-target=".modal-result"><i class="fa-solid fa-star-of-life"></i> v.2.0.0</span>
         </footer>
         <!-- ============================================================== -->
         <!-- End footer -->
@@ -626,6 +626,38 @@
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
+
+    <!-- MODALS -->
+    <div class="modal fade modal-result" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title text-purple" id="myLargeModalLabel">Revisioni del software OPAS</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body release-sw">
+                    <h5>Revisione <strong>v.2.0.0</strong></h5>
+                    <ul>
+                        <li><strong class="text-success"><i class="fa-solid fa-sparkles"></i> Nuova versione: </strong> release codice sorgente progetto su <a target="_blank" href="https://github.com/ARPA-VdA/OPAS">GitHub</a> con licenza AGPL-3.0;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> sezione System Admin per gestire la sospensione del sistema OPAS;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> link rapidi tra le pagine di Anagrafica, Mapper, Istantanei;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuovi campi per le dotazioni: marca, modello e data di consegna;</li>
+                        <li><strong class="text-warning"><i class="fa-solid fa-coffee-bean"></i> Versione beta: </strong> evoluzione sistema di selezione dei dati nel tool Validazione;</li>
+                        <li><strong class="text-warning"><i class="fa-solid fa-coffee-bean"></i> Versione beta: </strong> aggiunto in Analyser il recupero dei dati per stanziamento dei mezzi mobili;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> migliorate alcune query di estrazione dati;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> evolute funzioni nel database a supporto di future implementazioni;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> nuove versioni plugin e modifiche per mantenimento funzionalità;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> correzione bachi vari.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-purple btn-sm waves-effect text-info" data-dismiss="modal"><i class="fa-solid fa-xmark"></i> CHIUDI</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
 
 </body>
 

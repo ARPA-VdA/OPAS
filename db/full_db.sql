@@ -1,8 +1,8 @@
 -- +----------------------------------------------------------------------------------------------+
--- | - Script Name : full_db.sql                                                                  |
--- | - Author      : Ecometer s.n.c.                                                              |
--- | - Create Date : 2024-12-31                                                                   |
--- | - Description : Script to create PostgreSQL 'opas' database full structure.                  |
+-- | - Script Name   : full_db.sql                                                                |
+-- | - Author        : Ecometer s.n.c.                                                            |
+-- | - Creation Date : 2025-03-31                                                                 |
+-- | - Description   : Script to create PostgreSQL 'opas' database full structure.                |
 -- +----------------------------------------------------------------------------------------------+
 
 
@@ -17,6 +17,7 @@
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
     CREATE EXTENSION IF NOT EXISTS ltree;
     CREATE EXTENSION IF NOT EXISTS tablefunc;
+    CREATE EXTENSION IF NOT EXISTS intarray;
     CREATE EXTENSION IF NOT EXISTS citext;
     CREATE DOMAIN email AS citext
     CHECK ( value ~ '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$' );
@@ -2421,7 +2422,7 @@
     CREATE TABLE bobo_tools.general_options
     (
         go_id   serial,
-        go_tool text NOT NULL CHECK ( go_tool IN ('analyser', 'visualizer', 'validation', 'dataview') ), -- TIPO DI VOCE
+        go_tool text NOT NULL CHECK ( go_tool IN ('analyser', 'visualizer', 'validation', 'dataview', 'sysadmin') ), -- TIPO DI VOCE
         go_obj  jsonb NOT NULL DEFAULT '{}'::jsonb,
         go_desc text,
 
@@ -4768,7 +4769,7 @@
                 si.st_info_longname,
                 si.st_info_startup_date,
                 si.st_info_dismiss_date,
-                si.st_info_basepath,
+                si2.st_info_basepath,
                 s.site_locality AS st_info_locality,
                 si.st_info_zone,
                 si.st_info_basin,
@@ -4792,6 +4793,7 @@
             FROM
                 metadata.stations_info si
                 LEFT JOIN metadata.stations_sites ss ON si.station_id = ss.station_override_id
+                LEFT JOIN metadata.stations_info si2 ON ss.station_id = si2.station_id
                 LEFT JOIN metadata.sites s USING (site_id)
             WHERE
                 si.st_info_roaming_type_fk = 4
@@ -5203,6 +5205,54 @@
     GRANT ALL ON TABLE metadata.view_horiba_parameters TO group_tools;
     GRANT SELECT ON TABLE metadata.view_horiba_parameters TO group_readonly;
 
+    CREATE OR REPLACE VIEW metadata.view_sites_parameters AS
+        SELECT
+            -(so.station_override_id::text || lpad(sp.stpr_id::text, 7, '0'))::bigint AS stpr_id,
+            station_override_id AS station_id,
+            p.param_id,
+            sp.stpr_group_id,
+            sp.stpr_table_id,
+            sp.stpr_note,
+            st.station_name,
+            ((st2.station_schema || '.'::text) || COALESCE(st2.station_prefix, ''::text)) || st2.station_table AS station_fulltable,
+            stsi_period,
+            p.param_name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS parameter_name,
+            p.param_unit                AS parameter_unit,
+            p.param_conv                AS parameter_conv,
+            p.param_unit_conv           AS parameter_unit_conv,
+            p.param_offset              AS parameter_offset,
+            p.param_decimals            AS parameter_decimals,
+            p.param_active              AS parameter_active,
+            pm.pm_info_type_fk          AS parameter_type_id,
+            pt.pm_type_desc             AS parameter_type_desc,
+            pm.pm_info_obj              AS parameter_object,
+            spi.stpr_info_cadence_fk    AS station_param_cadence,
+            sp.stpr_active              AS station_param_active
+        FROM (
+            SELECT
+                station_id,
+                station_override_id,
+                range_agg (tsrange(stsi_startup_date, stsi_dismiss_date, '[]')) as stsi_period
+            FROM metadata.stations_sites ss
+            GROUP BY station_id, station_override_id
+            ORDER BY station_id, station_override_id
+        ) so
+        LEFT JOIN metadata.stations st ON (st.station_id = so.station_override_id)
+        LEFT JOIN metadata.stations st2 ON (st2.station_id = so.station_id)
+        LEFT JOIN metadata.stations_parameters sp ON (sp.station_id = so.station_id)
+        LEFT JOIN metadata.stations_params_info spi ON ( spi.stpr_id = sp.stpr_id)
+        LEFT JOIN metadata.parameters p USING (param_id)
+        LEFT JOIN metadata.parameters_info pm USING (param_id)
+        LEFT JOIN metadata.parameters_type pt ON pm.pm_info_type_fk = pt.pm_type_id;
+
+    GRANT ALL ON TABLE      metadata.view_sites_parameters TO group_admin;
+    GRANT ALL ON TABLE      metadata.view_sites_parameters TO group_bobo;
+    GRANT ALL ON TABLE      metadata.view_sites_parameters TO group_tools;
+    GRANT SELECT ON TABLE   metadata.view_sites_parameters TO group_readonly;
+
+    COMMENT ON VIEW metadata.view_sites_parameters IS '[BOBO] The view contains all the principal info about the relation site-parameter';
+
+
     -- --------------------------------------------------------------------------------------------
     -- FUNCTIONS
     -- --------------------------------------------------------------------------------------------
@@ -5359,6 +5409,58 @@
                         metadata.parameters
                     WHERE
                         param_id IN (519, 520, 522)
+                    ORDER BY param_id;';
+                    
+            /* H2S  */
+            WHEN (mo->>'ModuleType')::integer IN ( 416 )  THEN
+                /** h2s
+                 * param_id, stpr_table_id 1199,      'H2S Zero'
+                 * param_id, stpr_table_id 1202,      'H2S Span trovato'
+                 * param_id, stpr_table_id 1204,      'H2S Span deriva'
+                 */
+                q := 'SELECT
+                        param_id,
+                        param_name,
+                        param_unit,
+                        CASE param_id
+                            WHEN 1199 THEN 4050
+                            WHEN 1202 THEN 4051
+                            WHEN 1204 THEN 4053
+                            ELSE NULL
+                        END AS table_id
+                    FROM
+                        metadata.parameters
+                    WHERE
+                        param_id IN (1199, 1202, 1204)
+                    ORDER BY param_id;';
+
+            /* SO2 + H2S  */
+            WHEN (mo->>'ModuleType')::integer IN ( 417 )  THEN
+                /** so2 + h2s
+                 * param_id, stpr_table_id  519, 4023 'SO2 Zero'
+                 * param_id, stpr_table_id  520, 4024 'SO2 Span trovato'
+                 * param_id, stpr_table_id  522, 4026 'SO2 Span deriva'
+                 * param_id, stpr_table_id 1199, 4050 'H2S Zero'
+                 * param_id, stpr_table_id 1202, 4051 'H2S Span trovato'
+                 * param_id, stpr_table_id 1204, 4053 'H2S Span deriva'
+                 */
+                q := 'SELECT
+                        param_id,
+                        param_name,
+                        param_unit,
+                        CASE param_id
+                            WHEN  519 THEN 4023
+                            WHEN  520 THEN 4024
+                            WHEN  522 THEN 4026
+                            WHEN 1199 THEN 4050
+                            WHEN 1202 THEN 4051
+                            WHEN 1204 THEN 4053
+                            ELSE NULL
+                        END AS table_id
+                    FROM
+                        metadata.parameters
+                    WHERE
+                        param_id IN (519, 520, 522, 1199, 1202, 1204)
                     ORDER BY param_id;';
 
             /* NOX-NO-NO2 */
@@ -5835,52 +5937,63 @@
         IS 'Function to retrieve the conversion coefficient based on the past date: it is useful in case a parameter has changed conversion factor over time';
 
     -- Funzione per recuperare il coefficiente di conversione in base ad una data e di un determinato parametro di una determinata stazione
-    -- DROP FUNCTION IF EXISTS metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone);
+    -- DROP FUNCTION IF EXISTS metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone);
     CREATE OR REPLACE FUNCTION metadata.f_get_conversion_by_date_stprid(
-        stprid integer,
-        ts timestamp without time zone
-    )
+        stprid bigint,
+        ts timestamp without time zone)
         RETURNS real
         LANGUAGE 'plpgsql'
         COST 100
         STABLE PARALLEL UNSAFE
     AS $BODY$
+            DECLARE
+                conv real;
+            BEGIN
 
-    DECLARE
-        conv real;
-    BEGIN
-        /* TEST
-            SELECT metadata.f_get_conversion_by_date_stprid(98, '2023-07-18 10:00:00'::timestamp without time zone);
-            SELECT metadata.f_get_conversion_by_date_stprid(98, '2024-04-15 10:00:00'::timestamp without time zone);
-        */
+                /* TEST
+                    SELECT metadata.f_get_conversion_by_date_stprid(98, '2023-07-18 10:00:00'::timestamp without time zone);
+                    SELECT metadata.f_get_conversion_by_date_stprid(98, '2024-04-15 10:00:00'::timestamp without time zone);
+                */
+                CASE  
+                    WHEN stprid < 0 THEN  
 
-        SELECT
-            pc.pc_conv INTO conv
-        FROM
-            metadata.stations_parameters sp
-            LEFT JOIN metadata.parameters_conversions pc USING (param_id)
-        WHERE
-            stpr_id = stprid
-            AND tsrange(pc_from_fulldate, pc_to_fulldate, '[]') @> ts;
+                        SELECT
+                            pc.pc_conv INTO conv
+                        FROM
+                            metadata.f_get_view_sites_parameters(stprid::bigint) sp
+                            LEFT JOIN metadata.parameters_conversions pc USING (param_id)
+                        WHERE
+                            stpr_id = stprid
+                            AND tsrange(pc_from_fulldate, pc_to_fulldate, '[]') @> ts;
 
-        RETURN conv;
+                    ELSE
+                        SELECT
+                            pc.pc_conv INTO conv
+                        FROM
+                            metadata.stations_parameters sp
+                            LEFT JOIN metadata.parameters_conversions pc USING (param_id)
+                        WHERE
+                            stpr_id = stprid
+                            AND tsrange(pc_from_fulldate, pc_to_fulldate, '[]') @> ts;
+                END CASE;
 
-        /* errors check */
-        EXCEPTION
-        /* in case of any error */
-        WHEN OTHERS THEN RAISE NOTICE 'ERROR in metadata.f_get_conversion_by_date_stprid: %', SQLERRM;
-    END;
+                RETURN conv;
 
+            /* errors check */
+            EXCEPTION
+               /* in case of any error */
+               WHEN OTHERS THEN RAISE NOTICE 'ERROR in metadata.f_get_conversion_by_date_stprid: %', SQLERRM;
+            END;
     $BODY$;
 
     -- grants
-    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone) TO group_admin;
-    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone) TO group_tools;
-    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone) TO group_readonly;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone) TO group_admin;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone) TO group_tools;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone) TO group_readonly;
 
     -- comment
-    COMMENT ON FUNCTION metadata.f_get_conversion_by_date_stprid(integer, timestamp without time zone)
+    COMMENT ON FUNCTION metadata.f_get_conversion_by_date_stprid(bigint, timestamp without time zone)
         IS 'Function to retrieve the conversion coefficient based on the past date: it is useful in case a parameter has changed conversion factor over time.';
 
     -- Funzione per recuperare l'icona della mappa di una determinata stazione
@@ -5931,216 +6044,334 @@
     COMMENT ON FUNCTION metadata.f_get_icon_by_station_id(integer) IS 'Get map icon by station id';
 
     -- Funzione che restituisce un oggetto con tutti i parametri e i loro ID recuperati dal file di configurazione della stazione
-    -- DROP FUNCTION IF EXISTS metadata.f_get_parameters_from_station_config_v2(jsonb);
-    CREATE OR REPLACE FUNCTION metadata.f_get_parameters_from_station_config_v2(
-        config jsonb
-    )
+    -- DROP FUNCTION IF EXISTS metadata.f_get_parameters_from_station_config_v3(jsonb);
+    CREATE OR REPLACE FUNCTION metadata.f_get_parameters_from_station_config_v3(
+        config jsonb)
         RETURNS jsonb
         LANGUAGE 'plpgsql'
-        VOLATILE
         COST 100
-
+        VOLATILE PARALLEL UNSAFE
     AS $BODY$
-    DECLARE
-        mo jsonb; -- config module object
-        co jsonb; -- config channel object
+        DECLARE
+            mo jsonb; -- config module object
+            co jsonb; -- config channel object
 
-        d boolean; -- daily module
-        i integer; -- parameter id
-        n text; -- parameter name
-        u text; -- parameter unit
-        s text; -- station - parameter note / name suffix
+            d boolean; -- daily module
+            i integer; -- parameter id
+            n text; -- parameter name
+            u text; -- parameter unit
+            s text; -- station - parameter note / name suffix
 
-        po jsonb; -- partial parameter object
-        cc jsonb; -- cc result object
-        ro jsonb; -- result object
+            po jsonb; -- partial parameter object
+            cc jsonb; -- cc result object
+            ro jsonb; -- result object
 
-    BEGIN
-
-        /**
-         * Given the station configuration as argument, the function parses the json
-         * Specifically, for each ACTIVE module, all linked channels are analysed
-         * > If active then an object containing the parameter data (DatabaseID, Name, Unit ...) is created
-         * > otherwise they are ignored
-         *
-         * To retrieve pollutant information, the function relies on a support table (vocabulary)
-         * with which a mapping is performed between the name of the parameter set in the periphery and the relative ID in the center (param_id)
-         *
-         * The function takes into account the various types of channels (standard, diagnostic or alarms) and
-         * takes care of adding any CC parameters
-         *
-         * Returns an array of objects or NULL.
-         *
-         * TEST SELECT * FROM metadata.f_get_parameters_from_station_config_v2('...'::jsonb);
-         */
-
-        -- RAISE NOTICE 'Jsonb totale: %', jsonb_pretty(config);
-
-        /* build jsonb container */
-        SELECT jsonb_build_object(
-            'found'     , array_to_json(ARRAY[]::jsonb[]),
-            'not_found' , array_to_json(ARRAY[]::jsonb[]),
-            'not_active', array_to_json(ARRAY[]::jsonb[])
-        ) INTO ro;
-
-        /* Loop through all modules */
-        FOR mo IN SELECT * FROM jsonb_array_elements((config->>'Modules')::jsonb) LOOP
-
-            -- RAISE NOTICE 'Module: %', jsonb_pretty(m);
-            RAISE NOTICE 'Module name %', mo->>'Name';
-
-            /* Check if module is active otherwise continue to next loop */
-            IF NOT (mo->>'Active')::boolean THEN
-                RAISE NOTICE '-- Module not active!';
-                CONTINUE;
-            END IF;
+        BEGIN
 
             /**
-             * Check if it's a daily module
-             * SWAM_5A_DD, SWAM_5A_DD_MONO, SM200
+             * Given the station configuration as argument, the function parses the json
+             * Specifically, for each ACTIVE module, all linked channels are analysed
+             * > If active then an object containing the parameter data (DatabaseID, Name, Unit ...) is created
+             * > otherwise they are ignored
+             *
+             * To retrieve pollutant information, firstly the function checks whether the ParameterId is supplied. Otherwise the function relies on a support table (vocabulary)
+             * with which a mapping is performed between the name of the parameter set in the periphery and the relative ID in the center (param_id)
+             *
+             * The function takes into account the various types of channels (standard, diagnostic or alarms) and
+             * takes care of adding any CC parameters
+             *
+             * Returns an array of objects or NULL.
+             *
+             * TEST SELECT * FROM metadata.f_get_parameters_from_station_config_v3('...'::jsonb);
              */
-            IF (mo->>'ModuleType')::integer IN (1401, 1405, 600) THEN
-                RAISE NOTICE 'Daily module!';
-                d := TRUE;
-            ELSE
-                d := FALSE;
-            END IF;
 
-            /* Loop through all module's channels */
-            FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
+            -- RAISE NOTICE 'Jsonb totale: %', jsonb_pretty(config);
 
-                -- RAISE NOTICE '    Channel: %', jsonb_pretty(c);
-                RAISE NOTICE '    > Channel dbId, name: % %', co->>'DatabaseId', co->>'Name';
+            /* build jsonb container */
+            SELECT jsonb_build_object(
+                'found'     , array_to_json(ARRAY[]::jsonb[]),
+                'not_found' , array_to_json(ARRAY[]::jsonb[]),
+                'not_active', array_to_json(ARRAY[]::jsonb[])
+            ) INTO ro;
 
-                /* Check if channel is active otherwise add it in "not-active" property and continue to next loop */
-                IF NOT (co->>'Active')::boolean THEN
-                    RAISE NOTICE '    > Channel not active!';
-                    /* Initialize a new object for the new parameter */
-                    SELECT
-                        jsonb_build_object(
-                            'module', (mo->>'ID')::integer,
-                            'module_name', mo->>'Name',
-                            'name', co->>'Name',
-                            'id', (co->>'DatabaseId')::integer
-                        ) INTO po;
+            /* Loop through all modules */
+            FOR mo IN SELECT * FROM jsonb_array_elements((config->>'Modules')::jsonb) LOOP
 
-                    /* Append new parameter to final result */
-                    SELECT jsonb_set(
-                            ro,
-                            ARRAY['not_active']::text[],
-                            ro->'not_active' || po,
-                            true
-                        ) INTO ro;
+                -- RAISE NOTICE 'Module: %', jsonb_pretty(m);
+                RAISE NOTICE 'Module name %', mo->>'Name';
 
+                /* Check if module is active otherwise continue to next loop */
+                IF NOT (mo->>'Active')::boolean THEN
+                    RAISE NOTICE '-- Module not active!';
                     CONTINUE;
                 END IF;
 
                 /**
-                 * Based on the type of the channel, retrieve the parameter and build the jsonb in a different way
-                 * Standard = 0
-                 * Diagnostic = 1
-                 * Alarm = 2
+                 * Check if it's a daily module
+                 * SWAM_5A_DD, SWAM_5A_DD_MONO, SM200, CHEMISTRY_LAB 
                  */
+                IF (mo->>'ModuleType')::integer IN (1401, 1405, 600, 50) THEN
+                    RAISE NOTICE 'Daily module!';
+                    d := TRUE;
+                ELSE
+                    d := FALSE;
+                END IF;
 
-                /* Stardard type case */
-                CASE (co->>'Type')::smallint
-                    WHEN 0 THEN
-                        -- RAISE NOTICE '        Channel type: Standard';
+                /* Loop through all module's channels */
+                FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
 
-                        /* Search for channel name inside the vocabulary table */
-                        SELECT dl_value, param_name, param_unit INTO i, n, u
-                        FROM metadata.dl_vocabulary d
-                        LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
-                        WHERE LOWER(dl_key) LIKE LOWER( co->>'Name' );
+                    -- RAISE NOTICE '    Channel: %', jsonb_pretty(c);
+                    RAISE NOTICE '    > Channel dbId, name: % %', co->>'DatabaseId', co->>'Name';
 
-                        /* If parameter does not exist then do nothing, add it in "not-found" property and continue to next loop */
-                        IF NOT FOUND THEN
-                            RAISE NOTICE '    > Parameter not found!';
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'name', co->>'Name',
-                                    'id', (co->>'DatabaseId')::integer
-                                ) INTO po;
-
-                            /* Append new parameter to final result */
-                            SELECT jsonb_set(
-                                    ro,
-                                    ARRAY['not_found']::text[],
-                                    ro->'not_found' || po,
-                                    true
-                                ) INTO ro;
-                            
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'prid', 0,
-                                    'name', 'Param. generico',
-                                    'note', co->>'Name',
-                                    'unit', '--',
-                                    'id', (co->>'DatabaseId')::integer,
-                                    'need-group', TRUE,
-                                    'daily', d
-                                ) INTO po;
-
-                        ELSE
-                            /* Take care of different types of insruments, set info note */
-                            -- s := NULL;
-                            CASE
-                                /**
-                                * PALAS_FIDAS200_PIPE = 1150 ' PALAS Fidas® 200 via pipe file
-                                * PALAS_FIDAS200_MODBUS = 1151 ' PALAS Fidas® 200 via modbus
-                                * PALAS_FIDAS200_ETH = 1152 ' PALAS Fidas® 200 via ethernet
-                                */
-                                WHEN (mo->>'ModuleType')::integer BETWEEN 1150 AND 1152 THEN
-                                    s := 'FIDAS';
-                                -- WHEN (mo->>'ModuleType')::integer BETWEEN XXX AND XXX THEN
-                                --  s := 'XXX';
-                                ELSE
-                                    /* DO nothing */
-                            END CASE;
-
-                            -- RAISE NOTICE '        ID parametro: %', i;
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'prid', i,
-                                    'name', n,
-                                    'note', s,
-                                    'unit', u,
-                                    'id', (co->>'DatabaseId')::integer,
-                                    'need-group', TRUE,
-                                    'daily', d
-                                ) INTO po;
-
-                        END IF;
+                    /* Check if channel is active otherwise add it in "not-active" property and continue to next loop */
+                    IF NOT (co->>'Active')::boolean THEN
+                        RAISE NOTICE '    > Channel not active!';
+                        /* Initialize a new object for the new parameter */
+                        SELECT
+                            jsonb_build_object(
+                                'module', (mo->>'ID')::integer,
+                                'module_name', mo->>'Name',
+                                'name', co->>'Name',
+                                'id', (co->>'DatabaseId')::integer
+                            ) INTO po;
 
                         /* Append new parameter to final result */
-                        -- SELECT ro->'found' || po INTO ro;
                         SELECT jsonb_set(
                                 ro,
-                                ARRAY['found']::text[],
-                                ro->'found' || po,
+                                ARRAY['not_active']::text[],
+                                ro->'not_active' || po,
                                 true
                             ) INTO ro;
 
-                    WHEN 1 THEN
-                        -- RAISE NOTICE '        Channel type: Diagnostic';
+                        CONTINUE;
+                    END IF;
 
-                        /* Search for channel databaseID inside the vocabulary table */
-                        SELECT dl_value, param_name, param_unit INTO i, n, u
-                        FROM metadata.dl_vocabulary d
-                        LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
-                        WHERE (co->>'DatabaseId')::text ~ dl_key::text ;
+                    /* Check if the channel contains ParameterId: new field inserted for the evolution of the dataogge*/
+                    IF (co->>'ParameterId')::integer IS NOT NULL AND (co->>'ParameterId')::integer > 0 THEN
+                        RAISE NOTICE '    > ID parameter already present, it is not necessary to execute further searches!';
 
-                        /* If parameter does not exist then do nothing and continue to next loop */
-                        IF NOT FOUND THEN
+                        /* Search for channel name inside the vocabulary table */
+                        SELECT param_id, param_name, param_unit INTO i, n, u
+                        FROM metadata.parameters p
+                        WHERE param_id = (co->>'ParameterId')::integer;
+
+                        /* Initialize a new object for the new parameter */
+                        SELECT
+                            jsonb_build_object(
+                                'module', (mo->>'ID')::integer,
+                                'module_name', mo->>'Name',
+                                'prid', i,
+                                'name', n,
+                                'note', (co->>'ParameterNote'),
+                                'unit', u,
+                                'id', (co->>'DatabaseId')::integer,
+                                'need-group', TRUE,
+                                'daily', d
+                            ) INTO po;
+
+                        /* Append new parameter to final result */
+                        SELECT jsonb_set(
+                                    ro,
+                                    ARRAY['found']::text[],
+                                    ro->'found' || po,
+                                    true
+                                ) INTO ro;
+
+                        CONTINUE;
+                    END IF;
+
+                    /**
+                     * Based on the type of the channel, retrieve the parameter and build the jsonb in a different way
+                     * Standard = 0
+                     * Diagnostic = 1
+                     * Alarm = 2
+                     */
+
+                    /* Stardard type case */
+                    CASE (co->>'Type')::smallint
+                        WHEN 0 THEN
+                            -- RAISE NOTICE '        Channel type: Standard';
+
+                            /* Search for channel name inside the vocabulary table */
+                            SELECT dl_value, param_name, param_unit INTO i, n, u
+                            FROM metadata.dl_vocabulary d
+                            LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
+                            WHERE LOWER(dl_key) LIKE LOWER( co->>'Name' );
+
+                            /* If parameter does not exist then do nothing, add it in "not-found" property and continue to next loop */
+                            IF NOT FOUND THEN
+                                RAISE NOTICE '    > Parameter not found!';
+                                /* Initialize a new object for the new parameter */
+                                SELECT
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'name', co->>'Name',
+                                        'id', (co->>'DatabaseId')::integer
+                                    ) INTO po;
+
+                                /* Append new parameter to final result */
+                                SELECT jsonb_set(
+                                        ro,
+                                        ARRAY['not_found']::text[],
+                                        ro->'not_found' || po,
+                                        true
+                                    ) INTO ro;
+                                
+                                /* Initialize a new object for the new parameter */
+                                SELECT
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'prid', 0,
+                                        'name', 'Param. generico',
+                                        'note', co->>'Name',
+                                        'unit', '--',
+                                        'id', (co->>'DatabaseId')::integer,
+                                        'need-group', TRUE,
+                                        'daily', d
+                                    ) INTO po;
+
+                            ELSE
+                                /* Take care of different types of insruments, set info note */
+                                -- s := NULL;
+                                CASE
+                                    /**
+                                    * PALAS_FIDAS200_PIPE = 1150 ' PALAS Fidas® 200 via pipe file
+                                    * PALAS_FIDAS200_MODBUS = 1151 ' PALAS Fidas® 200 via modbus
+                                    * PALAS_FIDAS200_ETH = 1152 ' PALAS Fidas® 200 via ethernet
+                                    */
+                                    WHEN (mo->>'ModuleType')::integer BETWEEN 1150 AND 1152 THEN
+                                        s := 'FIDAS';
+                                    -- WHEN (mo->>'ModuleType')::integer BETWEEN XXX AND XXX THEN
+                                    --  s := 'XXX';
+                                    ELSE
+                                        /* DO nothing */
+                                END CASE;
+
+                                -- RAISE NOTICE '        ID parametro: %', i;
+                                /* Initialize a new object for the new parameter */
+                                SELECT
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'prid', i,
+                                        'name', n,
+                                        'note', s,
+                                        'unit', u,
+                                        'id', (co->>'DatabaseId')::integer,
+                                        'need-group', TRUE,
+                                        'daily', d
+                                    ) INTO po;
+
+                            END IF;
+
+                            /* Append new parameter to final result */
+                            -- SELECT ro->'found' || po INTO ro;
+                            SELECT jsonb_set(
+                                    ro,
+                                    ARRAY['found']::text[],
+                                    ro->'found' || po,
+                                    true
+                                ) INTO ro;
+
+                        WHEN 1 THEN
+                            -- RAISE NOTICE '        Channel type: Diagnostic';
+
+                            /* Search for channel databaseID inside the vocabulary table */
+                            SELECT dl_value, param_name, param_unit INTO i, n, u
+                            FROM metadata.dl_vocabulary d
+                            LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
+                            WHERE (co->>'DatabaseId')::text ~ dl_key::text ;
+
+                            /* If parameter does not exist then do nothing and continue to next loop */
+                            IF NOT FOUND THEN
+                                /* Search for channel name inside the vocabulary table */
+                                SELECT dl_value, param_name, param_unit INTO i, n, u
+                                FROM metadata.dl_vocabulary d
+                                LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
+                                WHERE LOWER(dl_key) LIKE LOWER( co->>'Name' );
+
+                                /* If parameter does not exist then do nothing, add it in "not-found" property and continue to next loop */
+                                IF NOT FOUND THEN
+                                    RAISE NOTICE '    > Parameter not found!';
+                                    /* Initialize a new object for the new parameter */
+                                    SELECT
+                                        jsonb_build_object(
+                                            'module', (mo->>'ID')::integer,
+                                            'module_name', mo->>'Name',
+                                            'name', co->>'Name',
+                                            'id', (co->>'DatabaseId')::integer
+                                        ) INTO po;
+
+                                    /* Append new parameter to final result */
+                                    SELECT jsonb_set(
+                                            ro,
+                                            ARRAY['not_found']::text[],
+                                            ro->'not_found' || po,
+                                            true
+                                        ) INTO ro;
+                                    
+                                    SELECT
+                                        jsonb_build_object(
+                                            'module', (mo->>'ID')::integer,
+                                            'module_name', mo->>'Name',
+                                            'prid', 0,
+                                            'name', 'Param. generico',
+                                            'note', co->>'Name',
+                                            'unit', '--',
+                                            'id', (co->>'DatabaseId')::integer,
+                                            'need-group', TRUE,
+                                            'daily', d
+                                        ) INTO po;
+                                END IF;
+                            
+                            ELSE
+                                /* Take care of swam, set correct line type in info note */
+                                s := NULL;
+                                CASE
+                                    WHEN (co->>'DatabaseId')::integer BETWEEN 5000 AND 5031 THEN
+                                        s := 'Linea A';
+                                    WHEN (co->>'DatabaseId')::integer BETWEEN 5050 AND 5081 THEN
+                                        s := 'Linea B';
+                                    WHEN (co->>'DatabaseId')::integer BETWEEN 5100 AND 5131 THEN
+                                        s := 'Linea C';
+                                    ELSE
+                                        /* DO nothing */
+                                END CASE;
+
+                                -- RAISE NOTICE '        ID parametro: %', i;
+                                /* Initialize a new object for the new parameter */
+                                SELECT
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'prid', i,
+                                        'name', n,
+                                        'note', s,
+                                        'unit', u,
+                                        'id', (co->>'DatabaseId')::integer,
+                                        'need-group', TRUE,
+                                        'daily', d
+                                    ) INTO po;
+
+                            END IF;
+
+                            -- RAISE NOTICE 'Jsonb parametro: %', jsonb_pretty(po);
+
+                            /* Append new parameter to final result */
+                            -- SELECT ro || po INTO ro;
+                            SELECT jsonb_set(
+                                    ro,
+                                    ARRAY['found']::text[],
+                                    ro->'found' || po,
+                                    true
+                                ) INTO ro;
+
+                        /* Alarm parameter */
+                        WHEN 2 THEN
+                            -- RAISE NOTICE '        Channel type: Alarm';
+
                             /* Search for channel name inside the vocabulary table */
                             SELECT dl_value, param_name, param_unit INTO i, n, u
                             FROM metadata.dl_vocabulary d
@@ -6179,168 +6410,80 @@
                                         'need-group', TRUE,
                                         'daily', d
                                     ) INTO po;
+                            
+                            ELSE
+                                -- RAISE NOTICE '        ID parametro: %', i;
+                                /* Initialize a new object for the new parameter */
+                                SELECT
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'prid', i,
+                                        'name', n,
+                                        'unit', u,
+                                        'id', (co->>'DatabaseId')::integer,
+                                        'need-group', FALSE,
+                                        'daily', FALSE
+                                    ) INTO po;
+                            
                             END IF;
-                        
-                        ELSE
-                            /* Take care of swam, set correct line type in info note */
-                            s := NULL;
-                            CASE
-                                WHEN (co->>'DatabaseId')::integer BETWEEN 5000 AND 5031 THEN
-                                    s := 'Linea A';
-                                WHEN (co->>'DatabaseId')::integer BETWEEN 5050 AND 5081 THEN
-                                    s := 'Linea B';
-                                WHEN (co->>'DatabaseId')::integer BETWEEN 5100 AND 5131 THEN
-                                    s := 'Linea C';
-                                ELSE
-                                    /* DO nothing */
-                            END CASE;
-
-                            -- RAISE NOTICE '        ID parametro: %', i;
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'prid', i,
-                                    'name', n,
-                                    'note', s,
-                                    'unit', u,
-                                    'id', (co->>'DatabaseId')::integer,
-                                    'need-group', TRUE,
-                                    'daily', d
-                                ) INTO po;
-
-                        END IF;
-
-                        -- RAISE NOTICE 'Jsonb parametro: %', jsonb_pretty(po);
-
-                        /* Append new parameter to final result */
-                        -- SELECT ro || po INTO ro;
-                        SELECT jsonb_set(
-                                ro,
-                                ARRAY['found']::text[],
-                                ro->'found' || po,
-                                true
-                            ) INTO ro;
-
-                    /* Alarm parameter */
-                    WHEN 2 THEN
-                        -- RAISE NOTICE '        Channel type: Alarm';
-
-                        /* Search for channel name inside the vocabulary table */
-                        SELECT dl_value, param_name, param_unit INTO i, n, u
-                        FROM metadata.dl_vocabulary d
-                        LEFT JOIN metadata.parameters p ON (p.param_id = d.dl_value)
-                        WHERE LOWER(dl_key) LIKE LOWER( co->>'Name' );
-
-                        /* If parameter does not exist then do nothing, add it in "not-found" property and continue to next loop */
-                        IF NOT FOUND THEN
-                            RAISE NOTICE '    > Parameter not found!';
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'name', co->>'Name',
-                                    'id', (co->>'DatabaseId')::integer
-                                ) INTO po;
 
                             /* Append new parameter to final result */
+                            -- SELECT ro || po INTO ro;
                             SELECT jsonb_set(
                                     ro,
-                                    ARRAY['not_found']::text[],
-                                    ro->'not_found' || po,
+                                    ARRAY['found']::text[],
+                                    ro->'found' || po,
                                     true
                                 ) INTO ro;
-                            
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'prid', 0,
-                                    'name', 'Param. generico',
-                                    'note', co->>'Name',
-                                    'unit', '--',
-                                    'id', (co->>'DatabaseId')::integer,
-                                    'need-group', TRUE,
-                                    'daily', d
-                                ) INTO po;
-                        
-                        ELSE
-                            -- RAISE NOTICE '        ID parametro: %', i;
-                            /* Initialize a new object for the new parameter */
-                            SELECT
-                                jsonb_build_object(
-                                    'module', (mo->>'ID')::integer,
-                                    'module_name', mo->>'Name',
-                                    'prid', i,
-                                    'name', n,
-                                    'unit', u,
-                                    'id', (co->>'DatabaseId')::integer,
-                                    'need-group', FALSE,
-                                    'daily', FALSE
-                                ) INTO po;
-                        
-                        END IF;
 
-                        /* Append new parameter to final result */
-                        -- SELECT ro || po INTO ro;
-                        SELECT jsonb_set(
+                         ELSE
+                            /* Do nothing */
+                            RAISE NOTICE '        Channel type % does not exist', co->>'Type';
+                            CONTINUE;
+
+                    END CASE;
+
+                /* END channels loop */
+                END LOOP;
+
+                /* Take care of CC parameters based on module type*/
+                RAISE NOTICE 'Looking for CC...';
+                -- SELECT ro || metadata.f_get_cc_from_station_config( mo ) INTO ro;
+                SELECT metadata.f_get_cc_from_station_config( mo ) INTO cc;
+                IF( jsonb_array_length(cc) > 0 ) THEN
+                    SELECT jsonb_set(
                                 ro,
                                 ARRAY['found']::text[],
-                                ro->'found' || po,
+                                ro->'found' || metadata.f_get_cc_from_station_config( mo ),
                                 true
                             ) INTO ro;
+                END IF;
 
-                     ELSE
-                        /* Do nothing */
-                        RAISE NOTICE '        Channel type % does not exist', co->>'Type';
-                        CONTINUE;
-
-                END CASE;
-
-            /* END channels loop */
+            /* END modules loop */
             END LOOP;
 
-            /* Take care of CC parameters based on module type*/
-            RAISE NOTICE 'Looking for CC...';
-            -- SELECT ro || metadata.f_get_cc_from_station_config( mo ) INTO ro;
-            SELECT metadata.f_get_cc_from_station_config( mo ) INTO cc;
-            IF( jsonb_array_length(cc) > 0 ) THEN
-                SELECT jsonb_set(
-                            ro,
-                            ARRAY['found']::text[],
-                            ro->'found' || metadata.f_get_cc_from_station_config( mo ),
-                            true
-                        ) INTO ro;
-            END IF;
+            -- RAISE NOTICE 'Jsonb totale: %', jsonb_pretty(ro);
 
-        /* END modules loop */
-        END LOOP;
+            RETURN ro;
 
-        -- RAISE NOTICE 'Jsonb totale: %', jsonb_pretty(ro);
+            /* errors check */
+            EXCEPTION
+            WHEN OTHERS THEN /* in case of any error */
+                RAISE NOTICE 'ERROR IN metadata.f_get_parameters_from_station_config_v3(jsonb) : %', SQLERRM ;
+                RETURN NULL;
+        END;
 
-        RETURN ro;
-
-        /* errors check */
-        EXCEPTION
-        WHEN OTHERS THEN /* in case of any error */
-            RAISE NOTICE 'ERROR IN metadata.f_get_parameters_from_station_config_v2(jsonb) : %', SQLERRM ;
-            RETURN NULL;
-    END;
-
+        
     $BODY$;
 
-    GRANT EXECUTE ON FUNCTION  metadata.f_get_parameters_from_station_config_v2(jsonb) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION  metadata.f_get_parameters_from_station_config_v2(jsonb) TO group_admin;
-    GRANT EXECUTE ON FUNCTION  metadata.f_get_parameters_from_station_config_v2(jsonb) TO group_tools;
 
-    COMMENT ON FUNCTION  metadata.f_get_parameters_from_station_config_v2(jsonb) IS '[BOBO] Function that returns an object with all parameters and their ids retrieved from station configuration file';
+    GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_admin;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_tools;
 
-
-    -- comment
-    COMMENT ON FUNCTION  metadata.f_get_parameters_from_station_config(jsonb)
-        IS 'Function that returns an object with all parameters and their ids retrieved from station configuration file';
+    COMMENT ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb)
+        IS '[BOBO] Function that returns an object with all parameters and their ids retrieved from station configuration file';
 
     -- Funzione per recuperare l'stid in base alla data passata
     -- la funzione è utile nel caso di mezzi mobili dislocati in siti diversi nel corso del tempo
@@ -6473,6 +6616,86 @@
     GRANT EXECUTE ON FUNCTION metadata.f_get_tablename_by_stationid(integer) TO group_tools;
     GRANT EXECUTE ON FUNCTION metadata.f_get_tablename_by_stationid(integer) TO group_bobo;
     GRANT EXECUTE ON FUNCTION metadata.f_get_tablename_by_stationid(integer) TO group_readonly;
+
+    -- DROP FUNCTION metadata.f_get_view_sites_parameters(bigint);
+    CREATE OR REPLACE FUNCTION metadata.f_get_view_sites_parameters(
+        stprid bigint
+    )
+        RETURNS TABLE(
+            stpr_id         bigint,    
+            station_id      integer,    
+            param_id        integer,    
+            stpr_group_id   integer,        
+            stpr_table_id   integer,
+            station_fulltable text,
+            stsi_period     tsmultirange,
+            stpr_note       text    
+        )
+        LANGUAGE 'plpgsql'
+        COST 100
+        STABLE PARALLEL UNSAFE
+    AS $BODY$
+        DECLARE
+            s integer;
+        BEGIN
+
+            /**
+             * Function for the dynamic recovery of a table containing all the metadata relating to a specific STPRID of an ALLOCATED mobile vehicle 
+             * These special STPRIDs are negative and they are built in this way:
+             *  - STID || LPAD(STPRID, 7, '0') 
+             * 
+             * The STID is the one assigned to the allocation of the mobile vehicle.
+             * The function is used in Analyser for the recovery of parameter information
+             * 
+             * Example: SELECT * FROM metadata.f_get_view_sites_parameters( -15320026270::bigint);
+             */
+
+            /* Get station override id*/ 
+            SELECT 
+                LEFT(( stprid )::text, -7)::integer * -1 INTO s;
+
+            /* Return the set of metadata for the specifc stprid */
+            RETURN QUERY
+                EXECUTE
+                    'SELECT
+                        -(so.station_override_id::text || lpad(sp.stpr_id::text, 7, ''0''))::bigint AS stpr_id,
+                        station_override_id AS station_id,
+                        sp.param_id,
+                        sp.stpr_group_id,
+                        sp.stpr_table_id,
+                        ((st2.station_schema || ''.''::text) || COALESCE(st2.station_prefix, ''''::text)) || st2.station_table AS station_fulltable,
+                        stsi_period,
+                        sp.stpr_note
+                    FROM (
+                        SELECT
+                            station_id,
+                            station_override_id,
+                            range_agg (tsrange(stsi_startup_date, stsi_dismiss_date, ''[]'')) as stsi_period
+                        FROM metadata.stations_sites ss
+                        WHERE 
+                            station_override_id = '|| s ||' 
+                        GROUP BY station_id, station_override_id
+                        ORDER BY station_id, station_override_id
+                    ) so
+                        LEFT JOIN metadata.stations_parameters sp ON (sp.station_id = so.station_id)
+                        LEFT JOIN metadata.stations st ON (st.station_id = so.station_override_id)
+                        LEFT JOIN metadata.stations st2 ON (st2.station_id = so.station_id)
+                    WHERE 
+                        -(so.station_override_id::text || lpad(sp.stpr_id::text, 7, ''0''))::bigint = '|| stprid;
+
+        /* errors check */
+        EXCEPTION
+           /* in case of any error */
+           WHEN OTHERS THEN RAISE NOTICE 'ERROR in metadata.f_get_view_sites_parameters: %', SQLERRM;
+        END;
+    $BODY$;
+
+    GRANT EXECUTE ON FUNCTION      metadata.f_get_view_sites_parameters(bigint) TO group_admin;
+    GRANT EXECUTE ON FUNCTION      metadata.f_get_view_sites_parameters(bigint) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION      metadata.f_get_view_sites_parameters(bigint) TO group_tools;
+
+    COMMENT ON FUNCTION metadata.f_get_view_sites_parameters(bigint) IS '[OPAS] Function for the recovery of the metadata relating to a specific STPRID of an ALLOCATED mobile vehicle.';
+
 
     -- comment
     COMMENT ON FUNCTION metadata.f_get_tablename_by_stationid(integer)
@@ -8405,104 +8628,108 @@
     COMMENT ON FUNCTION clients.f_auto_to_post_validity_code() IS 'Auto validation function and update of post validity code';
 
     -- Funzione di calcolo della media mobile dinamica
-    -- DROP FUNCTION IF EXISTS clients.f_calc_dynamic_moving_mean(integer, timestamp without time zone, timestamp without time zone, text, integer);
+    -- DROP FUNCTION IF EXISTS clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer);
     CREATE OR REPLACE FUNCTION clients.f_calc_dynamic_moving_mean(
-        stprid integer,
+        stprid bigint,
         date_from timestamp without time zone,
         date_to timestamp without time zone,
         validity text DEFAULT '>= 0'::text,
         dwindow integer DEFAULT 8)
-        RETURNS SETOF clients.t_data_function
+        RETURNS SETOF clients.t_data_function 
         LANGUAGE 'plpgsql'
         COST 100
         VOLATILE PARALLEL UNSAFE
         ROWS 1000
+
     AS $BODY$
+            DECLARE
+                c integer; -- counter
+                n integer; -- minimum number of data in window
+                q text;    -- dynamic query
+            BEGIN
 
-    DECLARE
-        c integer; -- counter
-        n integer; -- minimum number of data in window
-        q text;    -- dynamic query
-    BEGIN
-        /* entry */
-        RAISE NOTICE 'Function clients.f_calc_dynamic_moving_mean, stpr_id: %', stprid;
+                /* entry */
+                RAISE NOTICE 'Function clients.f_calc_dynamic_moving_mean, stpr_id: %', stprid;
 
-        /* Testing
+                /* Testing
 
-            SELECT * FROM  clients.f_calc_dynamic_moving_mean (
-                45,
-                '2021-01-13 00:00'::timestamp,
-                '2021-01-20 23:00'::timestamp,
-                '>= 0'::text,
-                6::integer
-            );
-        */
+                    SELECT * FROM  clients.f_calc_dynamic_moving_mean (
+                        45,
+                        '2021-01-13 00:00'::timestamp,
+                        '2021-01-20 23:00'::timestamp,
+                        '>= 0'::text,
+                        6::integer
+                    );
+                */
 
-        SELECT ((dwindow/100.0)*75)::integer INTO n;
+                SELECT ((dwindow/100.0)*75)::integer INTO n;
 
-        q =
-        'WITH t AS ('||E'\n'
-        ||'    SELECT'||E'\n'
-        ||'        measure_date_time,'||E'\n'
-        ||'        measure_id,'||E'\n'
-        ||'        ROUND(avg(measure_value) OVER mywindow, 10)::numeric AS measure_value,'||E'\n'
-        ||'        ROUND(avg(measure_min) OVER mywindow, 10)::numeric AS measure_min,'||E'\n'
-        ||'        ROUND(avg(measure_max) OVER mywindow, 10)::numeric AS measure_max,'||E'\n';
+                q =
+                'WITH t AS ('||E'\n'
+                ||'    SELECT'||E'\n'
+                ||'        measure_date_time,'||E'\n'
+                ||'        measure_id,'||E'\n'
+                ||'        ROUND(avg(measure_value) OVER mywindow, 10)::numeric AS measure_value,'||E'\n'
+                ||'        ROUND(avg(measure_min) OVER mywindow, 10)::numeric AS measure_min,'||E'\n'
+                ||'        ROUND(avg(measure_max) OVER mywindow, 10)::numeric AS measure_max,'||E'\n';
 
-        FOR c in 1..(dwindow-1) LOOP
-            RAISE NOTICE 'counter: %', c;
-            q = q ||'        CASE WHEN LAG(measure_value, '||c||') OVER mywindow IS NULL THEN 0 ELSE 1 END +'||E'\n';
-        END LOOP;
+                FOR c in 1..(dwindow-1) LOOP
+                    RAISE NOTICE 'counter: %', c;
+                    q = q ||'        CASE WHEN LAG(measure_value, '||c||') OVER mywindow IS NULL THEN 0 ELSE 1 END +'||E'\n';
 
-        q = q
-        ||'        CASE WHEN measure_value IS NULL THEN 0 ELSE 1 END'||E'\n'
-        ||'    AS measure_counter'||E'\n'
-        ||'    FROM clients.f_data_extraction('||stprid||'::integer, ('||quote_literal(date_from)||'::timestamp - INTERVAL '''||dwindow||' hours''), '||quote_literal(date_to)||'::timestamp, ''hh''::metadata.e_aggregations, ''avg''::metadata.e_treatments, '||quote_literal(validity)||'::text) tbl'||E'\n'
-        ||'    WINDOW mywindow AS (ORDER BY measure_date_time ROWS BETWEEN '||(dwindow-1)||' PRECEDING AND CURRENT ROW)'||E'\n'
-        ||'    ORDER BY measure_date_time'||E'\n'
-        ||')'||E'\n'
-        ||'SELECT '||E'\n'
-        ||'    t.measure_date_time,'||E'\n'
-        ||'    t.measure_id,'||E'\n'
-        ||'    CASE '||E'\n'
-        ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_value '||E'\n'
-        ||'        ELSE NULL '||E'\n'
-        ||'    END AS measure_value,'||E'\n'
-        ||'    CASE '||E'\n'
-        ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_min '||E'\n'
-        ||'        ELSE NULL '||E'\n'
-        ||'    END AS measure_min,'||E'\n'
-        ||'    CASE '||E'\n'
-        ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_max '||E'\n'
-        ||'        ELSE NULL '||E'\n'
-        ||'    END AS measure_max,'||E'\n'
-        ||'    CASE WHEN t.measure_value NOTNULL THEN (t.measure_counter::real / '||(dwindow)||'*100)::smallint END AS measure_perc,'||E'\n'
-        ||'    0::integer  AS post_validity_code,'||E'\n'
-        ||'    0::smallint AS final_validity_code'||E'\n'
-        ||'FROM t'||E'\n'
-        ||'ORDER BY t.measure_date_time;'||E'\n';
+                    -- IF c != (dwindow-1) THEN
+                    --     q = q ||'+'||E'\n';
+                    -- END IF;
+                END LOOP;
+                
+                q = q
+                ||'        CASE WHEN measure_value IS NULL THEN 0 ELSE 1 END'||E'\n'
+                ||'    AS measure_counter'||E'\n'
+                ||'    FROM clients.f_data_extraction('||stprid||'::bigint, ('||quote_literal(date_from)||'::timestamp - INTERVAL '''||dwindow||' hours''), '||quote_literal(date_to)||'::timestamp, ''hh''::metadata.e_aggregations, ''avg''::metadata.e_treatments, '||quote_literal(validity)||'::text) tbl'||E'\n'
+                ||'    WINDOW mywindow AS (ORDER BY measure_date_time ROWS BETWEEN '||(dwindow-1)||' PRECEDING AND CURRENT ROW)'||E'\n'
+                ||'    ORDER BY measure_date_time'||E'\n'
+                ||')'||E'\n'
+                ||'SELECT '||E'\n'
+                ||'    t.measure_date_time,'||E'\n'
+                ||'    t.measure_id,'||E'\n'
+                ||'    CASE '||E'\n'
+                ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_value '||E'\n'
+                ||'        ELSE NULL '||E'\n'
+                ||'    END AS measure_value,'||E'\n'
+                ||'    CASE '||E'\n'
+                ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_min '||E'\n'
+                ||'        ELSE NULL '||E'\n'
+                ||'    END AS measure_min,'||E'\n'
+                ||'    CASE '||E'\n'
+                ||'        WHEN t.measure_counter >= '||n||' THEN t.measure_max '||E'\n'
+                ||'        ELSE NULL '||E'\n'
+                ||'    END AS measure_max,'||E'\n'
+                ||'    CASE WHEN t.measure_value NOTNULL THEN (t.measure_counter::real / '||(dwindow)||'*100)::smallint END AS measure_perc,'||E'\n'
+                ||'    0::integer  AS post_validity_code,'||E'\n'
+                ||'    0::smallint AS final_validity_code'||E'\n'
+                ||'FROM t'||E'\n'
+                ||'ORDER BY t.measure_date_time;'||E'\n';
 
-        /* notice */
-        RAISE NOTICE 'Query: %', E'\n'||q;
+                /* notice */
+                RAISE NOTICE 'Query: %', E'\n'||q;
 
-        /* return value */
-        RETURN QUERY EXECUTE q;
+                /* return value */
+                RETURN QUERY EXECUTE q;
 
-        /* errors check */
-        EXCEPTION
-            WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_calc_dynamic_moving_mean(): %', SQLERRM;
-    END;
-
+            /* errors check */
+            EXCEPTION
+                WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_calc_dynamic_moving_mean(): %', SQLERRM;
+            END;
+        
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(integer, timestamp, timestamp, text, integer) TO group_readonly;
-    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(integer, timestamp, timestamp, text, integer) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(integer, timestamp, timestamp, text, integer) TO group_admin;
-    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(integer, timestamp, timestamp, text, integer) TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer) TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer) TO group_readonly;
+    GRANT EXECUTE ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer) TO group_tools;
 
     -- comment
-    COMMENT ON FUNCTION clients.f_calc_dynamic_moving_mean(integer, timestamp, timestamp, text, integer)
+    COMMENT ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer)
         IS 'Moving Average data extraction function';
 
     -- Funzione che restituisce la descrizione testuale del risultato di una taratura
@@ -9000,283 +9227,294 @@
         IS 'Refresh table with latest alarms';
 
     -- Funzione di estrazione dei dati per i vari applicativi del portale
-    -- DROP FUNCTION IF EXISTS clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text);
+    -- DROP FUNCTION IF EXISTS clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text);
     CREATE OR REPLACE FUNCTION clients.f_data_extraction(
-        stprid      integer,
-        date_from   timestamp without time zone,
-        date_to     timestamp without time zone,
-        aggregation metadata.e_aggregations DEFAULT 'hh',
-        treatment   metadata.e_treatments  DEFAULT 'avg',
-        validity    text DEFAULT '>= 0'
-    )
-        RETURNS SETOF clients.t_data_function
+        stprid bigint,
+        date_from timestamp without time zone,
+        date_to timestamp without time zone,
+        aggregation metadata.e_aggregations DEFAULT 'hh'::metadata.e_aggregations,
+        treatment metadata.e_treatments DEFAULT 'avg'::metadata.e_treatments,
+        validity text DEFAULT '>= 0'::text)
+        RETURNS SETOF clients.t_data_function 
         LANGUAGE 'plpgsql'
         COST 100
-        VOLATILE
+        VOLATILE PARALLEL UNSAFE
         ROWS 1000
 
     AS $BODY$
+            DECLARE
+                t text;         -- tablename
+                v text;         -- formatted validity
+                p integer;      -- parameter table id
+                i integer;      -- parameter id
+                d integer;      -- parameter decimals
+                y integer;      -- parameter type (10 = limite)
+                f text;         -- when stprid < 0, mm locations interval
+                q text;         -- dynamic query
+            BEGIN
 
-    DECLARE
-        t text;         -- tablename
-        v text;         -- formatted validity
-        p integer;      -- parameter table id
-        i integer;      -- parameter id
-        d integer;      -- parameter decimals
-        y integer;      -- parameter type (10 = limite)
-        q text;         -- dynamic query
-    BEGIN
-        /* entry */
-        RAISE NOTICE 'Function clients.f_data_extraction, stpr_id: %', stprid;
+                /* entry */
+                --RAISE NOTICE 'Function clients.f_data_extraction, stpr_id: %', stprid;
 
-        /* Testing
-            SELECT * FROM  clients.f_data_extraction (
-                571::integer,
-                '2020-01-01 00:00'::timestamp,
-                '2020-01-31 23:59'::timestamp,
-                'hh'::metadata.e_aggregations,
-                'avg'::metadata.e_treatments,
-                '<= 4'::text
-            );
-        */
-
-        /* get station properties */
-        /* suffix in order to get data from a view es cc, labs */
-        SELECT
-            station_fulltable||COALESCE( parameter_object->'general'->>'suffix', '' ) AS  station_fulltable, station_param_table_id, 10 AS parameter_decimals, parameter_type_id INTO t, p, d, y
-        FROM
-            metadata.view_stations_parameters
-        WHERE
-            station_param_id = stprid;
-
-        RAISE NOTICE 'Function clients.f_data_extraction, tablename: %, parame id: %', t, p;
-
-        SELECT
-            CASE
-                WHEN array_length(regexp_split_to_array(validity, ', '), 1) > 1 THEN '( main.signed_bitmask_toarray(t.post_validity_code::integer, 10 ) && ''{'||regexp_replace(validity, '= ', '', 'g')||'}''::integer[] )'
-                ELSE 't.post_validity_code '|| validity
-            END INTO v;
-
-        RAISE NOTICE 'CHeck for validity code: %', v;
-
-        /* build main dynamic query */
-        q =
-        'WITH m AS ('||E'\n'
-        ||'    SELECT'||E'\n'
-        ||'        ('||quote_literal(date_from)||'::timestamp + interval ''60 minute'' * s.a)::timestamp AS measure_date_time'||E'\n'
-        ||'    FROM'||E'\n'
-        ||'        generate_series(0,(EXTRACT(EPOCH FROM '||quote_literal(date_to)||'::timestamp'||E'\n'
-        ||'        - '||quote_literal(date_from)||'::timestamp)/3600)::integer) AS s(a)'||E'\n'
-        ||')'||E'\n\n';
-
-        /* take care of aggregation time */
-        CASE
-            WHEN aggregation = 'hh'::metadata.e_aggregations THEN
-
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    m.measure_date_time AS measure_date_time,'||E'\n';
-
-                /* measures */
-                q = q
-                ||'    '||p||'::smallint AS measure_id,'||E'\n';
-
-                /* take care of limits, alway 100% */
-                IF y = 18 THEN
-                    /*limit*/
-                    q = q
-                    ||'    0::numeric AS measure_value,'||E'\n'
-                    ||'    0::numeric AS measure_min,'||E'\n'
-                    ||'    0::numeric AS measure_max,'||E'\n'
-                    ||'    100::smallint AS measure_perc,'||E'\n'
-                    ||'    0::integer AS post_validity_code,'||E'\n'
-                    ||'    0::smallint AS final_validity_code'||E'\n';
+                /* Testing
+                    SELECT * FROM  clients.f_data_extraction (
+                        571::integer,
+                        '2020-01-01 00:00'::timestamp,
+                        '2020-01-31 23:59'::timestamp,
+                        'hh'::metadata.e_aggregations,
+                        'avg'::metadata.e_treatments,
+                        '<= 4'::text
+                    );
+                */
+                f := '';
+                
+                /* get station properties */
+                /* suffix in order to get data from a view es cc, labs */
+                CASE
+                WHEN stprid > 0 THEN
+                    SELECT
+                        station_fulltable||COALESCE( parameter_object->'general'->>'suffix', '' ) AS  station_fulltable, station_param_table_id, 10 AS parameter_decimals, parameter_type_id INTO t, p, d, y
+                    FROM
+                        metadata.view_stations_parameters
+                    WHERE
+                        station_param_id = stprid;
                 ELSE
-                    /*standard parameter*/
-                    q = q
-                    ||'    CASE WHEN '||v||' THEN t.measure_value::numeric END AS measure_value,'||E'\n'
-                    ||'    CASE WHEN '||v||' THEN t.measure_min::numeric END AS measure_min,'||E'\n'
-                    ||'    CASE WHEN '||v||' THEN t.measure_max::numeric END AS measure_max,'||E'\n'
-                    ||'    CASE WHEN t.measure_value NOTNULL AND '||v||' THEN 100::smallint END AS measure_perc,'||E'\n'
-                    ||'    t.post_validity_code::integer   AS post_validity_code,'||E'\n'
-                    ||'    t.final_validity_code::smallint AS final_validity_code'||E'\n';
-                END IF;
+                    SELECT
+                        station_fulltable||COALESCE( pm.pm_info_obj->'general'->>'suffix', '' ) AS  station_fulltable, stpr_table_id, 10 AS parameter_decimals, pm.pm_info_type_fk, 'AND t.measure_date_time <@ '''||stsi_period||'''::tsmultirange' INTO t, p, d, y, f
+                    FROM
+                       metadata.f_get_view_sites_parameters(stprid) tmp
+                       LEFT JOIN metadata.parameters_info pm USING (param_id)
+                    WHERE
+                        stpr_id = stprid;
+                END CASE;
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||')'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                -- RAISE NOTICE 'Function clients.f_data_extraction, tablename: %, parame id: %', t, p;
 
-                /* order by */
-                q = q
-                ||'ORDER BY'||E'\n'
-                ||'    measure_date_time'||E'\n';
+                SELECT
+                    CASE
+                        WHEN array_length(regexp_split_to_array(validity, ', '), 1) > 1 THEN '( main.signed_bitmask_toarray(t.post_validity_code::integer, 10 ) && ''{'||regexp_replace(validity, '= ', '', 'g')||'}''::integer[] )'
+                        ELSE 't.post_validity_code '|| validity
+                    END INTO v;
 
-            WHEN aggregation = 'dd'::metadata.e_aggregations THEN
+                -- RAISE NOTICE 'CHeck for validity code: %', v;
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                /* build main dynamic query */
+                q =
+                'WITH m AS ('||E'\n'
+                ||'    SELECT'||E'\n'
+                ||'        ('||quote_literal(date_from)||'::timestamp + interval ''60 minute'' * s.a)::timestamp AS measure_date_time'||E'\n'
+                ||'    FROM'||E'\n'
+                ||'        generate_series(0,(EXTRACT(EPOCH FROM '||quote_literal(date_to)||'::timestamp'||E'\n'
+                ||'        - '||quote_literal(date_from)||'::timestamp)/3600)::integer) AS s(a)'||E'\n'
+                ||')'||E'\n\n';
 
-                /* measures */
-                q = q
-                ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+                /* take care of aggregation time */
+                CASE
+                    WHEN aggregation = 'hh'::metadata.e_aggregations THEN
 
-                /* take care of limits, alway 100% */
-                IF y = 18 THEN
-                    /*limit*/
-                    q = q
-                    ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                    ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                    ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                    ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                ELSE
-                    /*standard parameter*/
-                    q = q
-                    ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                    ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                    ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                    ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
-                    ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                    ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
-                END IF;
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    m.measure_date_time AS measure_date_time,'||E'\n';
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||')'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* measures */
+                        q = q
+                        ||'    '||p||'::smallint AS measure_id,'||E'\n';
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        /* take care of limits, alway 100% */
+                        IF y = 18 THEN
+                            /*limit*/
+                            q = q
+                            ||'    0::numeric AS measure_value,'||E'\n'
+                            ||'    0::numeric AS measure_min,'||E'\n'
+                            ||'    0::numeric AS measure_max,'||E'\n'
+                            ||'    100::smallint AS measure_perc,'||E'\n'
+                            ||'    0::integer AS post_validity_code,'||E'\n'
+                            ||'    0::smallint AS final_validity_code'||E'\n';
+                        ELSE
+                            /*standard parameter*/
+                            q = q
+                            ||'    CASE WHEN '||v||' THEN t.measure_value::numeric END AS measure_value,'||E'\n'
+                            ||'    CASE WHEN '||v||' THEN t.measure_min::numeric END AS measure_min,'||E'\n'
+                            ||'    CASE WHEN '||v||' THEN t.measure_max::numeric END AS measure_max,'||E'\n'
+                            ||'    CASE WHEN t.measure_value NOTNULL AND '||v||' THEN 100::smallint END AS measure_perc,'||E'\n'
+                            ||'    t.post_validity_code::integer   AS post_validity_code,'||E'\n'
+                            ||'    t.final_validity_code::smallint AS final_validity_code'||E'\n';
+                        END IF;
 
-            WHEN aggregation = 'mm'::metadata.e_aggregations THEN
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                        /* order by */
+                        q = q
+                        ||'ORDER BY'||E'\n'
+                        ||'    measure_date_time'||E'\n';
 
-                /* measures */
-                q = q
-                ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+                    WHEN aggregation = 'dd'::metadata.e_aggregations THEN
 
-                /* take care of limits, alway 100% */
-                IF y = 18 THEN
-                    /*limit*/
-                    q = q
-                    ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                    ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                    ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                    ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                ELSE
-                    /*standard parameter*/
-                    q = q
-                    ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                    ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                    ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                    ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
-                    ||'    24 * max(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
-                    ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
-                    ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                    ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
-                END IF;
+                        /* measures */
+                        q = q
+                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||')'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* take care of limits, alway 100% */
+                        IF y = 18 THEN
+                            /*limit*/
+                            q = q
+                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                        ELSE
+                            /*standard parameter*/
+                            q = q
+                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                            ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                            ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                        END IF;
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-            WHEN aggregation = 'yy'::metadata.e_aggregations THEN
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                    WHEN aggregation = 'mm'::metadata.e_aggregations THEN
 
-                /* measures */
-                q = q
-                ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
-                /* take care of limits, alway 100% */
-                IF y = 18 THEN
-                    q = q
-                    ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                    ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                    ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                    ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                    ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                ELSE
-                    /*standard parameter*/
-                    q = q
-                    ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                    ||'    round(min (CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                    ||'    round(max (CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                    ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
-                    ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
-                    ||'    )::real*100)::smallint AS measure_perc'||E'\n'
-                    ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                    ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
-                END IF;
+                        /* measures */
+                        q = q
+                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||')'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* take care of limits, alway 100% */
+                        IF y = 18 THEN
+                            /*limit*/
+                            q = q
+                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                        ELSE
+                            /*standard parameter*/
+                            q = q
+                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                            ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                            ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
+                            ||'    24 * max(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
+                            ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        END IF;
 
-            ELSE
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-        END CASE;
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
 
-        /* notice */
-        RAISE NOTICE 'Query: %', E'\n'||q;
+                    WHEN aggregation = 'yy'::metadata.e_aggregations THEN
 
-        /* return value */
-        RETURN QUERY EXECUTE q;
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
-        /* errors check */
-        EXCEPTION
-            WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_data_extraction(): %', SQLERRM;
-    END;
+                        /* measures */
+                        q = q
+                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
 
+                        /* take care of limits, alway 100% */
+                        IF y = 18 THEN
+                            q = q
+                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                        ELSE
+                            /*standard parameter*/
+                            q = q
+                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                            ||'    round(min (CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                            ||'    round(max (CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
+                            ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
+                            ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
+                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                        END IF;
+
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
+
+                    ELSE
+
+                END CASE;
+
+                /* notice */
+                -- RAISE NOTICE 'Query: %', E'\n'||q;
+
+                /* return value */
+                RETURN QUERY EXECUTE q;
+
+            /* errors check */
+            EXCEPTION
+                WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_data_extraction(): %', SQLERRM;
+            END;
+        
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text) TO group_readonly;
-    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text) TO group_admin;
-    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text) TO group_tools;
 
-    -- comment
-    COMMENT ON FUNCTION clients.f_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, metadata.e_treatments, text)
-        IS 'Generic data extraction function';
+    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_readonly;
+
+    COMMENT ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) IS '[OPAS] Generic data extraction function';
+
 
     -- Funzione che calcola le statistiche di validità dei parametri di una determinata stazione
     -- DROP FUNCTION IF EXISTS clients.f_data_validity_statistics(integer, timestamp, timestamp, boolean);
@@ -12306,181 +12544,176 @@
         IS 'Set extract code based on measure cadence';
 
     -- Funzione per l'estrazione dei dati di media mobile
-    -- DROP FUNCTION IF EXISTS clients.f_sldavg_data_extraction(integer, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer);
+    -- DROP FUNCTION IF EXISTS clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer);
     CREATE OR REPLACE FUNCTION clients.f_sldavg_data_extraction(
-        stprid      integer,
-        date_from   timestamp without time zone,
-        date_to     timestamp without time zone,
-        aggregation metadata.e_aggregations DEFAULT 'hh',
-        validity    text DEFAULT '>= 0',
-        dwindow     integer DEFAULT 8
-    )
-        RETURNS SETOF clients.t_data_function
+        stprid bigint,
+        date_from timestamp without time zone,
+        date_to timestamp without time zone,
+        aggregation metadata.e_aggregations DEFAULT 'hh'::metadata.e_aggregations,
+        validity text DEFAULT '>= 0'::text,
+        dwindow integer DEFAULT 8)
+        RETURNS SETOF clients.t_data_function 
         LANGUAGE 'plpgsql'
         COST 100
-        VOLATILE
+        VOLATILE PARALLEL UNSAFE
         ROWS 1000
+
     AS $BODY$
+            DECLARE
+                treatment metadata.e_treatments := 'avg';
+                d integer := 10; -- parameter decimals
+                q text;         -- dynamic query
+            BEGIN
 
-    DECLARE
-        treatment metadata.e_treatments := 'avg';
-        d integer := 10; -- parameter decimals
-        q text;         -- dynamic query
-    BEGIN
-        /* entry */
-        RAISE NOTICE 'Function clients.f_sldavg_data_extraction, stpr_id: %', stprid;
+                /* entry */
+                RAISE NOTICE 'Function clients.f_sldavg_data_extraction, stpr_id: %', stprid;
 
-        /* Testing
-            SELECT * FROM  clients.f_sldavg_data_extraction (
-                45,
-                '2021-01-13 00:00'::timestamp,
-                '2021-01-20 23:00'::timestamp,
-                'dd'::metadata.e_aggregations,
-                '>= 0'::text,
-                8::integer
-            );
-        */
+                /* Testing
+                    SELECT * FROM  clients.f_sldavg_data_extraction (
+                        45,
+                        '2021-01-13 00:00'::timestamp,
+                        '2021-01-20 23:00'::timestamp,
+                        'dd'::metadata.e_aggregations,
+                        '>= 0'::text,
+                        8::integer
+                    );
+                */
 
-
-        /* build main dynamic query */
-        q =
-        'WITH m AS ('||E'\n'
-        ||'    SELECT a AS measure_date_time FROM generate_series'||E'\n'
-        ||'    ( '||quote_literal(date_from)||'::timestamp'||E'\n'
-        ||'    , '||quote_literal(date_to)||'::timestamp'||E'\n'
-        ||'    , ''1 hour''::interval) s(a)'||E'\n'
-        ||')'||E'\n\n';
-
-        /* take care of aggregation time */
-        CASE
-            WHEN aggregation = 'hh'::metadata.e_aggregations THEN
-
-                /* date time */
+                /* build main dynamic query */
                 q =
-                'SELECT * '||E'\n'
-                ||'FROM clients.f_calc_dynamic_moving_mean ('||stprid||'::integer, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) tbl'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    tbl.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                'WITH m AS ('||E'\n'
+                ||'    SELECT a AS measure_date_time FROM generate_series'||E'\n'
+                ||'    ( '||quote_literal(date_from)||'::timestamp'||E'\n'
+                ||'    , '||quote_literal(date_to)||'::timestamp'||E'\n'
+                ||'    , ''1 hour''::interval) s(a)'||E'\n'
+                ||')'||E'\n\n';
 
-            WHEN aggregation = 'dd'::metadata.e_aggregations THEN
+                /* take care of aggregation time */
+                CASE
+                    WHEN aggregation = 'hh'::metadata.e_aggregations THEN
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                        /* date time */
+                        q =
+                        'SELECT * '||E'\n'
+                        ||'FROM clients.f_calc_dynamic_moving_mean ('||stprid||'::bigint, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) tbl'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    tbl.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* measures */
-                q = q
-                ||'    MAX(measure_id) AS measure_id,'||E'\n'
-                ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
-                ||'    ROUND( MIN(t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
-                ||'    ROUND( MAX(t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
-                ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
-                ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                    WHEN aggregation = 'dd'::metadata.e_aggregations THEN
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::integer, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        /* measures */
+                        q = q
+                        ||'    MAX(measure_id) AS measure_id,'||E'\n'
+                        ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
+                        ||'    ROUND( MIN(t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
+                        ||'    ROUND( MAX(t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
+                        ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
+                        ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
 
-            WHEN aggregation = 'mm'::metadata.e_aggregations THEN
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::bigint, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
 
-                /* measures */
-                q = q
-                ||'    MAX(measure_id) AS measure_id,'||E'\n'
-                ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
-                ||'    ROUND( MIN(t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
-                ||'    ROUND( MAX(t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
-                ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/('||E'\n'
-                ||'    24 * MAX(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
-                ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
-                ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                    WHEN aggregation = 'mm'::metadata.e_aggregations THEN
 
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
+                        /* measures */
+                        q = q
+                        ||'    MAX(measure_id) AS measure_id,'||E'\n'
+                        ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
+                        ||'    ROUND( MIN(t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
+                        ||'    ROUND( MAX(t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
+                        ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/('||E'\n'
+                        ||'    24 * MAX(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
+                        ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
+                        ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::integer, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::bigint, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
 
-            WHEN aggregation = 'yy'::metadata.e_aggregations THEN
+                    WHEN aggregation = 'yy'::metadata.e_aggregations THEN
 
-                /* date time */
-                q = q
-                ||'SELECT'||E'\n'
-                ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
+                        /* date time */
+                        q = q
+                        ||'SELECT'||E'\n'
+                        ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
 
-                /* measures */
-                q = q
-                ||'    MAX(measure_id) AS measure_id,'||E'\n'
-                ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
-                ||'    ROUND(MIN (t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
-                ||'    ROUND(MAX (t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
-                ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/('||E'\n'
-                ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
-                ||'    )::real*100)::smallint AS measure_perc'||E'\n'
-                ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                        /* measures */
+                        q = q
+                        ||'    MAX(measure_id) AS measure_id,'||E'\n'
+                        ||'    ROUND('||treatment||'(t.measure_value::numeric), '||d||') AS measure_value,'||E'\n'
+                        ||'    ROUND(MIN (t.measure_min::numeric), '||d||') AS measure_min,'||E'\n'
+                        ||'    ROUND(MAX (t.measure_max::numeric), '||d||') AS measure_max,'||E'\n'
+                        ||'    (SUM(CASE WHEN t.measure_value NOTNULL THEN 1::smallint ELSE 0::smallint END)/('||E'\n'
+                        ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
+                        ||'    )::real*100)::smallint AS measure_perc'||E'\n'
+                        ||'    MAX( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    MAX( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
 
-                /* from clause */
-                q = q
-                ||'FROM'||E'\n'
-                ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::integer, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+                        /* from clause */
+                        q = q
+                        ||'FROM'||E'\n'
+                        ||'    m LEFT JOIN clients.f_calc_dynamic_moving_mean ('||stprid||'::bigint, '||quote_literal(date_from)||'::timestamp, '||quote_literal(date_to)||'::timestamp,'||quote_literal(validity)||'::text, '||dwindow||'::integer) t ON (m.measure_date_time = t.measure_date_time)'||E'\n'
+                        ||'WHERE'||E'\n'
+                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* order by */
-                q = q
-                ||'GROUP BY 1'||E'\n'
-                ||'ORDER BY 1'||E'\n';
+                        /* order by */
+                        q = q
+                        ||'GROUP BY 1'||E'\n'
+                        ||'ORDER BY 1'||E'\n';
 
-            ELSE
+                    ELSE
 
-        END CASE;
+                END CASE;
 
-        /* notice */
-        RAISE NOTICE 'Query: %', E'\n'||q;
+                /* notice */
+                RAISE NOTICE 'Query: %', E'\n'||q;
 
-        /* return value */
-        RETURN QUERY EXECUTE q;
+                /* return value */
+                RETURN QUERY EXECUTE q;
 
-        /* errors check */
-        EXCEPTION
-            WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_sldavg_data_extraction(): %', SQLERRM;
-    END;
-
+            /* errors check */
+            EXCEPTION
+                WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_sldavg_data_extraction(): %', SQLERRM;
+            END;
+        
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, text, integer) TO group_readonly;
-    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, text, integer) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, text, integer) TO group_admin;
-    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, text, integer) TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_readonly;
 
-    -- comment
-    COMMENT ON FUNCTION clients.f_sldavg_data_extraction(integer, timestamp, timestamp, metadata.e_aggregations, text, integer)
-        IS 'Generic data extraction function for moving mean';
+    COMMENT ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) IS '[OPAS] Generic data extraction function for moving mean';
+
 
     -- Versione 2 della funzione che "spalma" i valori giornalieri di PM10, PM2.5 e PM1 dello strumento SWAM sulle 24 ore
     -- DROP FUNCTION IF EXISTS clients.f_swam_to_24h_v2();
@@ -13944,7 +14177,7 @@
             ||'            COALESCE( SUM(extract_code) FILTER (WHERE    -1 = ANY(user_codes)) , 0 )'||E'\n'
             ||'        ] AS count_notvalid_codes,'||E'\n'
             ||'        ARRAY['||E'\n'
-            ||'            COALESCE( SUM(extract_code) FILTER (WHERE post_validity_code = 0)), '||E'\n'
+            ||'            COALESCE( SUM(extract_code) FILTER (WHERE post_validity_code = 0) , 0 ), '||E'\n'
             ||'            COALESCE( SUM(extract_code) FILTER (WHERE    1 = ANY(user_codes)) , 0 ),'||E'\n'
             ||'            COALESCE( SUM(extract_code) FILTER (WHERE    2 = ANY(user_codes)) , 0 ),'||E'\n'
             ||'            COALESCE( SUM(extract_code) FILTER (WHERE    4 = ANY(user_codes)) , 0 ),'||E'\n'
@@ -14428,16 +14661,19 @@
     -- Tabella che contiene le dotazioni
     -- DROP TABLE IF EXISTS equipments.miscellanies;
     CREATE TABLE equipments.miscellanies(
-        mi_id           serial,
-        mi_arpa_id      text DEFAULT NULL,
-        mi_owner        text DEFAULT NULL,
-        mi_name         text NOT NULL,
-        mi_dismiss_date date,
-        mi_active       boolean DEFAULT TRUE,
-        mi_note         text,
-        network_types   integer[] NOT NULL,
-        insert_time     timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-        insert_user     integer,
+        mi_id               serial,
+        mi_arpa_id          text DEFAULT NULL,
+        mi_owner            text DEFAULT NULL,
+        mi_name             text NOT NULL,
+        mi_brand_model      text DEFAULT NULL,
+        mi_serial_num       text DEFAULT NULL,
+        mi_delivery_date    date DEFAULT NULL,
+        mi_dismiss_date     date,
+        mi_active           boolean DEFAULT TRUE,
+        mi_note             text,
+        network_types       integer[] NOT NULL,
+        insert_time         timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        insert_user         integer,
 
         CONSTRAINT equipments_miscellanies_pkey PRIMARY KEY (mi_id)
     )
@@ -14453,17 +14689,20 @@
     GRANT ALL ON SEQUENCE equipments.miscellanies_mi_id_seq TO group_tools;
 
     -- comments
-    COMMENT ON TABLE  equipments.miscellanies                 IS 'Table holding the list of miscellanies';
-    COMMENT ON COLUMN equipments.miscellanies.mi_id           IS 'Miscellany ID (PK)';
-    COMMENT ON COLUMN equipments.miscellanies.mi_arpa_id      IS 'Miscellany arpa id';
-    COMMENT ON COLUMN equipments.miscellanies.mi_owner        IS 'Miscellany owner';
-    COMMENT ON COLUMN equipments.miscellanies.mi_name         IS 'Miscellany name';
-    COMMENT ON COLUMN equipments.miscellanies.mi_dismiss_date IS 'Miscellany dismiss date';
-    COMMENT ON COLUMN equipments.miscellanies.mi_active       IS 'Miscellany is active';
-    COMMENT ON COLUMN equipments.miscellanies.mi_note         IS 'Miscellany note';
-    COMMENT ON COLUMN equipments.miscellanies.network_types   IS 'Array of networks to which the miscellanies refers';
-    COMMENT ON COLUMN equipments.miscellanies.insert_time     IS 'Miscellanies insert time';
-    COMMENT ON COLUMN equipments.miscellanies.insert_user     IS 'Miscellanies insert user';
+    COMMENT ON TABLE  equipments.miscellanies                       IS 'Table holding the list of miscellanies';
+    COMMENT ON COLUMN equipments.miscellanies.mi_id                 IS 'Miscellany ID (PK)';
+    COMMENT ON COLUMN equipments.miscellanies.mi_arpa_id            IS 'Miscellany arpa id';
+    COMMENT ON COLUMN equipments.miscellanies.mi_owner              IS 'Miscellany owner';
+    COMMENT ON COLUMN equipments.miscellanies.mi_name               IS 'Miscellany name';
+    COMMENT ON COLUMN equipments.miscellanies.mi_brand_model        IS 'Miscellany brand/model';
+    COMMENT ON COLUMN equipments.miscellanies.mi_serial_num         IS 'Miscellany serial number';
+    COMMENT ON COLUMN equipments.miscellanies.mi_delivery_date      IS 'Miscellany delivery date';
+    COMMENT ON COLUMN equipments.miscellanies.mi_dismiss_date       IS 'Miscellany dismiss date';
+    COMMENT ON COLUMN equipments.miscellanies.mi_active             IS 'Miscellany is active';
+    COMMENT ON COLUMN equipments.miscellanies.mi_note               IS 'Miscellany note';
+    COMMENT ON COLUMN equipments.miscellanies.network_types         IS 'Array of networks to which the miscellanies refers';
+    COMMENT ON COLUMN equipments.miscellanies.insert_time           IS 'Miscellanies insert time';
+    COMMENT ON COLUMN equipments.miscellanies.insert_user           IS 'Miscellanies insert user';
 
     -- Tabella che contiene la varie operazioni
     -- DROP TABLE IF EXISTS equipments.miscellanies_operations;
@@ -14761,6 +15000,9 @@
         m.mi_arpa_id                                                   AS miscellany_arpa_id,
         m.mi_owner                                                     AS miscellany_owner,
         m.mi_name                                                      AS miscellany_name,
+        m.mi_brand_model                                               AS miscellany_brand_model,
+        m.mi_serial_num                                                AS miscellany_serial_num,
+        m.mi_delivery_date                                             AS miscellany_delivery_date,
         m.mi_dismiss_date                                              AS miscellany_dismiss_date,
         m.mi_active                                                    AS miscellany_active,
         m.mi_note                                                      AS miscellany_note,
@@ -14898,34 +15140,37 @@
     COMMENT ON VIEW metadata.view_stations_instruments IS 'The view contains all the info about the relation stations-instruments';
 
     -- Vista che raccoglie le informazioni delle stazioni in relazione alle dotazioni associate
-    -- DROP VIEW IF EXISTS metadata.view_stations_miscellaneous;
+    -- DROP VIEW IF EXISTS metadata.view_stations_miscellanies;
     CREATE OR REPLACE VIEW metadata.view_stations_miscellanies AS
-    SELECT
+    SELECT 
         sm.stmi_id,
         sm.mi_id,
         sm.station_id,
         s.station_name,
-        sm.stmi_startup_date AS station_mi_startup_date,
-        sm.stmi_dismiss_date AS station_mi_dismiss_date,
-        sm.stmi_note         AS station_mi_note,
-        m.mi_arpa_id         AS miscellany_arpa_id,
-        m.mi_owner           AS miscellany_owner,
-        m.mi_name            AS miscellany_name,
-        m.mi_dismiss_date    AS miscellany_dismiss_date,
-        m.mi_active          AS miscellany_active,
-        m.mi_note            AS miscellany_note,
-        m.network_types      AS network_types,
-        ARRAY(
-            SELECT
-                st_network_name
-            FROM  metadata.stations_network_type
-            WHERE st_network_id = ANY(m.network_types)
-        )                    AS network_names
-    FROM
+        sm.stmi_startup_date    AS station_mi_startup_date,
+        sm.stmi_dismiss_date    AS station_mi_dismiss_date,
+        sm.stmi_note            AS station_mi_note,
+        m.mi_arpa_id            AS miscellany_arpa_id,
+        m.mi_owner              AS miscellany_owner,
+        m.mi_name               AS miscellany_name,
+        m.mi_brand_model        AS miscellany_brand_model,
+        m.mi_serial_num         AS miscellany_serial_num,
+        m.mi_delivery_date      AS miscellany_delivery_date,
+        m.mi_dismiss_date       AS miscellany_dismiss_date,
+        m.mi_active             AS miscellany_active,
+        m.mi_note               AS miscellany_note,
+        m.network_types,
+        ARRAY( 
+            SELECT stations_network_type.st_network_name
+            FROM metadata.stations_network_type
+            WHERE stations_network_type.st_network_id = ANY (m.network_types)
+        )                       AS network_names
+    FROM 
         metadata.stations_miscellanies sm
-        LEFT JOIN metadata.stations s       USING (station_id)
+        LEFT JOIN metadata.stations s USING (station_id)
         LEFT JOIN equipments.miscellanies m USING (mi_id)
-    ORDER BY stmi_id;
+    ORDER BY 
+        sm.stmi_id;
 
     -- grants
     GRANT ALL ON TABLE    metadata.view_stations_miscellanies TO group_admin;
@@ -17181,6 +17426,11 @@
         -- "889" [CC] Naftalene Zero
         -- "890" [CC] Sommatoria IPA Zero
 
+        -- "1199" [CC] H2S Zero
+        -- "1202" [CC] H2S Span trovato
+        -- "1203" [CC] H2S Span verifica
+        -- "1204" [CC] H2S Span deriva
+
 
         cc = '{
                 "496": { "main_id" : "30", "step": "zero", "deriva": "false" },
@@ -17274,7 +17524,11 @@
                 "887": { "main_id" : "822", "step": "zero", "deriva": "false" },
                 "888": { "main_id" : "823", "step": "zero", "deriva": "false" },
                 "889": { "main_id" : "824", "step": "zero", "deriva": "false" },
-                "890": { "main_id" : "825", "step": "zero", "deriva": "false" }
+                "890": { "main_id" : "825", "step": "zero", "deriva": "false" },
+                "1199": { "main_id" : "37", "step": "zero", "deriva": "false" },
+                "1202": { "main_id" : "37", "step": "span", "deriva": "false" },
+                "1203": { "main_id" : "37", "step": "span", "deriva": "false" },
+                "1204": { "main_id" : "37", "step": "span", "deriva": "true"  }
             }'::jsonb;
 
         SELECT
@@ -17506,24 +17760,34 @@
     CREATE OR REPLACE FUNCTION template.f_create_opas_tables(
         stid integer
     )
-    RETURNS boolean
-    LANGUAGE 'plpgsql'
-    SECURITY DEFINER
-    VOLATILE
-    COST 100
+      RETURNS boolean
+      LANGUAGE 'plpgsql'
+      SECURITY DEFINER
+      VOLATILE
+      COST 100
     AS $BODY$
-
     DECLARE
         -- variables
         s text; -- schema
         t text; -- table
         q text; -- query
+
         r boolean; -- result
+
     BEGIN
+        /**
+         * The function takes care of creating the tables and triggers of a new station. The function is
+         * executed by the portal when user is inserting a new station
+         *
+         * The function is launched from the portal and is executed with the owner role (user_admin).
+         */
+
+        /* Select schema and table name */
         SELECT station_schema, station_table INTO s,t
         FROM metadata.stations
         WHERE station_id = stid;
 
+        /* If station not found then return false */
         IF NOT FOUND THEN
             RAISE NOTICE 'Station % not found!', stid;
             RETURN FALSE;
@@ -17531,18 +17795,21 @@
 
         RAISE NOTICE '> Create tables...';
 
+        /* Create table for instant data */
         SELECT template.f_create_inst_table_like_template(stid, false) INTO r;
+        /* Check errors */
         IF NOT r THEN
             RAISE EXCEPTION 'Error during template.f_create_inst_table_like_template function!';
         END IF;
+        /* Create main table */
         SELECT template.f_create_table_like_template(stid, 'opas'::text, false) INTO r;
+        /* Check errors */
         IF NOT r THEN
             RAISE EXCEPTION 'Error during template.f_create_table_like_template function!';
         END IF;
 
-
         RAISE NOTICE '> Create triggers...';
-
+        /* Create default triggers */
         q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_1_mc_to_pvc_bi '
             ||'BEFORE INSERT '
             ||'ON '||s||'.'||t||' '
@@ -17575,14 +17842,93 @@
 
         EXECUTE q;
 
-        RETURN TRUE;
-        /* errors check */
-        EXCEPTION
-        WHEN OTHERS THEN /* in case of any error */
-            RAISE NOTICE 'ERROR IN template.f_create_opas_tables() : %', SQLERRM ;
-            RETURN FALSE;
-    END;
 
+
+        /*Create CUSTOM triggers */
+
+        -- DATA EXPORT
+        IF s IN ('client_abr', 'client_ero', 'client_mar', 'client_tn', 'client_tos', 'client_umb', 'client_ven' ) THEN
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_data_export_aiau '
+                ||'AFTER INSERT OR UPDATE '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'EXECUTE FUNCTION '||s||'.f_data_export('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+        END IF;
+
+        -- SWAM TO 24H
+        IF s IN ('client_abr', 'client_ero', 'client_fvg', 'client_tos', 'client_umb') THEN
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_99_chk_measure_swam_bi '
+                ||'BEFORE INSERT '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'WHEN (pg_trigger_depth() = 0) '
+                ||'EXECUTE FUNCTION clients.f_swam_to_24h_v2('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+        END IF;
+
+        -- INFOARIA E2a
+        IF s IN ('client_fvg', 'client_vda') THEN
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_data_export_e2a_ai '
+                ||'AFTER INSERT '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'EXECUTE FUNCTION infoaria.f_data_export_e2a('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+        END IF;
+
+        -- SIRAL
+        IF s IN ('client_lig' ) THEN
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_export_siral_ai '
+                ||'AFTER INSERT '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'EXECUTE FUNCTION client_lig.f_export_siral('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_export_checked_siral_au '
+                ||'AFTER UPDATE OF measure_value, post_validity_code, final_validity_code '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'EXECUTE FUNCTION client_lig.f_export_checked_siral('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+        END IF;
+
+        -- ARPAE: BCBB BCFF E FIDAS (?)
+        IF s IN ('client_ero' ) THEN
+
+            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_bcbb_bcff_aiau '
+                ||'AFTER INSERT OR UPDATE OF measure_value '
+                ||'ON '||s||'.'||t||' '
+                ||'FOR EACH ROW '
+                ||'WHEN (pg_trigger_depth() = 0) '
+                ||'EXECUTE FUNCTION client_ero.f_calculate_bcbb_bcff('||quote_literal(stid)||'); ';
+
+            EXECUTE q;
+
+    END IF;
+
+
+    RETURN TRUE;
+    /* errors check */
+    EXCEPTION
+    WHEN OTHERS THEN /* in case of any error */
+        RAISE NOTICE 'ERROR IN template.f_create_opas_tables() : %', SQLERRM ;
+        RETURN FALSE;
+    END;
     $BODY$;
 
     -- grants
@@ -17812,6 +18158,198 @@
     -- comment
     COMMENT ON FUNCTION webservice.f_data_extraction(integer, timestamp, timestamp)
         IS 'Generic data extraction function for WEBSERVICE';
+
+        CREATE OR REPLACE FUNCTION webservice.f_data_extraction_v2(
+        stprid integer,
+        date_from timestamp without time zone,
+        date_to timestamp without time zone,
+        aggregation metadata.e_aggregations DEFAULT 'hh'::metadata.e_aggregations
+    )
+        RETURNS TABLE (
+            measure_date_time   timestamp without time zone,
+            measure_id          integer,
+            measure_value       numeric,
+            measure_perc        smallint,
+            measure_min         numeric,
+            measure_min_time    time without time zone,
+            measure_max         numeric,
+            measure_max_time    time without time zone,
+            measure_std_dev     numeric,
+            measure_code        integer,
+            station_code        smallint,
+            auto_validity_code  integer,
+            post_validity_code  integer,
+            final_validity_code smallint,
+            extract_code        smallint,
+            measure_insert_ts   timestamp without time zone,
+            measure_update_obj  jsonb
+        )
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE PARALLEL UNSAFE
+        ROWS 1000
+
+    AS $BODY$
+        DECLARE
+            t text;                     -- tablename
+            p integer;                  -- parameter table id
+            d integer;                  -- parameter decimals
+            o metadata.e_treatments;    -- parameter treatment
+            q text;                     -- dynamic query
+        BEGIN
+
+            /* entry */
+            -- RAISE NOTICE 'Function webservice.f_data_extraction_v2, stpr_id: %', stprid;
+
+            /* Testing
+                SELECT * FROM  webservice.f_data_extraction_v2 (
+                    38::integer,
+                    '2024-01-01 00:00'::timestamp,
+                    '2024-01-31 23:59'::timestamp,
+                    'dd'
+                );
+            */
+
+            /* get station properties */
+            SELECT
+                s.station_schema ||'.'|| COALESCE(s.station_prefix, ''::text)||s.station_table,
+                sp.stpr_table_id   ,
+                COALESCE(pi.pm_info_obj ->'general'->>'treatment', 'avg'),
+                5  INTO t, p, o, d
+            FROM
+                metadata.stations_parameters sp
+                LEFT JOIN metadata.stations s USING (station_id)
+                LEFT JOIN metadata.parameters_info pi USING (param_id)
+            WHERE
+                stpr_id = stprid;
+
+            -- RAISE NOTICE 'Function webservice.f_data_extraction, tablename: %, parame id: %', t, p;
+
+            /* build main dynamic query */
+            CASE
+                WHEN aggregation = 'hh'::metadata.e_aggregations THEN
+                    q =
+                    'SELECT'||E'\n'
+                    ||'    t.measure_date_time AS measure_date_time,'||E'\n';
+
+                    /* measures */
+                    q = q
+                        ||'    t.measure_id::integer                                AS measure_id,           '||E'\n'
+                        ||'    t.measure_value::numeric                             AS measure_value,        '||E'\n'
+                        ||'    t.measure_perc::smallint                             AS measure_perc,         '||E'\n'
+                        ||'    t.measure_min::numeric                               AS measure_min,          '||E'\n'
+                        ||'    t.measure_min_time::time without time zone           AS measure_min_time,     '||E'\n'
+                        ||'    t.measure_max::numeric                               AS measure_max,          '||E'\n'
+                        ||'    t.measure_max_time::time without time zone           AS measure_max_time,     '||E'\n'
+                        ||'    t.measure_std_dev::numeric                           AS measure_std_dev,      '||E'\n'
+                        ||'    t.measure_code::integer                              AS measure_code,         '||E'\n'
+                        ||'    t.station_code::smallint                             AS station_code,         '||E'\n'
+                        ||'    t.auto_validity_code::integer                        AS auto_validity_code,   '||E'\n'
+                        ||'    t.post_validity_code::integer                        AS post_validity_code,   '||E'\n'
+                        ||'    t.final_validity_code::smallint                      AS final_validity_code,  '||E'\n'
+                        ||'    t.extract_code::smallint                             AS extract_code ,        '||E'\n'
+                        ||'    t.measure_insert_ts::timestamp without time zone     AS measure_insert_ts ,   '||E'\n'
+                        ||'    t.measure_update_obj::jsonb                          AS measure_update_obj    '||E'\n';
+
+                    /* from clause */
+                    q = q
+                    ||'FROM'||E'\n'
+                    ||'    '||t||' t '||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    t.measure_id = '||p||''||E'\n'
+                    ||'    AND t.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+
+                    /* order by */
+                    q = q
+                    ||'ORDER BY'||E'\n'
+                    ||'    measure_date_time'||E'\n';
+
+                WHEN aggregation = 'dd'::metadata.e_aggregations THEN
+
+                    /** 
+                     * build temporary tables 
+                     *  - main table with series of hours
+                     *  - data table with aggregated values
+                     */
+                    q =
+                    'WITH m AS ('||E'\n'
+                    ||'    SELECT'||E'\n'
+                    ||'        ('||quote_literal(date_from)||'::timestamp + interval ''60 minute'' * s.a)::timestamp AS measure_date_time'||E'\n'
+                    ||'    FROM'||E'\n'
+                    ||'        generate_series(0,(EXTRACT(EPOCH FROM '||quote_literal(date_to)||'::timestamp'||E'\n'
+                    ||'        - '||quote_literal(date_from)||'::timestamp)/3600)::integer) AS s(a)'||E'\n'
+                    ||'),'||E'\n'
+                    ||'d AS ('||E'\n'
+                    ||'    SELECT'||E'\n'
+                    ||'        DATE_TRUNC( ''day'', m.measure_date_time )   AS measure_date_time,'||E'\n'
+                    ||'        MAX( t.measure_id::integer )                 AS measure_id,'||E'\n'
+                    ||'        ROUND( '||o||'( CASE WHEN t.post_validity_code >= 0 THEN t.measure_value::numeric END ), '||d||' ) AS measure_value,'||E'\n'
+                    ||'        ( SUM( CASE WHEN t.measure_value NOTNULL AND t.post_validity_code >= 0 THEN t.extract_code ELSE 0::smallint END )/24::real*100 )::smallint AS measure_perc,'||E'\n'
+                    ||'        ROUND( MIN( CASE WHEN t.post_validity_code >= 0 THEN t.measure_min::numeric END), '||d||')   AS measure_min,'||E'\n'
+                    ||'        DATE_TRUNC(''day'', m.measure_date_time)::time without time zone                             AS measure_min_time,'||E'\n'
+                    ||'        ROUND( MAX(CASE WHEN t.post_validity_code >= 0 THEN t.measure_max::numeric END), '||d||')    AS measure_max,'||E'\n'
+                    ||'        DATE_TRUNC(''day'', m.measure_date_time)::time without time zone                               AS measure_max_time'||E'\n'
+                    ||'    FROM'||E'\n'
+                    ||'        m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||')'||E'\n'
+                    ||'    WHERE'||E'\n'
+                    ||'        m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n'
+                    ||'    GROUP BY 1'||E'\n'
+                    ||'    ORDER BY 1'||E'\n'
+                    ||')'||E'\n';
+
+                    /* last extraction with data manipulation */
+                    q = q
+                    ||'SELECT'||E'\n'
+                    ||'    d.measure_date_time,'||E'\n'
+                    ||'    d.measure_id,'||E'\n'
+                    ||'    d.measure_value,'||E'\n'
+                    ||'    d.measure_perc,'||E'\n'
+                    ||'    d.measure_min,'||E'\n'
+                    ||'    d.measure_min_time,'||E'\n'
+                    ||'    d.measure_max,'||E'\n'
+                    ||'    d.measure_max_time,'||E'\n'
+                    ||'    NULL::numeric        AS measure_std_dev,'||E'\n'
+                    ||'    NULL::integer        AS measure_code,'||E'\n'
+                    ||'    NULL::smallint       AS station_code,'||E'\n'
+                    ||'    NULL::integer        AS auto_validity_code,'||E'\n'
+                    ||'    CASE '||E'\n'
+                    ||'        WHEN d.measure_perc >= 75 THEN 0::integer'||E'\n' -- valido di default
+                    ||'        ELSE -16::integer'||E'\n' -- numero letture insufficiente
+                    ||'    END                  AS post_validity_code,'||E'\n'
+                    ||'    NULL::smallint       AS final_validity_code,'||E'\n'
+                    ||'    NULL::smallint       AS extract_code,'||E'\n'
+                    ||'    NULL::timestamp without time zone        AS measure_insert_ts,'||E'\n'
+                    ||'    NULL::jsonb          AS measure_update_obj'||E'\n'
+                    ||'FROM'||E'\n'
+                    ||'    d'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    d.measure_value NOTNULL'||E'\n'
+                    ||'ORDER BY 1;'||E'\n';
+
+                ELSE
+                    /* Do nothing */
+            END CASE; 
+
+            /* notice */
+            RAISE NOTICE 'Query: %', E'\n'||q;
+
+            /* return value */
+            RETURN QUERY EXECUTE q;
+
+        /* errors check */
+        EXCEPTION
+            WHEN OTHERS THEN RAISE NOTICE 'ERROR webservice.f_data_extraction_v2(): %', SQLERRM;
+        END;
+        
+    $BODY$;
+
+
+    GRANT EXECUTE ON FUNCTION webservice.f_data_extraction_v2(integer, timestamp without time zone, timestamp without time zone, metadata.e_aggregations) TO group_admin;
+    GRANT EXECUTE ON FUNCTION webservice.f_data_extraction_v2(integer, timestamp without time zone, timestamp without time zone, metadata.e_aggregations) TO group_tools;
+
+    COMMENT ON FUNCTION webservice.f_data_extraction_v2(integer, timestamp without time zone, timestamp without time zone, metadata.e_aggregations) 
+        IS 'Generic data extraction function for WEBSERVICE v2.0';
+
 
     -- Funzione di estrazione degli ultimi dati modificati per il webservice del portale
     -- DROP FUNCTION IF EXISTS webservice.f_last_edited_data_extraction(integer, timestamp);

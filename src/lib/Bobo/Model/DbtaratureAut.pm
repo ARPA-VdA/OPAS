@@ -43,6 +43,10 @@ sub get_all_data_by_dates {
     # log
     $self->app->log->debug("Bobo::Model::DbtaratureAut sub get_all_data_by_dates");
 
+    $netid  = ($netid != -1 ? "^$netid\$": ".*");
+    $provid = ($provid != -1 ? "^$provid\$": ".*");
+    $prid   = ($prid != -1 ? "^$prid\$": ".*");
+
     # query
     my $sql = qq{
         WITH gp AS (
@@ -64,6 +68,8 @@ sub get_all_data_by_dates {
                 cr.calibration_date_time,
                 cr.station_id,
                 st.station_name,
+                si.st_info_network_type_fk,
+                pm.province_id,
                 cr.measure_id,
                 p.param_id,
                 p.param_name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS param_name,
@@ -88,43 +94,25 @@ sub get_all_data_by_dates {
                 cr.result_value
             FROM
                 clients.calibrations_result cr
-                LEFT JOIN metadata.stations st USING (station_id)
-                LEFT JOIN metadata.stations_info si USING (station_id)
-                LEFT JOIN metadata.stations_municipality sm USING (station_id)
+                LEFT JOIN metadata.stations_parameters sp ON (cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id )
+                LEFT JOIN gp ON (gp.stpr_group_id = sp.stpr_group_id )
+                LEFT JOIN metadata.stations st ON ( cr.station_id = st.station_id )
+                LEFT JOIN metadata.stations_info si ON ( cr.station_id = si.station_id )
+                LEFT JOIN metadata.stations_municipality sm ON ( cr.station_id = sm.station_id )
                 LEFT JOIN main.province_municipalities pm USING (mu_id)
-                LEFT JOIN metadata.stations_parameters sp ON ( cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id )
                 LEFT JOIN metadata.parameters p USING (param_id)
-                LEFT JOIN gp USING (stpr_group_id)
 
             WHERE
-                calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
-    };
-
-    if ($netid != -1) {
-        $sql .= qq{
-            AND si.st_info_network_type_fk = $netid
-        }
-    }
-
-    if ($provid != -1) {
-        $sql .= qq{
-            AND province_id = $provid
-        }
-    }
-
-    if ($prid != -1) {
-        $sql .= qq{
-            AND param_id = $prid
-        }
-    }
-
-    $sql .= qq{
+                cr.station_id IN (SELECT station_id FROM bobo.view_user_stations WHERE user_id = ?)
+                AND calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
+                
         )
         SELECT *
         FROM t
-        LEFT JOIN bobo.view_user_stations us USING (station_id)
-        WHERE
-            us.user_id = ?
+        WHERE 
+            st_info_network_type_fk::text ~ ?
+            AND province_id::text ~ ?
+            AND param_id::text ~ ?
     };
 
     if ($flag eq 'true') {
@@ -136,7 +124,11 @@ sub get_all_data_by_dates {
     $sql .= qq{ ORDER BY calibration_date_time DESC; };
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $user_id)->hashes();
+    return $self->pg->db->query($sql, 
+        $user_id,
+        $from, $to, 
+        $netid, $provid, $prid,  
+    )->hashes();
 }
 
 sub get_data_by_station_dates {
@@ -145,16 +137,20 @@ sub get_data_by_station_dates {
     # log
     $self->app->log->debug("Bobo::Model::DbtaratureAut sub get_data_by_station_dates");
 
+    $prid = ($prid != -1 ? "^$prid\$": ".*");
+
     # query
     my $sql = qq{
         WITH gp AS (
             SELECT
-                stpr_group_id, TRUE AS exception_flag
+                stpr_group_id, 
+                TRUE AS exception_flag
             FROM
                 metadata.stations_parameters sp
                 LEFT JOIN metadata.parameters p USING (param_id)
             WHERE
                 stpr_group_id NOTNULL
+                AND station_id = ?
             GROUP BY
                 stpr_group_id
             HAVING
@@ -188,25 +184,20 @@ sub get_data_by_station_dates {
                     ELSE ''::text
                 END AS result_code_string,
                 cr.result_value
-            FROM clients.calibrations_result cr
-                LEFT JOIN metadata.stations st USING (station_id)
-                LEFT JOIN metadata.stations_parameters sp ON cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id
+            FROM
+                clients.calibrations_result cr 
+                LEFT JOIN metadata.stations_parameters sp ON (cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id )
+                LEFT JOIN gp ON (gp.stpr_group_id = sp.stpr_group_id )
+                LEFT JOIN metadata.stations st ON ( st.station_id = sp.station_id )
                 LEFT JOIN metadata.parameters p USING (param_id)
-                LEFT JOIN gp USING (stpr_group_id)
-
             WHERE
-                calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
+                cr.station_id = ?
+                AND cr.calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
         )
         SELECT *
         FROM t
-        WHERE station_id = ?
+        WHERE param_id::text ~ ?
     };
-
-    if ($prid != -1) {
-        $sql .= qq{
-            AND param_id = $prid
-        }
-    }
 
     if ($flag eq 'true') {
         $sql .= qq{
@@ -217,7 +208,7 @@ sub get_data_by_station_dates {
     $sql .= qq{ ORDER BY calibration_date_time DESC; };
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $stid)->hashes();
+    return $self->pg->db->query($sql, $stid, $stid, $from, $to, $prid )->hashes();
 }
 
 sub get_all_events_by_dates {

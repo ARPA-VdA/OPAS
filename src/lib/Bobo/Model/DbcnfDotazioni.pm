@@ -25,8 +25,10 @@ sub get_miscellanies {
         WITH t AS (
             SELECT
                 m.mi_id,
-                COALESCE(m.mi_arpa_id, '--')    AS miscellany_arpa_id,
-                m.mi_name                       AS miscellany_name,
+                m.mi_name                               AS miscellany_name,
+                COALESCE(m.mi_arpa_id, '--')            AS miscellany_arpa_id,
+                COALESCE(miscellany_brand_model, '--')  AS miscellany_brand_model,
+                COALESCE(miscellany_serial_num, '--')   AS miscellany_serial_num,
                 m.mi_dismiss_date               AS miscellany_dismiss_date,
                 m.mi_active                     AS miscellany_active ,
                 vsm.stmi_id                     AS location_id,
@@ -73,8 +75,10 @@ sub get_miscellanies_by_date_station {
     my $sql = qq{
         SELECT
             mi_id,
-            COALESCE(miscellany_arpa_id, '--') AS miscellany_arpa_id,
             miscellany_name,
+            COALESCE(miscellany_arpa_id, '--')      AS miscellany_arpa_id,
+            COALESCE(miscellany_brand_model, '--')  AS miscellany_brand_model,
+            COALESCE(miscellany_serial_num, '--')   AS miscellany_serial_num,
             miscellany_dismiss_date,
             miscellany_active,
             stmi_id                     AS location_id,
@@ -274,12 +278,15 @@ sub insert_new_miscellany {
 
         $id = $self->pg->db->insert('equipments.miscellanies', {
             # id              => # id progressivo
-            mi_arpa_id      => $self->app->helperEscapeParam($params->{'equipment-arpa-id'}),
-            mi_owner        => $self->app->helperEscapeParam($params->{'equipment-owner'}),
-            mi_name         => $self->app->helperEscapeParam($params->{'equipment-name'}),
-            mi_dismiss_date => $self->app->helperGetFormattedFulldate($params->{'equipment-date-dismiss'}),
-            mi_active       => $self->app->helperGetBoolean($params, 'equipment-active'),
-            mi_note         => $self->app->helperEscapeParam($params->{'equipment-note'}),
+            mi_arpa_id          => $self->app->helperEscapeParam($params->{'equipment-arpa-id'}),
+            mi_owner            => $self->app->helperEscapeParam($params->{'equipment-owner'}),
+            mi_name             => $self->app->helperEscapeParam($params->{'equipment-name'}),
+            mi_brand_model      => $self->app->helperEscapeParam($params->{'equipment-brand-model'}),
+            mi_serial_num       => $self->app->helperEscapeParam($params->{'equipment-serial-number'}),
+            mi_delivery_date    => $self->app->helperGetFormattedFulldate($params->{'equipment-date-start'}),
+            mi_dismiss_date     => $self->app->helperGetFormattedFulldate($params->{'equipment-date-dismiss'}),
+            mi_active           => $self->app->helperGetBoolean($params, 'equipment-active'),
+            mi_note             => $self->app->helperEscapeParam($params->{'equipment-note'}),
 
             network_types   => \@networks,
             insert_user     => $userid
@@ -415,6 +422,9 @@ sub update_miscellany_by_id {
         mi_arpa_id      => $self->app->helperEscapeParam($params->{'equipment-arpa-id'}),
         mi_owner        => $self->app->helperEscapeParam($params->{'equipment-owner'}),
         mi_name         => $self->app->helperEscapeParam($params->{'equipment-name'}),
+        mi_brand_model      => $self->app->helperEscapeParam($params->{'equipment-brand-model'}),
+        mi_serial_num       => $self->app->helperEscapeParam($params->{'equipment-serial-number'}),
+        mi_delivery_date    => $self->app->helperGetFormattedFulldate($params->{'equipment-date-start'}),
         mi_dismiss_date => $self->app->helperGetFormattedFulldate($params->{'equipment-date-dismiss'}),
         mi_active       => $self->app->helperGetBoolean($params, 'equipment-active'),
         mi_note         => $self->app->helperEscapeParam($params->{'equipment-note'}),

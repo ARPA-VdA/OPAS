@@ -306,6 +306,28 @@ html body .m-t-50 {
     margin-bottom: 5px;
 }
 
+/* --- software release - footer --- */
+
+.release-txt{
+    cursor: pointer;
+}
+.release-sw{
+    font-size: 0.9rem;
+}
+.release-sw h5{
+    font-size: 1.04rem;
+    color: #000;
+    background-color: #f2f6f7;
+    padding: 7px 15px;
+    margin: 0px 0px 14px 0px;
+}
+.release-sw ul{
+    margin-bottom: 25px
+}
+.release-sw li{
+    padding-bottom: 4px;
+}
+
 /* --- form editing --- */
 
 .inline-radio .custom-radio{
@@ -923,14 +945,26 @@ a:hover{
 .form-horizontal .box-title{
     color: #79a030!important;
 }
+.text-gray {
+    color: #6a6a6a!important;
+}
 .text-info {
     color: #2293b5!important;
+}
+.text-aqua {
+    color: #13b5be!important;
 }
 .text-warning {
     color: #cda400!important;
 }
 .text-purple {
     color: #cb0b8f!important;
+}
+.text-violet {
+    color: #6f03c2!important;
+}
+.text-esmerald {
+    color: #009013!important;
 }
 form .error,
 .text-danger {
@@ -2751,8 +2785,6 @@ form .col-form-label,
     border-color: #dddddd;
 }
 
-
-
 /* --- errori --- */
 
 .error-body {
@@ -2766,6 +2798,17 @@ form .col-form-label,
 }
 .escl-error{
     background: url(../bobo-img/500.png)  no-repeat center bottom #fff;
+}
+.escl-maintenance{
+    background: url(../bobo-img/maintenance.png)  no-repeat left center #fff;
+    background-size:35% auto;
+}
+.maintenance h1 {
+    font-size: 170px;
+}
+.maintenance .text-muted {
+    color: #787d80 !important;
+    font-size: 1rem;
 }
 
 /* --- reports --- */

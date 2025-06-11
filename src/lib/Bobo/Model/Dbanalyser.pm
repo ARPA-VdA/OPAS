@@ -106,7 +106,7 @@ sub get_analyser_user_options {
 }
 
 sub get_analyser_groups {
-    my ( $self, $user_id ) = @_;
+    my ( $self, $user_id, $options ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::Dbanalyser sub get_analyser_groups");
@@ -181,6 +181,36 @@ sub get_analyser_groups {
                 OR at.tree_owner = ?
                 ORDER BY tree_order, tree_name
             )
+    };
+
+    if (!defined $options || !defined $options->{general}{allocationsEnabled} || $options->{general}{allocationsEnabled}) {
+        $sql .= qq{
+            UNION ALL
+                SELECT
+                    '-9999'      AS id,
+                    '#'         AS parent,
+                    'Stanziamenti mezzi mobili <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class=''fa-solid fa-bell fa-shake''></i> Novità (Beta testing)" style="margin-left: 2px; font-size: 0.65rem;"><i class="fa-solid fa-sparkle"></i></span>'  AS text,
+                    'fa-light fa-truck'  AS icon,
+                    (
+                        SELECT row_to_json(s)
+                        FROM (
+                            SELECT
+                                false AS opened,
+                                false AS loaded
+                        ) s
+                    ) AS state,
+                    (
+                        SELECT row_to_json(li)
+                        FROM (
+                            SELECT
+                                'sites'   AS type,
+                                -9999       AS id
+                        ) li
+                    ) AS li_attr
+        };
+    }
+
+    $sql .= qq{
             UNION ALL
                 SELECT
                     '1-'||s.station_id AS id,
@@ -859,6 +889,385 @@ sub get_params_type {
     return $self->pg->db->query($sql, $nodeid, $stid)->hash()->{'json_tree'};
 }
 
+sub get_allocations {
+    my ( $self, $nodeid, $user_id, $from, $to ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbanalyser sub get_allocations");
+
+    # query
+    my $sql = qq{
+        WITH t AS (
+            SELECT
+                ss.station_id 							AS main_station_id,
+                ss.station_override_id 					AS station_id,
+                MAX(s.station_name) 					AS station_name,
+                MAX(((s.station_schema || '.'::text) || COALESCE(s.station_prefix, ''::text)) || s.station_table) AS station_fulltable,
+                BOOL_AND(s.station_active)                   AS station_active
+            FROM 
+                metadata.stations_sites ss
+                LEFT JOIN metadata.stations s ON s.station_id = ss.station_override_id
+            WHERE 
+                ss.station_id IN (
+                    SELECT station_id
+                    FROM bobo.view_user_stations
+                    WHERE user_id = ?
+                )
+                AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(stsi_startup_date, stsi_dismiss_date, '[]')
+            GROUP BY
+                ss.station_id, ss.station_override_id
+        )
+        SELECT array_to_json(array_agg(row_to_json(d))) AS json_tree
+        FROM (
+            SELECT DISTINCT ON (t.station_name)
+                ? ||'-'||t.station_id AS id,
+                t.station_name              AS text,
+                'fa-light fa-location-crosshairs'  AS icon,
+                (
+                    SELECT row_to_json(s)
+                    FROM (
+                        SELECT
+                            false           AS opened,
+                            false           AS loaded
+                    ) s
+                ) AS state,
+                (
+                    SELECT row_to_json(li)
+                    FROM (
+                        SELECT
+                            'site_params'     AS type,
+                            t.main_station_id AS main_station_id,
+                            t.station_id      AS id,
+                            CASE
+                                WHEN t.station_active IS FALSE THEN 'node-not-active'
+                                ELSE ''
+                            END         AS class,
+                            t.station_fulltable      AS table
+                    ) li
+                ) AS li_attr
+            FROM t
+            ORDER BY t.station_name
+        ) d;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id, $from, $to, $nodeid)->hash()->{'json_tree'};
+}
+
+sub get_allocation_params {
+    my ( $self, $nodeid, $stid, $options ) = @_;
+
+    # log
+    $self->app->log->debug("sub get_allocation_params");
+    $self->app->log->debug($options->{general}{convEnabled});
+
+    my $unit = 'parameter_unit_conv';
+    if ($options->{general}{convEnabled} == 0) {
+        $unit = 'parameter_unit';
+    }
+
+    # unique column id NEEDED for tree structure
+    my $sql = qq{
+        SELECT array_to_json(array_agg(row_to_json(d))) AS json_tree
+        FROM (
+            (
+            SELECT
+            ?||'-'||stpr_id    AS id,
+            CASE
+                WHEN parameter_type_desc LIKE 'Limiti' THEN parameter_name||' ['
+    };
+
+    if ($options->{general}{limitsValueEnabled}){
+        $sql .= qq{ ||parameter_offset||' ' };
+    }
+
+    # query
+    $sql .= qq{ ||parameter_unit||']'
+                ELSE parameter_name||' ['|| $unit ||']'
+            END AS text,
+            CASE
+                WHEN parameter_type_desc LIKE 'Limiti' THEN 'ti-ruler-alt'
+                ELSE 'ti-stats-up'
+            END AS icon,
+            (
+                SELECT row_to_json(s)
+                FROM (
+                    SELECT
+                        false AS opened,
+                        true AS loaded
+                ) s
+            ) AS state,
+            (
+                SELECT row_to_json(li)
+                FROM (
+                    SELECT
+                        'param'                     AS type,
+                        param_id                    AS prid,
+                        stpr_id                     AS stprid,
+                        stpr_table_id               AS tbid,
+                        CASE
+                            WHEN station_param_active IS FALSE THEN 'node-not-active'
+                            ELSE 'drag'
+                        END AS class
+
+                ) li
+            ) AS li_attr
+            FROM metadata.view_sites_parameters vsp
+            LEFT JOIN bobo_tools.parameters_options po USING (param_id)
+            WHERE station_id = ?
+            AND parameter_type_id IN (1, 2, 3, 11, 18)
+            AND stpr_id IS NOT NULL
+            ORDER BY
+                (
+                    CASE
+                        WHEN parameter_type_id IN (2,3) THEN 1
+                        WHEN parameter_type_id = 1 THEN 2
+                        WHEN parameter_type_id IS NULL THEN 1000
+                        ELSE parameter_type_id
+                    END
+                ) ASC, param_order ASC, parameter_name
+            )
+    };
+
+    # 1   Meteo
+    # 2   Chimici
+    # 3   Polveri
+    # 4   Metalli
+    # 5   IPA
+    # 6   Ioni
+    # 7   ECOC
+    # 8   BC
+    # 9   Levoglucosano
+    # 10  Deposizioni metalli
+    # 11  OPC
+    # 12  Taratura
+    # 13  Diagnostici
+    # 14  Allarmi
+    # 15  Stato
+    # 16  Falda
+    # 17  Aria
+    # 18  Limiti
+    # 19  Gravimetrici
+    # 20  Metalli in continuo
+
+    # if exist diagnostics
+    my $sql2 = qq{ SELECT COUNT(*) AS num FROM metadata.view_sites_parameters WHERE station_id = ? AND parameter_type_id = 13 };
+    my $num = $self->pg->db->query($sql2, $stid)->hash()->{'num'};
+    if ($num > 0) {
+        $sql .= qq{
+            UNION ALL(
+                SELECT
+                    'diag-'||$stid AS id,
+                    'Diagnostici'  AS text,
+                    'ti-heart-broken'   AS icon,
+                        (
+                        SELECT row_to_json(s)
+                        FROM (
+                            SELECT
+                                false AS opened,
+                                false AS loaded
+                        ) s
+                    ) AS state,
+                (
+                    SELECT row_to_json(li)
+                    FROM (
+                        SELECT
+                            'site_params_type' AS type,
+                            'diag'  AS param_type,
+                            $stid   AS id
+                    ) li
+                ) AS li_attr
+            )
+        };
+    }
+
+    $sql2 = qq{ SELECT COUNT(*) AS num FROM metadata.view_sites_parameters WHERE station_id = ? AND parameter_type_id = 12 };
+    $num = $self->pg->db->query($sql2, $stid)->hash()->{'num'};
+    if ($num > 0) {
+        $sql .= qq{
+            UNION ALL(
+                SELECT
+                    'cc-'||$stid AS id,
+                    'Carte controllo'  AS text,
+                    'icon-layers'   AS icon,
+                        (
+                        SELECT row_to_json(s)
+                        FROM (
+                            SELECT
+                                false AS opened,
+                                false AS loaded
+                        ) s
+                    ) AS state,
+                (
+                    SELECT row_to_json(li)
+                    FROM (
+                        SELECT
+                            'site_params_type' AS type,
+                            'cc'  AS param_type,
+                            $stid   AS id
+                    ) li
+                ) AS li_attr
+            )
+        };
+    }
+
+    # if exist alarms
+    $sql2 = qq{ SELECT COUNT(*) AS num FROM  metadata.view_sites_parameters WHERE station_id = ? AND parameter_type_id = 14 };
+    $num = $self->pg->db->query($sql2, $stid)->hash()->{'num'};
+    if ($num > 0) {
+        $sql .= qq{
+            UNION ALL(
+                SELECT
+                    'alarm-'||$stid AS id,
+                    'Allarmi'       AS text,
+                    'ti-announcement'    AS icon,
+                        (
+                        SELECT row_to_json(s)
+                        FROM (
+                            SELECT
+                                false AS opened,
+                                false AS loaded
+                        ) s
+                    ) AS state,
+                (
+                    SELECT row_to_json(li)
+                    FROM (
+                        SELECT
+                            'site_params_type'         AS type,
+                            'alarm'         AS param_type,
+                            $stid           AS id
+                    ) li
+                ) AS li_attr
+            )
+        };
+    }
+
+    $sql2 = qq{
+        SELECT COUNT(*) AS num
+        FROM  metadata.view_sites_parameters
+        WHERE station_id = ?
+        AND ( parameter_type_id BETWEEN 4 AND 10 OR parameter_type_id IN (15, 16, 17, 19, 20) )
+    };
+    $num = $self->pg->db->query($sql2, $stid)->hash()->{'num'};
+    if ($num > 0) {
+        $sql .= qq{
+            UNION ALL(
+                SELECT
+                    'others-'||$stid AS id,
+                    'Altri'       AS text,
+                    'ti-panel'    AS icon,
+                        (
+                        SELECT row_to_json(s)
+                        FROM (
+                            SELECT
+                                false AS opened,
+                                false AS loaded
+                        ) s
+                    ) AS state,
+                (
+                    SELECT row_to_json(li)
+                    FROM (
+                        SELECT
+                            'site_params_type'  AS type,
+                            'other'             AS param_type,
+                            $stid               AS id
+                    ) li
+                ) AS li_attr
+            )
+        };
+    }
+
+    $sql .= qq{ ) d; };
+
+    # return
+    return $self->pg->db->query($sql, $nodeid, $stid)->hash()->{'json_tree'};
+}
+
+sub get_allocation_params_type{
+    my ( $self, $nodeid, $stid, $type, $options ) = @_;
+
+    # log
+    $self->app->log->debug("sub get_params_type");
+    $self->app->log->debug($options->{general}{convEnabled});
+
+    my $unit = 'parameter_unit_conv';
+    if ($options->{general}{convEnabled} == 0) {
+        $unit = 'parameter_unit';
+    }
+
+    # unique column id NEEDED for tree structure
+    my $sql = qq{
+        SELECT array_to_json(array_agg(row_to_json(d))) AS json_tree
+        FROM (
+            SELECT
+            ?||'-'||stpr_id    AS id,
+            CASE
+                WHEN parameter_type_desc LIKE 'Limiti' THEN parameter_name||' ['
+    };
+
+    if ($options->{general}{limitsValueEnabled}){
+        $sql .= qq{ ||parameter_offset||' ' };
+    }
+
+    $sql .= qq{ ||parameter_unit||']'
+                ELSE parameter_name||' ['|| $unit ||']'
+            END AS text,
+            CASE
+                WHEN parameter_type_desc LIKE 'Diagnostici' THEN 'ti-pulse'
+                WHEN parameter_type_desc LIKE 'Allarmi' THEN 'ti-alarm-clock'
+                ELSE 'ti-stats-up'
+            END AS icon,
+            (
+                SELECT row_to_json(s)
+                FROM (
+                    SELECT
+                        false AS opened,
+                        true AS loaded
+                ) s
+            ) AS state,
+            (
+                SELECT row_to_json(li)
+                FROM (
+                    SELECT
+                        'param'          AS type,
+                        param_id         AS prid,
+                        stpr_id          AS stprid,
+                        stpr_table_id    AS tbid,
+                        CASE
+                            WHEN station_param_active IS FALSE THEN 'node-not-active'
+                            ELSE 'drag'
+                        END AS class
+
+                ) li
+            ) AS li_attr
+            FROM metadata.view_sites_parameters vsp
+            LEFT JOIN bobo_tools.parameters_options po USING (param_id)
+            WHERE station_id = ?
+    };
+
+    if ($type eq 'cc') {
+        $sql .= qq{ AND parameter_type_id = 12 };
+    }
+    elsif ($type eq 'diag') {
+        $sql .= qq{ AND parameter_type_id = 13 };
+    }
+    elsif ($type eq 'other') {
+        $sql .= qq{ AND ( parameter_type_id BETWEEN 4 AND 10 OR parameter_type_id IN (15, 16, 17, 19, 20) ) };
+    }
+    else {
+        $sql .= qq{ AND parameter_type_id = 14 };
+    }
+
+    $sql .= qq{
+            AND stpr_id IS NOT NULL
+            ORDER BY parameter_name
+        ) d;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $nodeid, $stid)->hash()->{'json_tree'};
+}
+
 sub get_categories_list {
     my ( $self, $user_id ) = @_;
 
@@ -1130,7 +1539,7 @@ sub get_info_param {
         SELECT
             stpr_id             AS st_pr_id,
             parameter_name      AS name,
-            parameter_id        AS param_id,
+            param_id            AS param_id,
             station_name        AS station,
             station_name||' '||parameter_name||' ['|| $unit ||']'    AS legend,
             parameter_name||' ['|| $unit ||'] <br>'||station_name   AS column_name,
@@ -1141,6 +1550,7 @@ sub get_info_param {
             2                   AS line_width,
 
             $conv               AS converted,
+
             -- 24/07/2024 10:04 update for conversion coefficient history management
             -- CASE
             --     WHEN $conv THEN
@@ -1165,7 +1575,16 @@ sub get_info_param {
                 WHEN parameter_type_desc LIKE 'Limiti' THEN TRUE
                 ELSE FALSE
             END AS is_limit
-        FROM metadata.view_stations_parameters
+    };
+
+    if($stprid < 0){
+        $sql .= qq{FROM metadata.view_sites_parameters };
+    }
+    else {    
+        $sql .= qq{FROM metadata.view_stations_parameters };
+    }
+
+    $sql .= qq{
         WHERE stpr_id = ?;
     };
 

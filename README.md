@@ -1,5 +1,4 @@
-# OPAS
-PROGETTO OPAS: OPen Air System
+# PROGETTO OPAS
 
 Il sistema OPAS è composto da un insieme di componenti Hardware e Software che vanno a formare un'infrastruttura atta alla gestione di molteplici reti di monitoraggio dati sia chimici che meteo.
 
@@ -27,7 +26,7 @@ Un ORDBMS (Object–Relational DataBase Management System) è un modello di data
 
 Via shell:
 ```console
-$ git clone ...
+$ git clone https://github.com/ARPA-VdA/OPAS.git
 ```
 
-Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzione del file in doc/*INSTALL.md*.
+Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzione del file *INSTALL.md*.

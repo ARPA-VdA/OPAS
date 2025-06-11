@@ -46,21 +46,21 @@ export default class Edit{
 	}
 	
 	_deprecatedOptionsCheck(){
-		if(this.params.listItemFormatter){
-			this.cell.getTable().deprecationAdvisor.msg("The listItemFormatter editor param has been deprecated, please see the latest editor documentation for updated options");
-		}
+		// if(this.params.listItemFormatter){
+		// 	this.cell.getTable().deprecationAdvisor.msg("The listItemFormatter editor param has been deprecated, please see the latest editor documentation for updated options");
+		// }
 		
-		if(this.params.sortValuesList){
-			this.cell.getTable().deprecationAdvisor.msg("The sortValuesList editor param has been deprecated, please see the latest editor documentation for updated options");
-		}
+		// if(this.params.sortValuesList){
+		// 	this.cell.getTable().deprecationAdvisor.msg("The sortValuesList editor param has been deprecated, please see the latest editor documentation for updated options");
+		// }
 		
-		if(this.params.searchFunc){
-			this.cell.getTable().deprecationAdvisor.msg("The searchFunc editor param has been deprecated, please see the latest editor documentation for updated options");
-		}
+		// if(this.params.searchFunc){
+		// 	this.cell.getTable().deprecationAdvisor.msg("The searchFunc editor param has been deprecated, please see the latest editor documentation for updated options");
+		// }
 		
-		if(this.params.searchingPlaceholder){
-			this.cell.getTable().deprecationAdvisor.msg("The searchingPlaceholder editor param has been deprecated, please see the latest editor documentation for updated options");
-		}
+		// if(this.params.searchingPlaceholder){
+		// 	this.cell.getTable().deprecationAdvisor.msg("The searchingPlaceholder editor param has been deprecated, please see the latest editor documentation for updated options");
+		// }
 	}
 	
 	_initializeValue(){
@@ -601,8 +601,17 @@ export default class Edit{
 			data.forEach((row) => {
 				var val = column.getFieldValue(row);
 				
-				if(val !== null && typeof val !== "undefined" && val !== ""){
-					output[val] = true;
+				if(!this._emptyValueCheck(val)){
+					if(this.params.multiselect && Array.isArray(val)){
+						val.forEach((item) => {
+							if(!this._emptyValueCheck(item)){
+								output[item] = true;
+							}
+						});
+					}else{
+						output[val] = true;
+					}
+					
 				}
 			});
 		}else{
@@ -612,7 +621,10 @@ export default class Edit{
 		
 		return Object.keys(output);
 	}
-	
+
+	_emptyValueCheck(value){
+		return value === null || typeof value === "undefined" || value === "";
+	}
 	
 	_parseList(inputValues){
 		var data = [];

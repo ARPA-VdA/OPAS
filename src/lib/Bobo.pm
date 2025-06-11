@@ -80,6 +80,7 @@ sub startup {
     # secret
     # ----------------------------------------------------------------------------------------------
     $self->sessions->cookie_name('it.ecometer.bobo');
+    $self->sessions->cookie_name('sys_admin');
     $self->secrets( $config->{secrets} );
 
     # ----------------------------------------------------------------------------------------------
@@ -93,8 +94,8 @@ sub startup {
 
     $self->app->log->debug();
     $self->plugin('PODRenderer') if $config->{perldoc};
-    $self->plugin('Bobo::Plugin::Helpers', $config);
-    $self->plugin('Bobo::Plugin::Menus', $config); # functions for the menu
+    $self->plugin('Bobo::Plugin::Helpers'   , $config);
+    $self->plugin('Bobo::Plugin::Menus'     , $config); #functions for the menu
     $self->plugin('Bobo::Plugin::RenderFile'); # custom plugin to support file download event
 
     # ----------------------------------------------------------------------------------------------
@@ -247,6 +248,8 @@ sub startup {
             $self->app->log->debug('validate_user ' . '*' x 60);
             my $res = $self->dbmain->user_login( $usermail, $password );
             $self->app->log->debug( Dumper( $res ) );
+            $self->session('sys_admin', $res->{user_sys_admin});
+
             if( $res->{user_id} ) {
                 $self->app->log->debug('user_id found');
                 return $res->{user_id};
@@ -337,9 +340,64 @@ sub startup {
 
     $self->defaults( websockets => {} );
 
+
     # Router
     my $r = $self->routes;
     $r = $r->add_type(txt => qr/\w+/);
+
+    # For serving static files from your public directories, defaults to a Mojolicious::Static object.
+    my $static = $self->static;
+
+    # At all requests check if portal is under maintenance
+    $self->hook(before_dispatch => sub {
+        my ( $self ) = @_;
+        
+        my $sys_admin = $self->session('sys_admin');
+        
+        my $static = $self->app->static->paths->[0];
+
+        my $path = $self->req->url->to_abs->path;
+
+        # check if the request is a static file under "public" directory
+        # if TRUE do nothing
+        # else do more controls
+        if($path eq '/' || ! (-e $static . $path ) ){
+
+            # get system admin options
+            my $opt = $self->helperGetSysAdminOptions();
+
+            if( defined $opt->{'maintenance'} && $opt->{'maintenance'} == 1){
+                # format dates
+                my $f = $opt->{'maintenance_start'} ne '' ? $opt->{'maintenance_start'} : '01/01/1970 00:00';
+                my $t = $opt->{'maintenance_end'} ne '' ? $opt->{'maintenance_end'} : '01/01/2199 00:00';
+
+                $f = $self->helperGetFormattedFulldate($f);
+                $f =~ s/\//-/g;
+                $f =~ s/ /T/;
+                $f = $f.'Z';
+
+                $t = $self->helperGetFormattedFulldate($t);
+                $t =~ s/\//-/g;
+                $t =~ s/ /T/;
+                $t = $t.'Z';
+
+                my $now = $self->helperGetLocaleFullDate();
+                $now =~ s/\//-/g;
+                $now =~ s/ /T/;
+                $now = $now.'Z';
+
+                # check if there is an active maintenance
+                if(
+                    Time::Moment->from_string($f)->is_before(Time::Moment->from_string($now)) &&
+                    Time::Moment->from_string($t)->is_after(Time::Moment->from_string($now)) &&
+                    ( !defined $sys_admin || $sys_admin == 0)
+                ){
+                    $self->app->log->debug('!! UNDER MAINTENANCE !! ');
+                    $self->render(template => 'under_maintenance');
+                }
+            }
+        }
+    });
 
     # ----------------------------------------------------------------------------------------------
     #
@@ -458,6 +516,9 @@ sub startup {
     # MENU USER ADMIN SETTINGS - AJAX
     $auth->post('/usr_admin_get_portal_options'       )->to( controller => 'admin', action => 'get_options'               );
     $auth->post('/usr_admin_put_validation_options'   )->to( controller => 'admin', action => 'put_validation_options'    );
+    # MENU USER SYSTEM ADMIN - AJAX
+    $auth->post('/usr_sysadmin_get_options'              )->to(controller => 'sysadmin', action => 'get_options' );
+    $auth->post('/usr_sysadmin_put_options'              )->to(controller => 'sysadmin', action => 'put_options' );
 
     # MENU USER PROFILE - AJAX
     $auth->post('/usr_profile_get_user_byid'          )->to( controller => 'profile', action => 'get_user_byid'           );
@@ -483,40 +544,49 @@ sub startup {
     $auth->get('/str_openair'                                  )->requires(has_priv => '/str_openair'   )->to( controller => 'openair'   , action => 'openair'                                               );
 
     # STRUMENTI - ANALYSER - AJAX
-    $auth->post('/str_ana_get_analyser_options'        )->to( controller => 'analyser', action => 'get_analyser_options'         );
-    $auth->post('/str_ana_get_categories'              )->to( controller => 'analyser', action => 'get_categories'               );
-    $auth->post('/str_ana_get_category_byid'           )->to( controller => 'analyser', action => 'get_category_byid'            );
-    $auth->get('/str_ana_get_analyser_groups'          )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_analyser_groups' );
-    $auth->get('/str_ana_get_group_stations'           )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_group_stations'  );
-    $auth->get('/str_ana_get_station_params'           )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_station_params'  );
-    $auth->get('/str_ana_get_params_type'              )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_params_type'     );
-    $auth->get('/str_ana_get_groups'                   )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_groups'          );
-    $auth->get('/str_ana_get_group_macros'             )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_group_macros'    );
-    $auth->get('/str_ana_get_macro_params'             )->requires(has_priv => '/str_analyser')->to( controller => 'analyser', action => 'get_macro_params'    );
-    $auth->post('/str_ana_get_macro_metadata'          )->to( controller => 'analyser', action => 'get_macro_metadata'           );
-    $auth->post('/str_ana_get_param_info'              )->to( controller => 'analyser', action => 'get_param_info'               );
-    $auth->post('/str_ana_get_wind_scale'              )->to( controller => 'analyser', action => 'get_wind_scale'               );
-    $auth->post('/str_ana_get_highcharts_data_bydate'  )->to( controller => 'analyser', action => 'get_highcharts_data_bydate'   );
-    $auth->post('/str_ana_get_highcharts_data_per_year')->to( controller => 'analyser', action => 'get_highcharts_data_per_year' );
-    $auth->post('/str_ana_get_windrose_data'           )->to( controller => 'analyser', action => 'get_windrose_data'            );
-    $auth->post('/str_ana_get_tabulator_data'          )->to( controller => 'analyser', action => 'get_tabulator_data'           );
-    $auth->post('/str_ana_get_csv_data'                )->to( controller => 'analyser', action => 'get_csv_data'                 );
-    $auth->post('/str_ana_put_analyser_user_options'   )->to( controller => 'analyser', action => 'put_analyser_user_options'    );
-    $auth->post('/str_ana_put_category'                )->to( controller => 'analyser', action => 'put_category'                 );
-    $auth->post('/str_ana_put_macro'                   )->to( controller => 'analyser', action => 'put_macro'                    );
-    $auth->post('/str_ana_put_macro_duplication'       )->to( controller => 'analyser', action => 'put_macro_duplication'        );
-    $auth->post('/str_ana_del_category'                )->to( controller => 'analyser', action => 'del_category'                 );
-    $auth->post('/str_ana_del_macro'                   )->to( controller => 'analyser', action => 'del_macro'                    );
+    $auth->post('/str_ana_get_analyser_options'          )->to(controller => 'analyser', action => 'get_analyser_options'        );
+    $auth->post('/str_ana_get_categories'                )->to(controller => 'analyser', action => 'get_categories'              );
+    $auth->post('/str_ana_get_category_byid'             )->to(controller => 'analyser', action => 'get_category_byid'           );
+    $auth->get('/str_ana_get_analyser_groups'            )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_analyser_groups'         );
+    $auth->get('/str_ana_get_group_stations'             )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_group_stations'          );
+    $auth->get('/str_ana_get_station_params'             )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_station_params'          );
+    $auth->get('/str_ana_get_params_type'                )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_params_type'             );
+    $auth->get('/str_ana_get_allocations'              )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_allocations'             );
+    $auth->get('/str_ana_get_allocation_params'        )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_allocation_params'       );
+    $auth->get('/str_ana_get_allocation_params_type'   )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_allocation_params_type'  );
+
+
+    $auth->get('/str_ana_get_groups'                     )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_groups'                  );
+    $auth->get('/str_ana_get_group_macros'               )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_group_macros'            );
+    $auth->get('/str_ana_get_macro_params'               )->requires(has_priv => '/str_analyser' )->to(controller => 'analyser', action => 'get_macro_params'            );
+    $auth->post('/str_ana_get_macro_metadata'            )->to(controller => 'analyser', action => 'get_macro_metadata'          );
+    $auth->post('/str_ana_get_param_info'                )->to(controller => 'analyser', action => 'get_param_info'              );
+    $auth->post('/str_ana_get_wind_scale'                )->to(controller => 'analyser', action => 'get_wind_scale'              );
+
+    $auth->post('/str_ana_get_highcharts_data_bydate'    )->to(controller => 'analyser', action => 'get_highcharts_data_bydate'  );
+    $auth->post('/str_ana_get_highcharts_data_per_year'  )->to(controller => 'analyser', action => 'get_highcharts_data_per_year');
+    $auth->post('/str_ana_get_windrose_data'             )->to(controller => 'analyser', action => 'get_windrose_data'           );
+    $auth->post('/str_ana_get_tabulator_data'            )->to(controller => 'analyser', action => 'get_tabulator_data'          );
+    $auth->post('/str_ana_get_csv_data'                   )->to(controller => 'analyser', action => 'get_csv_data'               );
+
+    $auth->post('/str_ana_put_analyser_user_options'     )->to(controller => 'analyser', action => 'put_analyser_user_options'   );
+    $auth->post('/str_ana_put_category'                  )->to(controller => 'analyser', action => 'put_category'                );
+    $auth->post('/str_ana_put_macro'                     )->to(controller => 'analyser', action => 'put_macro'                   );
+    $auth->post('/str_ana_put_macro_duplication'         )->to(controller => 'analyser', action => 'put_macro_duplication'       );
+    $auth->post('/str_ana_del_category'                  )->to(controller => 'analyser', action => 'del_category'                );
+    $auth->post('/str_ana_del_macro'                     )->to(controller => 'analyser', action => 'del_macro'                   );
 
     # STRUMENTI - VISUALIZER - AJAX
-    $auth->post('/str_vis_get_visualizer_user_options')->to( controller => 'visualizer', action => 'get_visualizer_user_options' );
-    $auth->post('/str_vis_get_pages_by_cat'           )->to( controller => 'visualizer', action => 'get_pages_by_cat'            );
-    $auth->get('/str_vis_get_groups'                  )->requires(has_priv => '/str_visualizer')->to( controller => 'visualizer', action => 'get_groups'      );
-    $auth->get('/str_vis_get_group_pages'             )->requires(has_priv => '/str_visualizer')->to( controller => 'visualizer', action => 'get_group_pages' );
-    $auth->get('/str_vis_get_page_boxes'              )->requires(has_priv => '/str_visualizer')->to( controller => 'visualizer', action => 'get_page_boxes'  );
-    $auth->post('/str_vis_get_macros_by_page'         )->to( controller => 'visualizer', action => 'get_macros_by_page'          );
-    $auth->post('/str_vis_get_highcharts_data_bydate' )->to( controller => 'visualizer', action => 'get_highcharts_data_bydate'  );
-    $auth->post('/str_vis_put_visualizer_user_options')->to( controller => 'visualizer', action => 'put_visualizer_user_options' );
+    $auth->post('/str_vis_get_visualizer_user_options'   )->to(controller => 'visualizer', action => 'get_visualizer_user_options' );
+    $auth->post('/str_vis_get_pages_by_cat'              )->to(controller => 'visualizer', action => 'get_pages_by_cat' );
+    $auth->get('/str_vis_get_groups'                     )->requires(has_priv => '/str_visualizer' )->to(controller => 'visualizer', action => 'get_groups'                  );
+    $auth->get('/str_vis_get_group_pages'                )->requires(has_priv => '/str_visualizer' )->to(controller => 'visualizer', action => 'get_group_pages'             );
+    $auth->get('/str_vis_get_page_boxes'                 )->requires(has_priv => '/str_visualizer' )->to(controller => 'visualizer', action => 'get_page_boxes'              );
+    $auth->post('/str_vis_get_macros_by_page'            )->to(controller => 'visualizer', action => 'get_macros_by_page'          );
+
+    $auth->post('/str_vis_get_highcharts_data_bydate'    )->to(controller => 'visualizer', action => 'get_highcharts_data_bydate'  );
+
+    $auth->post('/str_vis_put_visualizer_user_options'   )->to(controller => 'visualizer', action => 'put_visualizer_user_options' );
 
     # STRUMENTI - MAPPER - AJAX
     $auth->post('/str_map_get_stations'         )->to( controller => 'common', action => 'get_stations'          );
@@ -543,32 +613,33 @@ sub startup {
     $auth->get('/dat_validazione/<id:num>/<start:num>/<end:num>')->requires(has_priv => '/dat_validazione'   )->to( controller => 'validazione'  , action => 'validazione', id => undef, start => undef, end => undef );
     $auth->get('/dat_validaz_finale'                            )->requires(has_priv => '/dat_validaz_finale')->to( controller => 'validazfinale', action => 'validaz_finale' );
     $auth->get('/dat_istantanei/<stid:num>'                     )->requires(has_priv => '/dat_istantanei'    )->to( controller => 'utilities'    , action => 'istantanei', stid => undef );
-    $auth->get('/dat_diagnostici'                               )->requires(has_priv => '/dat_diagnostici'   )->to( controller => 'diagnostici'  , action => 'diagnostici'    );
+    $auth->get('/dat_diagnostici/<stid:num>'                    )->requires(has_priv => '/dat_diagnostici'    )->to(controller => 'diagnostici'   ,  action => 'diagnostici', stid => undef );
     $auth->get('/dat_tarature_aut/<stid:num>/<start:num>'       )->requires(has_priv => '/dat_tarature_aut'  )->to( controller => 'taratureaut'  , action => 'tarature_aut', stid => undef, start => undef );
     $auth->get('/dat_allarmi'                                   )->requires(has_priv => '/dat_allarmi'       )->to( controller => 'utilities'    , action => 'allarmi'        );
     $auth->get('/dat_warning'                                   )->requires(has_priv => '/dat_warning'       )->to( controller => 'utilities'    , action => 'warning'        );
 
     # DATI - VALIDAZIONE - AJAX
-    $auth->post('/dat_val_get_codes'                  )->to( controller => 'common'     , action => 'get_codes'                   );
-    $auth->post('/dat_val_get_stations'               )->to( controller => 'validazione', action => 'get_stations'                );
-    $auth->post('/dat_val_get_parameters'             )->to( controller => 'common'     , action => 'get_parameters'              );
-    $auth->post('/dat_val_get_validation_codes'       )->to( controller => 'validazione', action => 'get_validation_codes'        );
-    $auth->post('/dat_val_get_validation_user_options')->to( controller => 'validazione', action => 'get_validation_user_options' );
-    $auth->get('/dat_val_get_validation_groups'       )->requires(has_priv => '/dat_validazione')->to( controller => 'validazione', action => 'get_validation_groups'    );
-    $auth->get('/dat_val_get_group_stations'          )->requires(has_priv => '/dat_validazione')->to( controller => 'validazione', action => 'get_group_stations'       );
-    $auth->get('/dat_val_get_group_params'            )->requires(has_priv => '/dat_validazione')->to( controller => 'validazione', action => 'get_group_params'         );
-    $auth->get('/dat_val_get_group_suspects'          )->requires(has_priv => '/dat_validazione')->to( controller => 'validazione', action => 'get_group_suspects'       );
-    $auth->get('/dat_val_get_group_suspect_params'    )->requires(has_priv => '/dat_validazione')->to( controller => 'validazione', action => 'get_group_suspect_params' );
-    $auth->post('/dat_val_get_stations_by_param'      )->to( controller => 'validazione', action => 'get_stations_by_param'       );
-    $auth->post('/dat_val_get_all_params_data_table'  )->to( controller => 'validazione', action => 'get_all_params_data_table'   );
-    $auth->post('/dat_val_get_all_stations_data_table')->to( controller => 'validazione', action => 'get_all_stations_data_table' );
-    $auth->post('/dat_val_get_validation_codes_bycell')->to( controller => 'validazione', action => 'get_validation_codes_bycell' );
-    $auth->post('/dat_val_get_point_neighborhood'     )->to( controller => 'validazione', action => 'get_point_neighborhood'      );
-    $auth->post('/dat_val_put_validation_user_options')->to( controller => 'validazione', action => 'put_validation_user_options' );
-    $auth->post('/dat_val_put_action_by_calendar'     )->to( controller => 'validazione', action => 'put_action_by_calendar'      );
-    $auth->post('/dat_val_put_cells'                  )->to( controller => 'validazione', action => 'put_cells'                   );
-    $auth->post('/dat_val_put_check_cells'            )->to( controller => 'validazione', action => 'put_check_cells'             );
-    $auth->post('/dat_val_put_reset_cells'            )->to( controller => 'validazione', action => 'put_reset_cells'             );
+    $auth->post('/dat_val_get_codes'                     )->to(controller => 'common'     , action => 'get_codes'                     );
+    $auth->post('/dat_val_get_stations'                  )->to(controller => 'validazione', action => 'get_stations'                  );
+    $auth->post('/dat_val_get_parameters'                )->to(controller => 'common'     , action => 'get_parameters'                );
+    $auth->post('/dat_val_get_validation_codes'          )->to(controller => 'validazione', action => 'get_validation_codes'          );
+    $auth->post('/dat_val_get_validation_user_options'   )->to(controller => 'validazione', action => 'get_validation_user_options'   );
+    $auth->get('/dat_val_get_validation_groups'          )->requires(has_priv => '/dat_validazione' )->to(controller => 'validazione', action => 'get_validation_groups'         );
+    $auth->get('/dat_val_get_group_stations'             )->requires(has_priv => '/dat_validazione' )->to(controller => 'validazione', action => 'get_group_stations'            );
+    $auth->get('/dat_val_get_group_params'               )->requires(has_priv => '/dat_validazione' )->to(controller => 'validazione', action => 'get_group_params'              );
+    $auth->get('/dat_val_get_group_suspects'             )->requires(has_priv => '/dat_validazione' )->to(controller => 'validazione', action => 'get_group_suspects'            );
+    $auth->get('/dat_val_get_group_suspect_params'       )->requires(has_priv => '/dat_validazione' )->to(controller => 'validazione', action => 'get_group_suspect_params'      );
+
+    $auth->post('/dat_val_get_all_params_data_table'     )->to(controller => 'validazione', action => 'get_all_params_data_table'     );
+    $auth->post('/dat_val_get_all_stations_data_table'   )->to(controller => 'validazione', action => 'get_all_stations_data_table'   );
+    $auth->post('/dat_val_get_validation_codes_bycell'   )->to(controller => 'validazione', action => 'get_validation_codes_bycell'   );
+    $auth->post('/dat_val_get_point_neighborhood'        )->to(controller => 'validazione', action => 'get_point_neighborhood'        );
+
+    $auth->post('/dat_val_put_validation_user_options'   )->to(controller => 'validazione', action => 'put_validation_user_options'   );
+    $auth->post('/dat_val_put_action_by_calendar'        )->to(controller => 'validazione', action => 'put_action_by_calendar'        );
+    $auth->post('/dat_val_put_cells'                     )->to(controller => 'validazione', action => 'put_cells'                     );
+    $auth->post('/dat_val_put_check_cells'               )->to(controller => 'validazione', action => 'put_check_cells'               );
+    $auth->post('/dat_val_put_reset_cells'               )->to(controller => 'validazione', action => 'put_reset_cells'               );
 
     # DATI - VALIDAZIONE FINALE - AJAX
     $auth->post('/dat_validaz_finale_get_stations_by_network')->to( controller => 'common'       , action => 'get_stations_by_net_province' );
@@ -770,22 +841,22 @@ sub startup {
     $auth->get('/cnf_dotazioni'           )->requires(has_priv => '/cnf_dotazioni')->to( controller => 'cnfdotazioni', action => 'dotazioni'                );
 
     # IMPOSTAZIONI RETE - STAZIONI - AJAX
-    $auth->post('/cnf_stazioni_get_provinces'             )->to( controller => 'common'      , action => 'get_provinces'              );
-    $auth->post('/cnf_stazioni_get_municipalities'        )->to( controller => 'common'      , action => 'get_municipalities'         );
-    $auth->post('/cnf_stazioni_get_municipality_by_coords')->to( controller => 'common'      , action => 'get_municipality_by_coords' );
-    $auth->post('/cnf_stazioni_get_stations'              )->to( controller => 'cnfstazioni' , action => 'get_stations'               );
-    $auth->post('/cnf_stazioni_get_station_by_id'         )->to( controller => 'cnfstazioni' , action => 'get_station_by_id'          );
-    $auth->post('/cnf_stazioni_put_station'               )->to( controller => 'cnfstazioni' , action => 'put_station'                );
-    $auth->post('/cnf_stazioni_put_pdf'                   )->to( controller => 'cnfstazioni' , action => 'put_pdf'                    );
-    $auth->post('/cnf_stazioni_del_station'               )->to( controller => 'cnfstazioni' , action => 'del_station'                );
-
+    $auth->post('/cnf_stazioni_get_provinces'               )->to(controller => 'common'   , action => 'get_provinces'              );
+    $auth->post('/cnf_stazioni_get_municipalities'          )->to(controller => 'common'   , action => 'get_municipalities'         );
+    $auth->post('/cnf_stazioni_get_municipality_by_coords'  )->to(controller => 'common'   , action => 'get_municipality_by_coords' );
+    $auth->post('/cnf_stazioni_get_stations'                )->to(controller => 'cnfstazioni',  action => 'get_stations'           );
+    $auth->post('/cnf_stazioni_get_station_by_id'           )->to(controller => 'cnfstazioni',  action => 'get_station_by_id'      );
+    $auth->get ('/cnf_stazioni_get_pdf'                     )->to(controller => 'cnfstazioni',  action => 'get_pdf' );
+    $auth->post('/cnf_stazioni_put_station'                 )->to(controller => 'cnfstazioni',  action => 'put_station'            );
+    $auth->post('/cnf_stazioni_put_pdf'                     )->to(controller => 'cnfstazioni',  action => 'put_pdf'                );
+    $auth->post('/cnf_stazioni_del_station'                 )->to(controller => 'cnfstazioni',  action => 'del_station'            );
     # IMPOSTAZIONI RETE - PARAMETRI - AJAX
-    $auth->post('/cnf_parametri_get_parameters_by_stid'   )->to( controller => 'cnfparametri', action => 'get_parameters_by_stid'     );
-    $auth->post('/cnf_parametri_get_parameter_by_stprid'  )->to( controller => 'cnfparametri', action => 'get_parameter_by_stprid'    );
-    $auth->post('/cnf_parametri_put_station_param'        )->to( controller => 'cnfparametri', action => 'put_station_param'          );
-    $auth->post('/cnf_parametri_put_config_file'          )->to( controller => 'cnfparametri', action => 'put_config_file'            );
-    $auth->post('/cnf_parametri_put_config_params'        )->to( controller => 'cnfparametri', action => 'put_config_params'          );
-    $auth->post('/cnf_parametri_del_station_param'        )->to( controller => 'cnfparametri', action => 'del_station_param'          );
+    $auth->post('/cnf_parametri_get_parameters_by_stid'      )->to(controller => 'cnfparametri',  action => 'get_parameters_by_stid'    );
+    $auth->post('/cnf_parametri_get_parameter_by_stprid'     )->to(controller => 'cnfparametri',  action => 'get_parameter_by_stprid'   );
+    $auth->post('/cnf_parametri_put_station_param'           )->to(controller => 'cnfparametri',  action => 'put_station_param'         );
+    $auth->post('/cnf_parametri_put_config_file'             )->to(controller => 'cnfparametri',  action => 'put_config_file'           );
+    $auth->post('/cnf_parametri_put_config_params'           )->to(controller => 'cnfparametri',  action => 'put_config_params'         );
+    $auth->post('/cnf_parametri_del_station_param'           )->to(controller => 'cnfparametri',  action => 'del_station_param'         );
 
     # IMPOSTAZIONI RETE - STRUMENTI - AJAX
     $auth->post('/cnf_strumenti_get_stations'                )->to( controller => 'common'      , action => 'get_stations_by_net_province' );
@@ -975,6 +1046,7 @@ Pagina di Amministrazione del portale.
 
 =item /usr_sysadmin                           GET
 
+Pagina di gestione impostazioni del System Admin
 
 =item /usr_profile                            GET
 
@@ -1243,6 +1315,10 @@ Le successive route vengono utilizzate dai form per l'invio di dati al backend
 =item /usr_admin_get_portal_options                    POST
 
 =item /usr_admin_put_validation_options                POST
+
+=item /usr_sysadmin_get_options                        POST
+
+=item /usr_sysadmin_put_options                        POST
 
 =item /usr_profile_get_user_byid                       POST
 

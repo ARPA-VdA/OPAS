@@ -81,6 +81,11 @@ table.dataTable>tbody>tr.selected>th.select-checkbox:after {
     margin-left: -8px;
     text-shadow: none!important;
 }
+table.dataTable input.dt-select-checkbox:checked:after {
+    margin-top: -8px;
+    margin-left: -1px;
+}
+
 /* --- BOOTSTRAP MODAL  --- */
 
 .modal-header{

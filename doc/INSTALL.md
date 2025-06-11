@@ -11,7 +11,7 @@
 * ### Installare il sistema operativo (OS) "Ubuntu 24.04.1 LTS" tramite l'immagine (ISO) da scaricare al seguente link:
 
     https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso
-
+## AGGIUNGERE DETTAGLI SU PARAMETRI DI INSTALLAZIONE DI Ubuntu (Ex. pacchetti, layout tastiera e lingua)
 ## POST INSTALLAZIONE
 
 * ### Accesso alla macchina virtuale appena creata tramite *SSH*
@@ -274,10 +274,9 @@
 * ### Clonare il repository da Github in una directory locale
 
     ```console
-    git clone [FUTURO_URL]
+    git clone https://github.com/ARPA-VdA/OPAS.git
     ```
     Una volta lanciato il comando, si ritroveranno le directories *src*, *doc*, *scripts*, *webservice* e *db* contenenti i file dell'applicativo e gli sql.
-	``` non c'è il repo; copiare le cartelle da '2024-12-31'```
 
 ## POPOLAMENTO DB (cartella */db*)
 

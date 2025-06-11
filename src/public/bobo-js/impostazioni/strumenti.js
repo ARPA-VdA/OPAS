@@ -220,14 +220,15 @@ $(document).ready(function() {
             $('#instr-serial-num').val(instrument.instrument_serial_num);
             $('#instr-owner').val(instrument.instrument_owner);
 
-            $('#instr-active').prop('checked', instrument.instrument_active ).trigger('change');
-
             $('#instr-date-delivery').val('');
             $('#instr-date-disuse').val('');
             if(instrument.instrument_delivery_date)
                 $('#instr-date-delivery').bootstrapMaterialDatePicker('setDate', moment(instrument.instrument_delivery_date).format('DD/MM/YYYY'));
             if(instrument.instrument_dismiss_date)
                 $('#instr-date-disuse').bootstrapMaterialDatePicker('setDate', moment(instrument.instrument_dismiss_date).format('DD/MM/YYYY'));
+            // destroy and re-itialize bootstraptoggle in order to not trigger change event
+            $('#instr-active').prop('checked', instrument.instrument_active).bootstrapToggle('destroy').bootstrapToggle();
+
             $('#instr-networks').val(instrument.network_types).trigger('change.select2');
 
             $('#instr-note').val(instrument.instrument_note);
@@ -523,7 +524,13 @@ $(document).ready(function() {
     // END Dropzone //
 
     // // Form element // //
-
+    $('#instr-date-delivery').bootstrapMaterialDatePicker({
+        maxDate: moment().format("DD/MM/YYYY"),
+        format: 'DD/MM/YYYY',
+        lang: 'it',
+        cancelText: 'Annulla',
+        time: false
+    });
     /**
      * Dismission/disuse date of the new instrument.
      */
@@ -533,18 +540,12 @@ $(document).ready(function() {
         lang : 'it',
         cancelText : 'Annulla',
         time: false
+    }).on('change', function(){
+        // destroy and re-itialize bootstraptoggle in order to not trigger change event
+        $('#instr-active').prop('checked', false).bootstrapToggle('destroy').bootstrapToggle();
     });
 
-    $('#instr-date-disuse').on('change', function(e){
-        // uncheck toggle
-        $('#instr-active').prop('checked', false).trigger('change', false);
-    });
-
-    $('#instr-active').on('change', function(e, flag){
-        // no status change
-        if(flag == false)
-            return;
-
+    $('#instr-active').on('change', function(){
         // get toggle status
         var status = $(this).is(':checked');
 
@@ -1821,7 +1822,7 @@ $(document).ready(function() {
             }
 
             // add link for the new tab
-            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#in'+inid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+fullname+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="in'+inid+'"></i></a></li>';
+            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#in'+inid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+fullname+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-detail" data-close="in'+inid+'"></i></a></li>';
             $('.nav').append(html);
 
             // variable for dinamically building the html

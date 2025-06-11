@@ -20,10 +20,11 @@ sub get_report {
 
     my $portal = $params->{'portal'};
     my $type = $params->{'type'};
+    my $prov = $params->{'prov'};
 
     my $user_id = $self->session('it.ecometer.bobo');
 
-    # get users associated with the portal
+    # get user metadata
     my $user = $self->dbcommon->get_user_byid($user_id);
 
     # sanity check
@@ -32,6 +33,21 @@ sub get_report {
 
     if ($portal == 3 && $type eq 'rp-rrqa') { # arpae
         $self->get_arpae_rp_rrqa();
+    }
+    elsif ($portal == 3 && $type eq 'rp-rrqa-stations') { # arpae
+        $self->get_arpae_rrqa_stations();
+    }
+    elsif ($portal == 3 && ( $type eq 'rp-rrqa-equipments-active' || $type eq 'rp-rrqa-equipments-notactive') ) { # arpae
+        my $active = 1;
+        if ( $type =~ /notactive/ ){
+            $active = 0;
+        }
+
+        if(!defined $prov){
+            $prov = 'ALL';
+        }
+
+        $self->get_arpae_rrqa_equipments($active, $prov);
     }
     else {
         return $self->reply->not_found;
@@ -177,6 +193,525 @@ sub get_arpae_rp_rrqa {
         }
     }
     else {
+        $self->reply->exception;
+    }
+}
+
+sub get_arpae_rrqa_stations {
+    my $self = shift;
+
+    $self->app->log->debug("Bobo::Controller::Customized sub get_arpae_rrqa_stations");
+
+    eval{
+        my $body_html = ''."\n";
+        $body_html .= '<html>'."\n";
+        $body_html .= '    <head>'."\n";
+        $body_html .= '        <link rel="icon" id="icon16" type="image/png" sizes="16x16" href="/bobo-img/arpae/favicon/favicon-16x16.png">'."\n";
+        $body_html .= '        <link rel="icon" id="icon32" type="image/png" sizes="32x32" href="/bobo-img/arpae/favicon/favicon-32x32.png">'."\n";
+        $body_html .= '        <style>'."\n";
+        $body_html .= '            body,html {margin: 0 0 0 0; padding: 0; min-width: 100% !important; font-family: Tahoma, Verdana, Trebuchet MS, sans-serif; font-size: 12px; color: #525252;}'."\n";
+        $body_html .= '            .main-table tr:nth-child(even){background-color: #f2f2f2}'."\n";
+        $body_html .= '            .main-table th {'."\n";
+        $body_html .= '                background-color: #4f727b;'."\n";
+        $body_html .= '                color: white;'."\n";
+        $body_html .= '                text-align: left;'."\n";
+        $body_html .= '            }'."\n";
+        $body_html .= '            .main-table td,#main-table th{'."\n";
+        $body_html .= '                padding: 6px;'."\n";
+        $body_html .= '            }'."\n";
+        $body_html .= '        </style>'."\n";
+        $body_html .= '    </head>'."\n";
+        $body_html .= '    <body bgcolor="#e3edfa" style="min-width: 100% !important; font-family: Tahoma, Verdana, Trebuchet MS, sans-serif; font-size: 12px; color: #525252; margin: 0px 0 0; padding: 0;">'."\n";
+        
+        # STAZIONI REGIONALI
+        $body_html .= $self->create_rrqa_stations(1);
+        # STAZIONI LOCALI
+        $body_html .= $self->create_rrqa_stations(2);
+        # STAZIONI MOBILI
+        $body_html .= $self->create_rrqa_stations(3);
+
+        $body_html .= '    </body>'."\n";
+        $body_html .= '</html>'."\n";
+
+        # get application path .../public/ path
+        my $app_path = $self->app->home->rel_file('public/downloads/arpae');
+        $self->app->log->debug("Application path: $app_path");
+
+        # build filename
+        my $filename = 'QAReportsStations.html';
+        $filename = encode_utf8($filename);
+
+        my $full_filename = "$app_path/$filename";
+        
+        # DA FINIRE
+        open(FH, '>:encoding(utf-8)', $full_filename) or die $!;
+        print FH $body_html;
+        close(FH);
+
+        # copy file to remote server
+        if ($^O eq 'linux') {
+            eval {
+                $self->app->log->debug("[SCP] Copy html file to reverse server (dmz)");
+                my $dest_path = 'PATH';
+                my $proxy = 'Proxy';
+                # -T Disable strict filename checking
+                system("ls") or $self->app->log->warn("Scp failed: $!");
+            };
+
+            if ($@) {
+                $self->app->log->warning("[SCP] Command failed: $@");
+                # reply to 404 page
+                $self->reply->exception;
+            }
+            else { # all went file
+                $self->app->log->debug("[SCP] File copied");
+            }
+        }
+
+        # redirect if file exists
+        if (-e $full_filename) {
+            $self->reply->static("/downloads/arpae/$filename");
+        }
+        else {
+            $self->reply->exception;
+        }
+    };
+
+    # error check
+    if ($@) {
+        $self->reply->exception;
+    }
+}
+
+sub create_rrqa_stations {
+    my ( $self, $type ) = @_;
+
+    my $body_html = '';
+    my $table_rows;
+
+    my $local_tz = DateTime::TimeZone->new(name => 'Europe/Rome');
+    my $now = DateTime->now(time_zone => $local_tz);
+
+    my $table_name;
+
+    if($type == 1){
+        $table_name = 'RRQA';
+    }
+    elsif($type == 2){
+        $table_name ='Stazioni locali';
+    }
+    elsif($type == 3){
+        $table_name = 'Stazioni mobili';
+    }
+
+    $body_html .= '        <table width="100%" bgcolor="#e3edfa" border="0" cellpadding="0" cellspacing="0" style="padding-top: 20px;">'."\n";
+    $body_html .= '            <tr>'."\n";
+    $body_html .= '                <td>'."\n";
+    $body_html .= '                    <table  align="center" cellpadding="0" cellspacing="10px" border="0" bgcolor="#FFFFFF" style="width: 80%; box-shadow: 3px 3px #c4d0d4; border: 1px solid #bfd0db;">'."\n";
+    $body_html .= '                        <tr>'."\n";
+    $body_html .= '                            <td bgcolor="#f5ffff" style="padding: 10px; border: 1px dashed #c4d0d3;">'."\n";
+    $body_html .= '                                <table width="100%" cellpadding="2px" cellspacing="0" border="0">'."\n";
+    $body_html .= '                                    <tr>'."\n";
+    $body_html .= '                                        <td width="145"><img src="https://opas.isprambiente.it/bobo-img/arpae/loghi/arpae.png" alt="logo Arpae" width="200" style="margin-right: 20px;" /></td>'."\n";
+    $body_html .= '                                        <td>'."\n";
+    $body_html .= '                                            <h1 style="font-size: 1.3em; color: #125465; font-weight: 500; margin: 5px 0px 0px;">Elenco stazioni della rete di monitoraggio della qualità dell\'aria</h1>'."\n";
+    $body_html .= '                                        </td>'."\n";
+    $body_html .= '                                        <td align="right"><h4 style="font-size: 1.1em; color: #125465; font-weight: 600; margin: 6px 0px 0px 0px;">'.$table_name.'</h4></td>'."\n";
+    $body_html .= '                                    </tr>'."\n";
+    $body_html .= '                                </table>'."\n";
+    $body_html .= '                            </td>'."\n";
+    $body_html .= '                        </tr>'."\n";
+    $body_html .= '                        <tr>'."\n";
+    $body_html .= '                            <td>'."\n";
+    $body_html .= '                                <table class="main-table" width="100%" cellpadding="5px" cellspacing="0" border="0" style="margin-bottom:5px; font-size:1rem;">'."\n";
+    $body_html .= '                                    <thead>'."\n";
+    $body_html .= '                                        <tr>'."\n";
+    $body_html .= '                                            <th>#</th>'."\n";
+    $body_html .= '                                            <th>ID ARPA</th>'."\n";
+    $body_html .= '                                            <th>ID Europeo</th>'."\n";
+    $body_html .= '                                            <th>Nome</th>'."\n";
+    $body_html .= '                                            <th>Indirizzo</th>'."\n";
+    $body_html .= '                                            <th>WGS84 Lat.</th>'."\n";
+    $body_html .= '                                            <th>WGS84 Lon.</th>'."\n";
+    $body_html .= '                                            <th align="center">PM10</th>'."\n";
+    $body_html .= '                                            <th align="center">PM2.5</th>'."\n";
+    $body_html .= '                                            <th align="center">NOx</th>'."\n";
+    $body_html .= '                                            <th align="center">CO</th>'."\n";
+    $body_html .= '                                            <th align="center">BTX</th>'."\n";
+    $body_html .= '                                            <th align="center">SO2</th>'."\n";
+    $body_html .= '                                            <th align="center">O3</th>'."\n";
+    $body_html .= '                                            <th>Tipo staz.</th>'."\n";
+    $body_html .= '                                            <th>Zona</th>'."\n";
+    $body_html .= '                                        </tr>'."\n";
+    $body_html .= '                                    </thead>'."\n";
+    $body_html .= '                                    <tbody>'."\n";
+
+    # get STAZIONI REGIONALI
+    $table_rows = $self->dbcustomized->get_arpae_stations($type);
+
+    $body_html .= $table_rows->{body};
+    $body_html .= $table_rows->{totals};
+
+    $body_html .= '                                    </tbody>'."\n";
+    $body_html .= '                                <tfoot>'."\n";
+    $body_html .= '                                   <tr>'."\n";
+    $body_html .= '                                        <th>#</th>'."\n";
+    $body_html .= '                                        <th>ID ARPA</th>'."\n";
+    $body_html .= '                                        <th>ID Europeo</th>'."\n";
+    $body_html .= '                                        <th>Nome</th>'."\n";
+    $body_html .= '                                        <th>Indirizzo</th>'."\n";
+    $body_html .= '                                        <th>WGS84 Lat.</th>'."\n";
+    $body_html .= '                                        <th>WGS84 Lon.</th>'."\n";
+    $body_html .= '                                        <th align="center">PM10</th>'."\n";
+    $body_html .= '                                        <th align="center">PM2.5</th>'."\n";
+    $body_html .= '                                        <th align="center">NOx</th>'."\n";
+    $body_html .= '                                        <th align="center">CO</th>'."\n";
+    $body_html .= '                                        <th align="center">BTX</th>'."\n";
+    $body_html .= '                                        <th align="center">SO2</th>'."\n";
+    $body_html .= '                                        <th align="center">O3</th>'."\n";
+    $body_html .= '                                        <th>Tipo staz.</th>'."\n";
+    $body_html .= '                                        <th>Zona</th>'."\n";
+    $body_html .= '                                   </tr>'."\n";
+    $body_html .= '                               </tfoot>'."\n";
+    $body_html .= '                           </table>'."\n";
+    $body_html .= '                        </td>'."\n";
+    $body_html .= '                    </tr>'."\n";
+    $body_html .= '                </table>'."\n";
+    $body_html .= '            </td>'."\n";
+    $body_html .= '        </tr>'."\n";
+    $body_html .= '        <tr>'."\n";
+    $body_html .= '            <td>'."\n";
+    $body_html .= '                <table align="center" cellpadding="0" cellspacing="10" border="0" style="width: 100%; max-width: 650px; font-size: 0.8em;">'."\n";
+    $body_html .= '                    <tr>'."\n";
+    $body_html .= '                        <td>'."\n";
+    $body_html .= '                            <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="left">Mod8-P71501/SA rev2 del 01/02/2025</p>'."\n";
+    $body_html .= '                        </td>'."\n";
+    $body_html .= '                        <td>'."\n";
+    $body_html .= '                            <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="right">aggiornato il '. $now->strftime("%d/%m/%Y") .'</p>'."\n";
+    $body_html .= '                        </td>'."\n";
+    $body_html .= '                    </tr>'."\n";
+    $body_html .= '                </table>'."\n";
+    $body_html .= '            </td>'."\n";
+    $body_html .= '        </tr>'."\n";
+    $body_html .= '    </table>'."\n";
+
+
+    return $body_html;
+}
+
+sub get_arpae_rrqa_equipments{
+    my ( $self, $active, $prov ) = @_;
+
+    $self->app->log->debug("Bobo::Controller::Customized sub get_arpae_rp_rrqa");
+
+    my $equipments;
+    my $filename;
+    my $title;
+    my $mod;
+
+    if($active == 1){
+        $equipments = $self->dbcustomized->get_arpae_active_equipments($prov);
+        # build filename
+        $filename = 'QAReportsActiveEquipments.html';
+        $filename = encode_utf8($filename);
+
+        $title = ' ';
+        $mod = 'Mod4-P71501/SA rev.2 del 01/03/2025';
+    }
+    else{
+        $equipments = $self->dbcustomized->get_arpae_not_active_equipments($prov);
+        # build filename
+        $filename = 'QAReportsNotActiveEquipments.html';
+        $filename = encode_utf8($filename);
+        $title = ' non ';
+
+        $mod = 'Mod7-P71501/SA rev.2 del 01/03/2025';
+    }
+
+    eval{
+        my $body_html;
+        $body_html = '<html>'."\n";
+        $body_html .= '<head>'."\n";
+        $body_html .= '    <script src="/node_modules/jquery/jquery-3.2.1.min.js"></script>'."\n";
+        $body_html .= '    <link rel="icon" id="icon16" type="image/png" sizes="16x16" href="/bobo-img/arpae/favicon/favicon-16x16.png">'."\n";
+        $body_html .= '    <link rel="icon" id="icon32" type="image/png" sizes="32x32" href="/bobo-img/arpae/favicon/favicon-32x32.png">'."\n";
+        $body_html .= '    <style>'."\n";
+        $body_html .= '        body,html {margin: 0 0 0 0; padding: 0; min-width: 100% !important; font-family: Tahoma, Verdana, Trebuchet MS, sans-serif; font-size: 12px; color: #525252;}'."\n";
+        $body_html .= '        #main-table tr:nth-child(even){background-color: #f2f2f2}'."\n";
+        $body_html .= '        #main-table th {'."\n";
+        $body_html .= '            background-color: #4f727b;'."\n";
+        $body_html .= '            color: white;'."\n";
+        $body_html .= '            text-align: left;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        #main-table td,#main-table th{'."\n";
+        $body_html .= '            padding: 6px;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .circle-green, .circle-red{'."\n";
+        $body_html .= '            color: #FFF;'."\n";
+        $body_html .= '            display: inline-block;'."\n";
+        $body_html .= '            width: 22px;'."\n";
+        $body_html .= '            height: 22px;'."\n";
+        $body_html .= '            text-align: center;'."\n";
+        $body_html .= '            line-height: 21px;'."\n";
+        $body_html .= '            font-weight: 600;'."\n";
+        $body_html .= '            border-radius: 50%;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .circle-green{'."\n";
+        $body_html .= '            background-color: #458c9f;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .circle-red{'."\n";
+        $body_html .= '            background-color: #858c8e;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .no-print-select{'."\n";
+        $body_html .= '            font-size: 15px;'."\n";
+        $body_html .= '            padding-top: 15px;'."\n";
+        $body_html .= '            text-align: center;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .no-print-select label{'."\n";
+        $body_html .= '            font-weight: bold;'."\n";
+        $body_html .= '            padding-right: 6px;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        .no-print-select select{'."\n";
+        $body_html .= '            font-size: 15px;'."\n";
+        $body_html .= '            display: inline-block;'."\n";
+        $body_html .= '            padding: 5px 10px;'."\n";
+        $body_html .= '            width: 30%;'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '        @media print {'."\n";
+        $body_html .= '            .no-print-select {'."\n";
+        $body_html .= '                display: none;'."\n";
+        $body_html .= '            }'."\n";
+        $body_html .= '        }'."\n";
+        $body_html .= '    </style>'."\n";
+        $body_html .= '</head>'."\n";
+        $body_html .= '<body bgcolor="#e3edfa" style="min-width: 100% !important; font-family: Tahoma, Verdana, Trebuchet MS, sans-serif; font-size: 12px; color: #525252; margin: 0px 0 0; padding: 0;">'."\n";
+        $body_html .= '    <script type="text/javascript">'."\n";
+        $body_html .= '        $(document).ready(function() { '."\n";
+        $body_html .= '            $("#prov").val("'.$prov.'"); '."\n";
+        $body_html .= '            $("#prov").on("change", function(e){'."\n";
+        $body_html .= '                let prov = $(this).val();'."\n";
+        $body_html .= '                let loc = window.location.href;'."\n";
+        $body_html .= '                loc = loc.replace(/prov=[A-Z]+/, "prov="+prov );'."\n";
+        $body_html .= '                window.location.replace( loc );'."\n";
+        $body_html .= '            });'."\n";
+        $body_html .= '        }); '."\n";
+        $body_html .= '    </script>'."\n";
+        $body_html .= '    <div class="no-print-select">'."\n";
+        $body_html .= '        <label for="prov">Seleziona provincia</label>'."\n";
+        $body_html .= '        <select name="prov" id="prov">'."\n";
+        $body_html .= '            <option value="ALL">Tutte</option>'."\n";
+        $body_html .= '            <option value="BO">Bologna</option>'."\n";
+        $body_html .= '            <option value="FE">Ferrara</option>'."\n";
+        $body_html .= '            <option value="FC">Forlì-Cesena</option>'."\n";
+        $body_html .= '            <option value="MO">Modena</option>'."\n";
+        $body_html .= '            <option value="PR">Parma</option>'."\n";
+        $body_html .= '            <option value="PC">Piacenza</option>'."\n";
+        $body_html .= '            <option value="RA">Ravenna</option>'."\n";
+        $body_html .= '            <option value="RE">Reggio-Emilia</option>'."\n";
+        $body_html .= '            <option value="RN">Rimini</option>'."\n";
+        if($active == 0){
+            $body_html .= '            <option value="RR">Rete Ricerca</option>'."\n";
+        }
+        $body_html .= '        </select>'."\n";
+        $body_html .= '    </div>'."\n";
+
+        my $old_prov = '';
+        my $tables_html = '';
+
+        my $local_tz = DateTime::TimeZone->new(name => 'Europe/Rome');
+        my $now = DateTime->now(time_zone => $local_tz);
+
+        foreach my $equip (@{$equipments}){
+
+            if( $equip->{province_name} ne $old_prov){
+
+                # check if previous province is defined
+                # not first loop -> table already open, close it!
+                if($old_prov ne ''){
+
+                    $tables_html .= '                        </tbody>'."\n";
+                    $tables_html .= '                        <tfoot>'."\n";
+                    $tables_html .= '                            <tr>'."\n";
+                    $tables_html .= '                                    <th>#</th>'."\n";
+                    if($active == 1){
+                        $tables_html .= '                                    <th>Stazione</th>'."\n";
+                    }
+                    $tables_html .= '                                    <th>Nome</th>'."\n";
+                    $tables_html .= '                                    <th>Marca e modello</th>'."\n";
+                    $tables_html .= '                                    <th>Numero di serie</th>'."\n";
+                    $tables_html .= '                                    <th>Numero inventario</th>'."\n";
+                    $tables_html .= '                                    <th>Data acquisto</th>'."\n";
+                    $tables_html .= '                                    <th>Proprietario</th>'."\n";
+                    $tables_html .= '                                    <th>A/I</th>'."\n";
+                    $tables_html .= '                            </tr>'."\n";
+                    $tables_html .= '                        </tfoot>'."\n";
+                    $tables_html .= '                    </table>'."\n";
+                    $tables_html .= '                    </td>'."\n";
+                    $tables_html .= '                </tr>'."\n";
+                    $tables_html .= '            </table>'."\n";
+                    $tables_html .= '        </td>'."\n";
+                    $tables_html .= '    </tr>'."\n";
+                    $tables_html .= '    <tr>'."\n";
+                    $tables_html .= '        <td>'."\n";
+                    $tables_html .= '            <table align="center" cellpadding="0" cellspacing="10" border="0" style="width: 100%; max-width: 650px; font-size: 0.8em;">'."\n";
+                    $tables_html .= '                <tr>'."\n";
+                    $tables_html .= '                    <td>'."\n";
+                    $tables_html .= '                        <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="left">'.$mod.'</p>'."\n";
+                    $tables_html .= '                    </td>'."\n";
+                    $tables_html .= '                    <td>'."\n";
+                    $tables_html .= '                        <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="right">aggiornato il '. $now->strftime("%d/%m/%Y") .'</p>'."\n";
+                    $tables_html .= '                    </td>'."\n";
+                    $tables_html .= '                </tr>'."\n";
+                    $tables_html .= '            </table>'."\n";
+                    $tables_html .= '        </td>'."\n";
+                    $tables_html .= '    </tr>'."\n";
+                    $tables_html .= '</table>'."\n";
+
+                }
+
+                # open new table
+                $tables_html .= '<!-- '.$equip->{province_name}.' -->'."\n";
+                $tables_html .= '<table width="100%" bgcolor="#e3edfa" border="0" cellpadding="0" cellspacing="0" style="padding-top: 20px;">'."\n";
+                $tables_html .= '    <tr>'."\n";
+                $tables_html .= '        <td>'."\n";
+                $tables_html .= '            <table  align="center" cellpadding="0" cellspacing="10px" border="0" bgcolor="#FFFFFF" style="width: 80%; box-shadow: 3px 3px #c4d0d4; border: 1px solid #bfd0db;">'."\n";
+                $tables_html .= '                <tr>'."\n";
+                $tables_html .= '                    <td bgcolor="#f5ffff" style="padding: 10px; border: 1px dashed #c4d0d3;">'."\n";
+                $tables_html .= '                        <table width="100%" cellpadding="2px" cellspacing="0" border="0">'."\n";
+                $tables_html .= '                            <tr>'."\n";
+                $tables_html .= '                                <td width="145"><img src="https://opas.isprambiente.it/bobo-img/arpae/loghi/arpae.png" alt="logo Arpae" width="200" style="margin-right: 20px;" /></td>'."\n";
+                $tables_html .= '                                <td>'."\n";
+                $tables_html .= '                                    <h1 style="font-size: 1.4em; color: #125465; font-weight: 500; margin: 5px 0px 0px;">Elenco analizzatori e impianti della RRQA'.$title.'in uso</h1>'."\n";
+                $tables_html .= '                                </td>'."\n";
+                $tables_html .= '                                <td align="right"><h4 style="font-size: 1.1em; color: #125465; font-weight: 600; margin: 6px 0px 0px 0px;">'.$equip->{province_name}.'</h4></td>'."\n";
+                $tables_html .= '                            </tr>'."\n";
+                $tables_html .= '                        </table>'."\n";
+                $tables_html .= '                    </td>'."\n";
+                $tables_html .= '                </tr>'."\n";
+                $tables_html .= '                <tr>'."\n";
+                $tables_html .= '                    <td>'."\n";
+                $tables_html .= '                        <table id="main-table" width="100%" cellpadding="5px" cellspacing="0" border="0" style="margin-bottom:5px; font-size:1rem;">'."\n";
+                $tables_html .= '                            <thead>'."\n";
+                $tables_html .= '                                <tr>'."\n";
+                $tables_html .= '                                    <th>#</th>'."\n";
+                if($active == 1){
+                    $tables_html .= '                                    <th>Stazione</th>'."\n";
+                }
+                $tables_html .= '                                    <th>Nome</th>'."\n";
+                $tables_html .= '                                    <th>Marca e modello</th>'."\n";
+                $tables_html .= '                                    <th>Numero di serie</th>'."\n";
+                $tables_html .= '                                    <th>Numero inventario</th>'."\n";
+                $tables_html .= '                                    <th>Data acquisto</th>'."\n";
+                $tables_html .= '                                    <th>Proprietario</th>'."\n";
+                $tables_html .= '                                    <th>A/I</th>'."\n";
+                $tables_html .= '                                </tr>'."\n";
+                $tables_html .= '                            </thead>'."\n";
+                $tables_html .= '                            <tbody>'."\n";
+            }
+
+            $tables_html .= '                                <tr>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{row_num}.'</td>'."\n";
+            if($active == 1){
+                $tables_html .= '                                    <td>'.$equip->{station_name}.'</td>'."\n";
+            }
+            $tables_html .= '                                    <td>'.$equip->{equip_name}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{equip_brand_model}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{equip_serial_num}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{equip_arpa_id}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{equip_delivery_date}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{equip_owner}.'</td>'."\n";
+            $tables_html .= '                                    <td>'.$equip->{row_icon}.'</td>'."\n";
+            $tables_html .= '                                </tr>'."\n";
+
+
+            $old_prov = $equip->{province_name}; 
+        }
+
+        $tables_html .= '                        </tbody>'."\n";
+        $tables_html .= '                        <tfoot>'."\n";
+        $tables_html .= '                            <tr>'."\n";
+        $tables_html .= '                                    <th>#</th>'."\n";
+        if($active == 1){
+            $tables_html .= '                                    <th>Stazione</th>'."\n";
+        }
+        $tables_html .= '                                    <th>Nome</th>'."\n";
+        $tables_html .= '                                    <th>Marca e modello</th>'."\n";
+        $tables_html .= '                                    <th>Numero di serie</th>'."\n";
+        $tables_html .= '                                    <th>Numero inventario</th>'."\n";
+        $tables_html .= '                                    <th>Data acquisto</th>'."\n";
+        $tables_html .= '                                    <th>Proprietario</th>'."\n";
+        $tables_html .= '                                    <th>A/I</th>'."\n";
+        $tables_html .= '                            </tr>'."\n";
+        $tables_html .= '                        </tfoot>'."\n";
+        $tables_html .= '                    </table>'."\n";
+        $tables_html .= '                    </td>'."\n";
+        $tables_html .= '                </tr>'."\n";
+        $tables_html .= '            </table>'."\n";
+        $tables_html .= '        </td>'."\n";
+        $tables_html .= '    </tr>'."\n";
+        $tables_html .= '    <tr>'."\n";
+        $tables_html .= '        <td>'."\n";
+        $tables_html .= '            <table align="center" cellpadding="0" cellspacing="10" border="0" style="width: 100%; max-width: 650px; font-size: 0.8em;">'."\n";
+        $tables_html .= '                <tr>'."\n";
+        $tables_html .= '                    <td>'."\n";
+        $tables_html .= '                        <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="left">'.$mod.'</p>'."\n";
+        $tables_html .= '                    </td>'."\n";
+        $tables_html .= '                    <td>'."\n";
+        $tables_html .= '                        <p style="font-size: 1.15em; margin: 0px 0px 10px;" align="right">aggiornato il '. $now->strftime("%d/%m/%Y") .'</p>'."\n";
+        $tables_html .= '                    </td>'."\n";
+        $tables_html .= '                </tr>'."\n";
+        $tables_html .= '            </table>'."\n";
+        $tables_html .= '        </td>'."\n";
+        $tables_html .= '    </tr>'."\n";
+        $tables_html .= '</table>'."\n";
+
+        $body_html .= $tables_html;
+
+
+        $body_html .= '</body>'."\n";
+        $body_html .= '</html>'."\n";
+
+        # get application path .../public/ path
+        my $app_path = $self->app->home->rel_file('public/downloads/arpae');
+        $self->app->log->debug("Application path: $app_path");
+
+        my $full_filename = "$app_path/$filename";
+        
+        open(FH, '>:encoding(utf-8)', $full_filename) or die $!;
+        print FH $body_html;
+        close(FH);
+
+        # copy file to remote server
+        if ($^O eq 'linux') {
+            eval {
+                $self->app->log->debug("[SCP] Copy html file to reverse server (dmz)");
+                my $dest_path = 'PATH';
+                my $proxy = 'Proxy';
+                # -T Disable strict filename checking
+                system("ls") or $self->app->log->warn("Scp failed: $!");
+            };
+
+            if ($@) {
+                $self->app->log->warning("[SCP] Command failed: $@");
+                # reply to 404 page
+                $self->reply->exception;
+            }
+            else { # all went file
+                $self->app->log->debug("[SCP] File copied");
+            }
+        }
+
+        # redirect if file exists
+        if (-e $full_filename) {
+            $self->reply->static("/downloads/arpae/$filename");
+        }
+        else {
+            $self->reply->exception;
+        }
+    };
+
+    # error check
+    if ($@) {
         $self->reply->exception;
     }
 }

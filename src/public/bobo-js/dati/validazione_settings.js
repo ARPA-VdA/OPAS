@@ -991,19 +991,35 @@ $(document).ready(function() {
 
         // reset selected cells and variable with modified cells
         $("#deselect-cells").trigger('click');
-
+        
         // enable / disable clipboard
         clipboardEnabled = ! clipboardEnabled;
 
         // change button classes and text based on clipboard status
         $("#val-clipboard").toggleClass('btn-secondary btn-danger');
-        if(clipboardEnabled)
+        if(clipboardEnabled){
             $("#val-clipboard").html('<i class="icon-note"></i> Mod. avanzata: ON');
+
+            var tabs = centralContainer.header.tabs;
+            var index = tabs.length-1;
+            // loop through all tabs
+            // for each tab call resetTab function
+            for(; index >= 1; index--) {
+                var tab = tabs[index];
+
+                resetTab(tab.contentItem);
+            };
+            // reset global variables
+            counter = 0;
+            chart = [];
+            table = [];
+        }
         else
             $("#val-clipboard").html('<i class="icon-note"></i> Mod. avanzata: OFF');
 
         // toggle class on maintable container
         $("#maintable-container").toggleClass('clipboard-enabled');
+
         // show / hide copy-save-canc-info buttons
         $('.clipboard-hide').toggle();
     });
@@ -1014,8 +1030,9 @@ $(document).ready(function() {
 
         // if table is initialized then copy active rows
         // "active" - Rows currently in the table (rows that pass current filters etc)
-        if(maintable)
-            maintable.copyToClipboard("active");
+        if(maintable){
+            maintable.copyToClipboard();
+        }
     });
 
     // button visibile only with "clipboard" option enabled
@@ -1031,21 +1048,6 @@ $(document).ready(function() {
     // button visibile only with "clipboard" option enabled
     $("#val-clipboard-canc").on('click', function(e){
         e.preventDefault();
-
-        // for each selected cell, restore initial value and remove classes
-        // selectedCells.forEach(function(cell, idx){
-
-        //     console.log('restore value');
-        //     cell.restoreInitialValue();
-
-        //     console.log('classlist remove');
-        //     cell.getElement().classList.remove('cell-modified');
-        //     setClasses(cell);
-        // });
-
-        // // reset selected cells and variable with modified cells
-        // $("#deselect-cells").trigger('click');
-        // modifiedCells = [];
 
         // ACK for by-passing initialValue bug of Tabulator
         $('#update-data').trigger('click');
@@ -1081,13 +1083,13 @@ $(document).ready(function() {
     $("#deselect-cells").on('click', function(e){
         e.preventDefault();
 
-        // loop through selected cells
-        // for each cell remove class "selected"
-        for(var i = 0; i< selectedCells.length; i++){
-            selectedCells[i].getElement().classList.remove('cell-selected');
-            // set classes based on the validity of the value - validazione.js
-            setClasses(selectedCells[i]);
+        if( selectedCells.length > 0 ){
+            let cell = selectedCells[0];
+            cell.getTable().getRanges().forEach(function(range){
+                range.remove();
+            });
         }
+
         // reset global array
         selectedCells = [];
         // hide button

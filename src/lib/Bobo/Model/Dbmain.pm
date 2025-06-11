@@ -31,7 +31,8 @@ sub user_login {
     my $sql = qq{
         SELECT
             user_id,
-            user_name || ' ' || COALESCE(user_second_name, '') || ' ' || user_surname AS user_fullname
+            user_name || ' ' || COALESCE(user_second_name, '') || ' ' || user_surname AS user_fullname,
+            user_sys_admin
         FROM
             bobo.view_user_authentication
         WHERE
@@ -498,6 +499,33 @@ sub get_shortcuts {
 # -----------------------------------------------------------------------------
 # PAGE
 # -----------------------------------------------------------------------------
+sub get_sys_admin_options{
+    my ( $self ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbmain sub get_sys_admin_options");
+
+    # query
+    my $sql = qq{
+        WITH t AS (
+            SELECT
+                go_obj
+            FROM
+                bobo_tools.general_options
+            WHERE
+                go_tool = 'sysadmin'
+        )
+        SELECT t.go_obj
+        FROM t
+        UNION ALL
+        SELECT '{}'::jsonb
+        WHERE NOT EXISTS (SELECT 1 FROM t);
+    };
+
+    # return
+    $self->pg->db->query($sql)->hash->{'go_obj'};
+}
+
 sub get_portal_page_options {
     my ( $self, $portal_id, $active_page ) = @_;
 
@@ -534,6 +562,35 @@ sub get_portal_page_options {
     # return
     $self->pg->db->query($sql, $portal_id, $active_page)->hash->{'po_obj'};
 }
+
+sub insert_sys_admin_options{
+    my( $self, $obj ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbmain sub insert_sys_admin_options");
+
+    # query
+    my $sql = qq{
+        INSERT INTO bobo_tools.general_options 
+            (go_tool, go_obj)
+        VALUES
+            ( 'sysadmin', ?::jsonb )
+        ON CONFLICT ON CONSTRAINT bobo_tools_general_options_ukey
+        DO UPDATE
+            SET go_obj = EXCLUDED.go_obj;
+    };
+
+    # check result and return
+    if ($self->pg->db->query($sql, $obj))
+    {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+
 
 1;
 
@@ -703,6 +760,16 @@ Return:     Risultato della query;
 
 =cut
 
+=head1 get_sys_admin_options
+
+Funzione che recupera le opzioni di sistema settate dal System Admin.
+
+Argomenti:  /
+
+Return:     Risultato della query;
+
+=cut
+
 =head1 get_portal_page_options
 
 Funzione che recupera le opzioni relative alla pagina attualmente visualizzata
@@ -713,5 +780,19 @@ Argomenti:  * id del portale ('portal_id');
            * url della pagina attualmente visualizzata ('active_page');
 
 Return:     Risultato della query;
+
+=cut
+
+=head1 insert_sys_admin_options
+
+Funzione che inserisce nel db le impostazioni settate dal System Admin sottoforma di jsonb
+
+Argomenti:  * oggetto contenente le modifiche relative alle impostazioni ('obj');
+
+Return:     valore 1/0:
+
+                - 1: OK
+
+                - 0: ERRORE
 
 =cut

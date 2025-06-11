@@ -1,7 +1,9 @@
 import Module from '../../core/Module.js';
 import Helpers from '../../core/tools/Helpers.js';
 
-class MoveColumns extends Module{
+export default class MoveColumns extends Module{
+
+	static moduleName = "moveColumn";
 	
 	constructor(table){
 		super(table);
@@ -37,15 +39,20 @@ class MoveColumns extends Module{
 	initialize(){
 		if(this.table.options.movableColumns){
 			this.subscribe("column-init", this.initializeColumn.bind(this));
+			this.subscribe("alert-show", this.abortMove.bind(this));
 		}
+	}
+
+	abortMove(){
+		clearTimeout(this.checkTimeout);
 	}
 	
 	initializeColumn(column){
 		var self = this,
 		config = {},
 		colEl;
-		
-		if(!column.modules.frozen && !column.isGroup){
+
+		if(!column.modules.frozen && !column.isGroup && !column.isRowHeader){
 			colEl = column.getElement();
 			
 			config.mousemove = function(e){
@@ -167,6 +174,13 @@ class MoveColumns extends Module{
 		headerElement = this.table.columnManager.getContentsElement(),
 		headersElement = this.table.columnManager.getHeadersElement();
 		
+		//Prevent moving columns when range selection is active
+		if(this.table.modules.selectRange && this.table.modules.selectRange.columnSelection){
+			if(this.table.modules.selectRange.mousedown && this.table.modules.selectRange.selecting === "column"){
+				return;
+			}
+		}
+
 		this.moving = column;
 		this.startX = (this.touchMove ? e.touches[0].pageX : e.pageX) - Helpers.elOffset(element).left;
 		
@@ -196,6 +210,8 @@ class MoveColumns extends Module{
 		}
 		
 		this.moveHover(e);
+
+		this.dispatch("column-moving", e, this.moving);
 	}
 	
 	_bindMouseMove(){
@@ -252,7 +268,7 @@ class MoveColumns extends Module{
 			if(this.toCol){
 				this.table.columnManager.moveColumnActual(this.moving, this.toCol, this.toColAfter);
 			}
-			
+
 			this.moving = false;
 			this.toCol = false;
 			this.toColAfter = false;
@@ -293,7 +309,3 @@ class MoveColumns extends Module{
 		}
 	}
 }
-
-MoveColumns.moduleName = "moveColumn";
-
-export default MoveColumns;

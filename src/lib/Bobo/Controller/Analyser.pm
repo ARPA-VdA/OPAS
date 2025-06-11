@@ -137,9 +137,20 @@ sub get_analyser_groups {
     $self->app->log->debug("Bobo::Controller::Analyser sub get_analyser_groups");
 
     my $user_id = $self->session('it.ecometer.bobo');
+    my $options = $self->req->query_params->to_hash->{options};
+
+    if(defined $options){
+        $options = decode_json(encode_utf8($options));
+    }
+    else{
+        my $user_opt = $self->dbanalyser->get_analyser_user_options($user_id);
+        if(defined $user_opt){
+            $options = decode_json(encode_utf8($user_opt->{'option_object'}));
+        }
+    }
 
     # get groups for the construction of the jstree
-    my $groups = $self->dbanalyser->get_analyser_groups($user_id);
+    my $groups = $self->dbanalyser->get_analyser_groups($user_id, $options);
 
     if (defined $groups) {
         # $self->helperDumper( decode_json(encode_utf8($groups)) );
@@ -229,6 +240,89 @@ sub get_params_type {
 
     # get params by station id for the construction of the jstree
     my $params = $self->dbanalyser->get_params_type($nodeid, $stid, $type, $options);
+
+    if (defined $params) {
+        # $self->helperDumper( decode_json(encode_utf8($params)) );
+        $self->render(json => decode_json(encode_utf8($params)));
+    }
+    else {
+        $self->render(json => []);
+    }
+}
+
+sub get_allocations {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Analyser sub get_allocations");
+
+    # dump
+    $self->helperDumper($self->req->query_params->to_hash);
+
+    my $user_id = $self->session('it.ecometer.bobo');
+
+    # get group id
+    my $nodeid = $self->req->query_params->to_hash->{nodeid};
+    my $from = $self->req->query_params->to_hash->{from};
+    my $to = $self->req->query_params->to_hash->{to};
+
+    # get stations by group id for the construction of the jstree
+    my $allocations = $self->dbanalyser->get_allocations($nodeid, $user_id, $from, $to);
+
+    if (defined $allocations) {
+        $self->render(json => decode_json(encode_utf8($allocations)));
+    }
+    else {
+        $self->render(json => {
+            'icon'=> 'ti-pin' ,
+            'text'=> 'Nessuno stanziamento nel periodo selezionato'
+        });
+    }
+}
+
+sub get_allocation_params {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Analyser sub get_allocation_params");
+
+    $self->helperDumper($self->req->query_params->to_hash);
+
+    my $stid = $self->req->query_params->to_hash->{id};
+    my $nodeid = $self->req->query_params->to_hash->{nodeid};
+    my $options = decode_json(encode_utf8($self->req->query_params->to_hash->{options}));
+
+    $self->app->log->debug("Got stid: $stid");
+
+    # get params by station id for the construction of the jstree
+    my $params = $self->dbanalyser->get_allocation_params($nodeid, $stid, $options);
+
+    if (defined $params) {
+        # $self->helperDumper( decode_json(encode_utf8($params)) );
+        $self->render(json => decode_json(encode_utf8($params)));
+    }
+    else {
+        $self->render(json => []);
+    }
+}
+
+sub get_allocation_params_type {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Analyser sub get_allocation_params_type");
+
+    $self->helperDumper( $self->req->query_params->to_hash);
+
+    my $stid = $self->req->query_params->to_hash->{id};
+    my $type = $self->req->query_params->to_hash->{type};
+    my $nodeid = $self->req->query_params->to_hash->{nodeid};
+    my $options = decode_json(encode_utf8($self->req->query_params->to_hash->{options}));
+
+    $self->app->log->debug("Got stid: $stid");
+
+    # get params by station id for the construction of the jstree
+    my $params = $self->dbanalyser->get_allocation_params_type($nodeid, $stid, $type, $options);
 
     if (defined $params) {
         # $self->helperDumper( decode_json(encode_utf8($params)) );

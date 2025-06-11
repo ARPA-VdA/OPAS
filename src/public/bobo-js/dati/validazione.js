@@ -15,11 +15,8 @@ var clipboardEnabled = false;
 var rightClickCell;
 var modifiedCells = [];
 
-document.body.style.MozUserSelect="none"
-
 $(document)
 .mousedown(function(e){
-    // $(".tabulator-cell").removeClass('cell-selected');
     // if event is a single-click
     if(e.which === 1){
         isMouseDown = true;
@@ -97,7 +94,6 @@ function getValidationHistory(cell){
             // cell codes and modifications history
             var codes = result.codes;
             var dataChanges = result.history;
-            console.dir(dataChanges);
 
             // codes from the periphery
             if(codes.periphery_codes.length > 0){
@@ -249,7 +245,7 @@ function getValidationHistory(cell){
  * @param {object} cell2 last cell
  * @param {object} tbl table
  */
-function selectCells(cell1, cell2, tbl){
+function old_selectCells(cell1, cell2, tbl){
     // reset selected cell
     for(var i = 0; i< selectedCells.length; i++){
         selectedCells[i].getElement().classList.remove('cell-selected');
@@ -394,12 +390,16 @@ function createTable(result){
     }
 
     // build object for the first column containing data dates
-    column_fulldate = {
+    var column_fulldate = {
         title: "Data",
         field: "fulldate",
         minWidth: 150,
+        hozAlign:"center",
         frozen: true,
+        editable: false,
         headerTooltip:false,
+        // headerSort:false,
+        // resizable:false,
         formatter:function(cell, formatterParams, onRendered){
             //cell - the cell component
             //formatterParams - parameters set for the column
@@ -414,9 +414,11 @@ function createTable(result){
 
             var index = moment(cell.getValue()).unix();
             var icon = '';
+
+            var element = cell.getElement();
+            // element.classList.add('range-header-col');
             // if there alarms for current date then add tooltip attributes
             if(alarms[index]){
-                var element = cell.getElement();
                 element.classList.add('cell-alarm');
                 element.setAttribute('data-toggle-table', 'tooltip');
                 element.setAttribute('data-html', 'true');
@@ -429,23 +431,20 @@ function createTable(result){
         }
     };
 
-    // push first column to columns array
-    columns.push(column_fulldate);
-
     // loop through alla parameters
     // for each parameter build a column of the table
     $.each(result.params, function (data_key, data_value) {
-
         var column_name = data_value.column_name;
 
         column_obj = {
             title: column_name,
             field: 'field_'+data_key,
-            headerSort: false,
+            // headerSort: false,
             editor: 'number',
             editorParams: {
                 // default
                 step: Math.pow(10, -data_value.parameter_decimals),
+                selectContents: true,
                 // additional
                 id: data_value.station_param_id,
                 tableid: data_value.station_param_table_id,
@@ -456,7 +455,35 @@ function createTable(result){
                 insertGrant: data_value.station_insert,
                 updateGrant: data_value.station_update
             },
-            editable:false,
+            // at double click event check if all conditions are respected and enable (or not) edit action
+            // event that triggers edit action is defined in tabulator initialization with the property editTriggerEvent
+            editable: function(cell){
+                // if clipboard is enabled then disable all other events
+                if(clipboardEnabled == true)
+                    return false;
+        
+                var cellDate = cell.getRow().getCells()[0].getValue();
+                // check if value date is before closure date (portal options)
+                // - if true then select do nothing
+                // - else continue
+                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
+                    return false;
+                }
+        
+                // data not present in the database => insert action
+                if(cell.getValue() == '--'){
+                    if( insert_grant && data_value.station_insert && !cell.getElement().classList.contains('tabulator-editing')){
+                        return true;
+                    }
+                } // data present in the database => update action
+                else{
+                    if( update_grant && data_value.station_update && !cell.getElement().classList.contains('tabulator-editing')){
+                        return true;
+                    }
+                }
+    
+                return false;
+            },
             formatterParams: {
                 position: data_key,
 
@@ -477,16 +504,16 @@ function createTable(result){
                 return cell.getValue();
             },
             formatterClipboard: function(cell, formatterParams, onRendered){
-                // if value is equal to -- then returns an empty string
-                return cell.getValue() == '--' ? '' : cell.getValue();
+                // replace decimal separator for excel compatibility
+                return cell.getValue().replace('.', ',');;
             },
             // format values entered via clipboard or manually
             mutatorEditParams: {
                 decimals: data_value.parameter_decimals
             },
-            mutatorClipboard: function(value, data, type, params, column){
-                return (value == '' || value == '\r') ? '--' : value;
-            },
+            // mutatorClipboard: function(value, data, type, params, column){
+            //     return (value == '' || value == '\r') ? '--' : value;
+            // },
             mutatorEdit : function(value, data, type, params, cell){
                 var val = parseFloat(value);
                 if(isNaN(val))
@@ -498,89 +525,24 @@ function createTable(result){
             // click event
             cellClick:function(e, cell){
                 // if clipboard is enabled then disable all other events
-                if(clipboardEnabled)
-                    return;
+                if(clipboardEnabled){
+                    e.preventDefault();
+                    return false;
+                }
+
                 // if single click then select current cell and get value's modification history
                 if (e.detail == 1) {
-
-                    for(var i = 0; i< selectedCells.length; i++){
-                        selectedCells[i].getElement().classList.remove('cell-selected');
-                        setClasses(selectedCells[i]);
-                    }
-                    selectedCells = [];
-
-                    cell.getElement().classList.add('cell-selected');
-                    setClasses(cell);
-                    // select cell
-                    selectedCells.push(cell);
-
                     // get cell validation history
                     getValidationHistory(cell);
                 }
             },
-            // mouse move event
-            cellMouseMove:function(e, cell){
-                // if clipboard is enabled then disable all other events
-                if(clipboardEnabled == true || $('.tabulator-editing').length > 0 )
-                    return;
-
-                var cellDate = cell.getRow().getCells()[0].getValue();
-                // check if value date is before closure date (portal options)
-                // - if true then select do nothing
-                // - else continue
-                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
-                    return;
-                }
-
-                // if mouse's left button is pressed then set variables of the selection action
-                if(isMouseDown){
-                    // if first cell is empty then the current one is the first
-                    if(firstCell == null){
-                        // reset left-bottom box
-                        $("#codes-detail").empty();
-                        $("#changes-detail").empty();
-                        firstCell = cell;
-                    }
-                    // store current cell as last one of the selection
-                    var lastCell = cell;
-                    // select cells
-                    selectCells(firstCell, lastCell, firstCell.getTable());
-                    // show button
-                    $("#deselect-cells").show();
-                }
-            },
-            // double click event
-            cellDblClick:function(e, cell){
-                // if clipboard is enabled then disable all other events
-                if(clipboardEnabled == true)
-                    return;
-
-                var cellDate = cell.getRow().getCells()[0].getValue();
-                // check if value date is before closure date (portal options)
-                // - if true then select do nothing
-                // - else continue
-                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
-                    return;
-                }
-
-                // if it is a double click action then enable edit cell
-                if(e.detail == 2){
-                    // data not present in the database => insert action
-                    if(cell.getValue() == '--'){
-                        if( insert_grant && data_value.station_insert && !cell.getElement().classList.contains('tabulator-editing')){
-                            cell.edit(true);
-                        }
-                    } // data present in the database => update action
-                    else{
-                        if( update_grant && data_value.station_update && !cell.getElement().classList.contains('tabulator-editing')){
-                            cell.edit(true);
-                        }
-                    }
-                }
-
-            },
             // right click event
             cellContext:function(e, cell){
+                // if clipboard is enabled then disable all other events
+                if(clipboardEnabled){
+                    e.preventDefault();
+                    return false;
+                }
 
                 // get metadata stored in the column definition
                 var column = cell.getColumn();
@@ -615,34 +577,41 @@ function createTable(result){
             // at the end of the process hide preloader
             $('.preloader').hide();
         });
-        // maintable.on('renderComplete', function(){
-        //     maintable.setData(result.data);
-        //     $('.preloader').hide();
-        // });
     }
     // otherwise initialize tabulator
     else{
         maintable = new Tabulator("#maintable-container", {
             locale: 'it',
-            autoResize:false,
+            height: '100%',
+            layout: "fitData", //fitColumn
+            autoResize: false,
+
             keybindings:{
                 "copyToClipboard" : false
             },
-            // debugEventsInternal:["edit-success"],
-            // debugInvalidOptions: false,
-            // renderVerticalBuffer:100,
-            // tooltipGenerationMode:"hover",
-            height:'100%',
-            data: result.data,
-            layout:"fitData", //fitColumn
-            columns: columns,
-            index:"fulldate",
+
+            // debug
+            debugInvalidOptions: true,
+            
+            // pagination
             pagination: !clipboardEnabled, //true,
             paginationMode: "local",
             paginationSize: (result.data.length/(numberDays+1)),
             paginationSizeSelector:true,
             history:true,
+            
+            // select
+            selectableRange: true, // Enable/Disable range selection
+            selectableRangeColumns: false, // Enable/ Disable range column header selection
+            selectableRangeRows: true, // Enable/Disable range row header selection
+            selectableRangeClearCells: false, // Enable clearing of all values in a range
+            selectableRangeAutoFocus:false, // disable auto focus on cell during range selection
+         
+            //change edit trigger mode to make cell navigation smoother
+            editTriggerEvent: "dblclick", //trigger edit on double click
+            // clipboard
             clipboard:true,
+            clipboardCopyRowRange: "active",
             clipboardCopyStyled:false,
             clipboardPasteAction: function(rowsData){
                 // if clipboard not enabled then disable paste event
@@ -657,7 +626,10 @@ function createTable(result){
                 // for each row in clipboard
                 // retrieve the corresponding row to be replaced in the maintable
                 rowsData.forEach(function(el, idx){
-                    if(el.fulldate && el.fulldate != ""){
+                    // console.log('RIGA: ' +idx);
+                    // console.dir(el);
+
+                    if(el.fulldate && el.fulldate != "" && el.fulldate != "Data"){
 
                         // check if value date is before closure date (portal options)
                         // - if true then select do nothing
@@ -666,7 +638,7 @@ function createTable(result){
                             return;
                         }
 
-                        // retrive row by fulldate
+                        // retrieve row by fulldate
                         var row = maintable.getRow(moment(el.fulldate, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm:ss'));
 
                         // if row exists then replace values
@@ -675,7 +647,7 @@ function createTable(result){
                             var cells = row.getCells();
 
                             if(cells.length == Object.keys(el).length ){
-                                cells.forEach(function(cell, idx2){
+                                cells.forEach(function(cell){
 
                                     res = true;
                                     // replace only cells containing pollutants value
@@ -747,7 +719,39 @@ function createTable(result){
 
                 return;
             },
-            placeholder:"Nessun dato"
+            
+            rowHeader: column_fulldate,
+
+            columnDefaults:{
+                headerSort:false,
+                resizable:"header",
+            },
+            columns: columns,
+            index: "fulldate",
+
+
+            placeholder:"Nessun dato",
+            data: result.data
+        });
+
+        // the rangeChanged event is triggered when the bounds of an existing range are changed.
+        maintable.on("rangeChanged", function(){
+            selectedCells = [];
+
+            //range - range component for the selected range
+            maintable.getRanges().forEach(function(range){
+                range.getCells().forEach(function(row){
+                    row.forEach(function(cell){
+                        if(cell.getField() != 'fulldate')
+                            selectedCells.push(cell);
+                    });
+                });
+            });
+
+            if(! clipboardEnabled){
+                // show button
+                $("#deselect-cells").show();
+            }
         });
 
         maintable.on('cellEdited', function(cell){
@@ -793,6 +797,7 @@ function createTable(result){
 
         // event triggered when active rows are copied in the clipboard
         maintable.on("clipboardCopied", function(clipboard){
+            console.log('clipboardCopied');
             //clipboard - the string that has been copied into the clipboard
             $.toast({
                 heading: 'Informazione',
@@ -839,7 +844,7 @@ function createTable(result){
                 // data structure
                     // {
                     //     oldValue:"", //the original value of the cell
-                    //     newValue:"", //the nev value of the cell
+                    //     newValue:"", //the new value of the cell
                     // }
                 var definition = component.getColumn().getDefinition();
                 var cellElement = {
@@ -1018,34 +1023,28 @@ function createDetailedChart(datetime, data){
                 point: {
                     events: {
                         select: function(){
-                            console.log('select');
                             var date = this.x;
                             var datetime = moment.utc(date).format('YYYY-MM-DD HH:mm:ss');
-                            console.log(datetime);
-
-                            // reset selected cell
-                            for(var i = 0; i< selectedCells.length; i++){
-                                selectedCells[i].getElement().classList.remove('cell-selected');
-                                setClasses(selectedCells[i]);
-                            }
-                            selectedCells = [];
 
                             if(table[componentState.id]){
+
                                 var row = table[componentState.id].getRow(datetime);
 
+                                // Add range via tabulator methods
+                                let topLeft = row.getCell('fulldate');
+                                let bottomRight = row.getCell('max');
+                                
+                                table[componentState.id].addRange(topLeft, bottomRight);
                                 table[componentState.id].scrollToRow(datetime, 'middle', true);
-                                row.getElement().classList.add('row-highlighted');
 
-                                var cell = row.getCells()[1];
+                                table[componentState.id].getRanges()[0].remove();
 
-                                // select cell
-                                cell.getElement().classList.add('cell-selected');
-                                setClasses(cell);
+                                var cell = row.getCell('value');
+                                selectedCells = [];
                                 selectedCells.push(cell);
                             }
                         },
                         unselect: function(){
-                            console.log('unselect');
                             var date = this.x;
                             var datetime = moment.utc(date).format('YYYY-MM-DD HH:mm:ss');
                             console.log(datetime);
@@ -1163,22 +1162,27 @@ function createDetailedTable(datetime, result){
     var stationData = JSON.parse(result.chart_data.station_data);
 
     var unit = componentState.conv ? metadata.parameter_unit_conv : metadata.parameter_unit;
+
+    var column_fulldate = {
+        title: "Data",
+        field: "fulldate",
+        minWidth: 150,
+        frozen: true,
+        headerSort: false,
+        formatter:function(cell, formatterParams, onRendered){
+            //cell - the cell component
+            //formatterParams - parameters set for the column
+            //onRendered - function to call when the formatter has been rendered
+            return getFormattedDateDT(cell.getValue(), 'basic_timeStartMin'); //global.js
+        },
+    };
+
     // build columns objects for tabulator initialization
     columns = [
         {
-            title: "Data",
-            field: "fulldate",
-            frozen: true,
-            formatter:function(cell, formatterParams, onRendered){
-                //cell - the cell component
-                //formatterParams - parameters set for the column
-                //onRendered - function to call when the formatter has been rendered
-                return getFormattedDateDT(cell.getValue(), 'basic_timeStartMin'); //global.js
-            },
-        },
-        {
             field: 'value',
-            headerSort: false,
+            title: metadata.parameter_name+' ['+unit+']',
+            // headerSort: false,
             editor: 'number',
             editorParams: {
                 // default
@@ -1192,9 +1196,37 @@ function createDetailedTable(datetime, result){
                 decimals: metadata.parameter_decimals,
                 insertGrant: metadata.station_insert,
                 updateGrant: metadata.station_update,
-                title: metadata.parameter_name+' ['+unit+']',
+                // title: metadata.parameter_name+' ['+unit+']',
             },
-            editable:false,
+            // at double click event check if all conditions are respected and enable (or not) edit action
+            // event that triggers edit action is defined in tabulator initialization with the property editTriggerEvent
+            editable: function(cell){
+                // if clipboard is enabled then disable all other events
+                if(clipboardEnabled == true)
+                    return false;
+        
+                var cellDate = cell.getRow().getCells()[0].getValue();
+                // check if value date is before closure date (portal options)
+                // - if true then select do nothing
+                // - else continue
+                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
+                    return false;
+                }
+        
+                // data not present in the database => insert action
+                if(cell.getValue() == '--'){
+                    if( insert_grant && metadata.station_insert && !cell.getElement().classList.contains('tabulator-editing')){
+                        return true;
+                    }
+                } // data present in the database => update action
+                else{
+                    if( update_grant && metadata.station_update && !cell.getElement().classList.contains('tabulator-editing')){
+                        return true;
+                    }
+                }
+    
+                return false;
+            },
             formatterParams: {
                 position: null
             },
@@ -1226,85 +1258,21 @@ function createDetailedTable(datetime, result){
                 // if clipboard is enabled then disable all other events
                 if(clipboardEnabled)
                     return;
+                // if single click then select current cell and get value's modification history
+                if (e.detail == 1) {
 
-                // reset selected cell
-                for(var i = 0; i< selectedCells.length; i++){
-                    selectedCells[i].getElement().classList.remove('cell-selected');
-                    setClasses(selectedCells[i]);
-                }
-                selectedCells = [];
+                    // get cell validation history
+                    getValidationHistory(cell);
+                    
+                    // get cell date in seconds
+                    var date = moment.utc(cell.getRow().getCell('fulldate').getValue()).valueOf();
 
-                // select cell
-                cell.getElement().classList.add('cell-selected');
-                setClasses(cell);
-                selectedCells.push(cell);
-
-                var date = moment.utc(cell.getRow().getCells()[0].getValue()).valueOf();
-                // highlight point on chart
-                chart[componentState.id].series[0].data.forEach(function(point, idx){
-                    if (point.x == date ){
-                        chart[componentState.id].series[0].data[idx].select(true);
-                    }
-                });
-
-                // get cell validation history
-                getValidationHistory(cell);
-            },
-            cellMouseMove:function(e, cell){
-                // if clipboard is enabled then disable all other events
-                if(clipboardEnabled == true || $('.tabulator-editing').length > 0 )
-                    return;
-
-                var cellDate = cell.getRow().getCells()[0].getValue();
-                // check if value date is before closure date (portal options)
-                // - if true then select do nothing
-                // - else continue
-                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
-                    return;
-                }
-
-                // if mouse's left button is pressed then set variables of the selection action
-                if(isMouseDown){
-                    // if first cell is empty then the current one is the first
-                    if(firstCell == null){
-                        // reset left-bottom box
-                        $("#codes-detail").empty();
-                        $("#changes-detail").empty();
-                        firstCell = cell;
-                    }
-                    // store current cell as last one of the selection
-                    var lastCell = cell;
-                    // select cells
-                    selectCells(firstCell, lastCell, firstCell.getTable());
-                    // show button
-                    $("#deselect-cells").show();
-                }
-            },
-            cellDblClick:function(e, cell){
-                // if clipboard is enabled then disable all other events
-                if(clipboardEnabled)
-                    return;
-
-                var cellDate = cell.getRow().getCells()[0].getValue();
-                // check if value date is before closure date (portal options)
-                // - if true then select do nothing
-                // - else continue
-                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
-                    return;
-                }
-
-                if(e.detail == 2){
-                    // data not present in the database => insert action
-                    if(cell.getValue() == '--'){
-                        if( insert_grant && metadata.station_insert && !cell.getElement().classList.contains('tabulator-editing')){
-                            cell.edit(true);
+                    // highlight point on chart
+                    chart[componentState.id].series[0].data.forEach(function(point, idx){
+                        if (point.x == date ){
+                            chart[componentState.id].series[0].data[idx].select(true);
                         }
-                    } // data present in the database => update action
-                    else{
-                        if( update_grant && metadata.station_update && !cell.getElement().classList.contains('tabulator-editing')){
-                            cell.edit(true);
-                        }
-                    }
+                    });
                 }
             }
         }
@@ -1316,7 +1284,7 @@ function createDetailedTable(datetime, result){
             {
                 title: 'Min',
                 field: 'min',
-                headerSort: false
+                // headerSort: false
             }
         );
     }
@@ -1327,7 +1295,7 @@ function createDetailedTable(datetime, result){
             {
                 title: 'Max',
                 field: 'max',
-                headerSort: false
+                // headerSort: false
             }
         );
     }
@@ -1340,26 +1308,42 @@ function createDetailedTable(datetime, result){
         keybindings:{
             "copyToClipboard" : false
         },
-        columns: columns,
-        index:"fulldate",
         layout:"fitColumns", //fitColumns
         placeholder:"Nessun dato",
-        rowFormatter:function(row){
-            var fulldate = row.getData()["fulldate"];
+        editTriggerEvent:"dblclick", //trigger edit on double click
 
-            if(fulldate == datetime){
-                row.getElement().classList.add('row-highlighted');
-            }
-        }
+        // select
+        selectableRange: true, // Enable/Disable range selection
+        selectableRangeColumns: false, // Enable/ Disable range column header selection
+        selectableRangeRows: true, // Enable/Disable range row header selection
+        selectableRangeClearCells: false, // Enable clearing of all values in a range
+        selectableRangeAutoFocus:false, // disable auto focus on cell during range selection
+
+        rowHeader: column_fulldate,
+
+        columnDefaults:{
+            headerSort:false,
+            resizable:"header",
+        },
+        columns: columns,
+        index: "fulldate",
     });
 
-    // at the end of table construction, add data and scroll view to right-clicked data
-    table[componentState.id].on('tableBuilt', function(){
-        table[componentState.id].setData(data);
-        console.log(datetime);
-        table[componentState.id].getRow(datetime).scrollTo();
-        // at the end of the process hide preloader
-        $('.preloader').hide();
+    // the rangeChanged event is triggered when the bounds of an existing range are changed.
+    table[componentState.id].on("rangeChanged", function(){
+        console.log('rangeChanged');
+
+        selectedCells = [];
+
+        //range - range component for the selected range
+        table[componentState.id].getRanges().forEach(function(range){
+            range.getCells().forEach(function(row){
+                row.forEach(function(cell){
+                    if(cell.getField() != 'fulldate' && cell.getField() != 'min' && cell.getField() != 'max')
+                        selectedCells.push(cell);
+                });
+            });
+        });
     });
 
     table[componentState.id].on('cellEdited', function(cell){
@@ -1399,6 +1383,30 @@ function createDetailedTable(datetime, result){
         cell.clearEdited();
         cell.getElement().classList.remove('tabulator-editing');
     });
+
+    // at the end of table construction, add data and scroll view to right-clicked data
+    table[componentState.id].on('tableBuilt', function(){
+        table[componentState.id].setData(data);
+        table[componentState.id].getRow(datetime).scrollTo();
+
+        let row = table[componentState.id].getRow(datetime);
+        // Add range via tabulator methods
+        let topLeft = row.getCell('fulldate');
+        let bottomRight = row.getCell('max');
+        
+        row.getTable().addRange(topLeft, bottomRight);
+
+        var cell = row.getCell('value');
+        selectedCells = [];
+        selectedCells.push(cell);
+
+        table[componentState.id].getRanges()[0].remove();
+
+        // at the end of the process hide preloader
+        $('.preloader').hide();
+    });
+
+    
 }
 /////////////////////////////////////////////////////////////////////////
 // END LOCAL FUNCTIONS
@@ -1611,6 +1619,10 @@ function updateCells(cellArray, clipboardSave){
     var activeTabElement = centralContainer.header.activeContentItem;
     var componentState = activeTabElement.config.componentState;
 
+    // new variable used as a copy to format the cells on the return of the updates
+    // before the main variable is overwritten
+    let copySelectedCells = selectedCells;
+
     // ajax call
     var jqxhr = $.ajax({
         url: '/dat_val_put_cells',
@@ -1631,9 +1643,9 @@ function updateCells(cellArray, clipboardSave){
             if(clipboardSave != true){
                 // loop through all selected cells
                 // for each element take care of classes
-                selectedCells.forEach(function(cell, index) {
-
-                     //only if user has insert or edit permission
+                copySelectedCells.forEach(function(cell, index) {
+                    
+                    //only if user has insert or edit permission
                     if( cellArray[index].grant == 1 ){
                         var value = cellArray[index].value;
                         var cellClass;

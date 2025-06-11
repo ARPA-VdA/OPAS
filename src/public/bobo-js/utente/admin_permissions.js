@@ -347,7 +347,7 @@ $(document).ready(function() {
             arrayGroups = user.groups_id;
 
             // Create nav-link
-            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#user'+user.user_id+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+user.user_fullname+'</span>&nbsp&nbsp<i class="fa fa-times text-danger user-close-view" data-close="user'+user.user_id+'"></i></a> </a> </li>';
+            var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#user'+user.user_id+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+user.user_fullname+'</span>&nbsp&nbsp<i class="fa fa-times text-danger user-close-view" data-close="user'+user.user_id+'"></i></a> </a> </li>';
             $('.big-nav').append(html);
 
             // create tab's content

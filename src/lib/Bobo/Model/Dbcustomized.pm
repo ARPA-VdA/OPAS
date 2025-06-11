@@ -47,6 +47,132 @@ sub get_arpae_validators {
     return $self->pg->db->query($sql)->hash->{'body'};
 }
 
+sub get_arpae_stations {
+    my ( $self, $type ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbcustomized sub get_arpae_stations");
+    
+    # query
+    my $sql = qq{
+        SELECT
+            STRING_AGG(
+                '<tr>'||E'\n'
+                ||'    <td>'||st_num||'</td>'||E'\n'
+                ||'    <td>'||st_arpa_id||'</td>'||E'\n'
+                ||'    <td>'||st_eu_id||'</td>'||E'\n'
+                ||'    <td>'||st_name||'</td>'||E'\n'
+                ||'    <td>'||st_address||'</td>'||E'\n'
+                ||'    <td>'||st_lat_wgs84||'</td>'||E'\n'
+                ||'    <td>'||st_lon_wgs84||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_pm10 IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_pm25 IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_nox  IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_co   IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_btx  IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_so2  IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td align="center">'||( CASE WHEN st_o3   IS TRUE THEN '✔' ELSE '-' END )||'</td>'||E'\n'
+                ||'    <td>'||st_type||'</td>'||E'\n'
+                ||'    <td>'||st_zone||'</td>'||E'\n'
+                ||'</tr>'||E'\n'
+            , '') AS body,
+
+            '<tr style="font-weight: 600;font-size:1.1rem;color: #4f727b;">'||E'\n'
+            ||'    <td colspan="3"></td>'||E'\n'
+            ||'    <td colspan="4">N° totale stazioni: '||MAX(tot_stations)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_pm10)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_pm25)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_nox)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_co)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_btx)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_so2)||'</td>'||E'\n'
+            ||'    <td align="center">'||MAX(tot_o3)||'</td>'||E'\n'
+            ||'    <td colspan="2"></td>'||E'\n'
+            ||'</tr>'||E'\n' AS totals
+            
+        FROM
+            metadata.view_custom_arpae_stations
+        WHERE 
+            st_group = ?
+    };
+
+    # return
+    return $self->pg->db->query($sql, $type)->hash;
+}
+
+sub get_arpae_active_equipments{
+    my ( $self, $prov ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbcustomized sub get_arpae_active_equipments");
+
+    $prov = ($prov ne 'ALL' ? "^$prov\$": ".*");
+
+    my $sql = qq{
+        SELECT 
+            --equip_id,
+            row_number() OVER (PARTITION BY vsm.province_name ORDER BY t.station_name, t.row_type, t.equip_name)::text AS row_num,
+            t.station_id,
+            t.station_name,
+            vsm.province_name,
+            t.equip_name,
+            t.equip_brand_model,
+            t.equip_serial_num,
+            t.equip_arpa_id,
+            t.equip_delivery_date,
+            t.equip_owner,
+            t.row_icon,
+            t.row_type
+        FROM 
+            metadata.view_custom_arpae_active_equipments t
+            LEFT JOIN metadata.view_stations_municipality vsm USING (station_id)
+
+        WHERE vsm.province_code ~* ?
+        ORDER BY
+            vsm.province_name, t.station_name, t.row_type, t.equip_name;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $prov)->hashes;
+}
+
+sub get_arpae_not_active_equipments{
+    my ( $self, $prov ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbcustomized sub get_arpae_not_active_equipments");
+
+    $prov = ($prov ne 'ALL' ? "$prov": ".*");
+
+    my $sql = qq{
+        SELECT 
+            --equip_id,
+            row_number() OVER (PARTITION BY p.province_name ORDER BY t.row_type, t.equip_name)::text AS row_num,
+            CASE 
+                WHEN SPLIT_PART(t.equip_name, '-', 2 ) = 'RR' THEN 'Rete Ricerca'
+                ELSE p.province_name
+            END AS province_name,
+            t.equip_name,
+            t.equip_brand_model,
+            t.equip_serial_num,
+            t.equip_arpa_id,
+            t.equip_delivery_date,
+            t.equip_owner,
+            t.row_icon,
+            t.row_type
+        FROM 
+            metadata.view_custom_arpae_not_active_equipments t
+            LEFT JOIN main.provinces p ON ( SPLIT_PART(t.equip_name, '-', 2 ) = p.province_code  )
+        WHERE
+            SPLIT_PART(t.equip_name, '-', 2 ) ~* ? -- Codice provincia
+        ORDER BY
+            p.province_name, t.row_type, t.equip_name;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $prov)->hashes;
+}
+
 #
 # IMMAGINI HORIBA
 #

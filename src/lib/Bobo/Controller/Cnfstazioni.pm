@@ -4,6 +4,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 use Unicode::UTF8 qw[decode_utf8 encode_utf8];
+use Sys::Hostname;
 
 sub stazioni {
     my $self = shift;
@@ -136,6 +137,109 @@ sub get_station_by_id {
 
     # render
     $self->render(json => $json);
+}
+
+sub get_pdf{
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Qatarature sub get_pdf");
+
+    my $user_id = $self->session('it.ecometer.bobo');
+    # get user metadata
+    my $user = $self->dbcommon->get_user_byid($user_id);
+
+    my $params = $self->req->query_params->to_hash;
+    $self->helperDumper($params);
+
+    # get station id
+    my $stid = $params->{'stid'}; # post
+
+    $self->app->log->debug("PDF della stazione: $stid");
+
+    if ($^O eq 'linux') {
+        # choose by host
+        my $host = hostname;
+        if ($host eq 'opas-http') {
+            # system
+            eval{
+                # create remote report
+                $self->app->log->debug("[LOCALE] Lancio script creazione pdf");
+                my $cmd = '~/perl5/perlbrew/perls/perl-5.38.0/bin/perl ~/bin/anagrafica/stazioni/report-anagrafica.pl '.$user->{portal_id}.' '.$stid;
+                $self->app->log->debug($cmd);
+                system($cmd) or $self->app->log->warn("CMD failed: $!");
+                $self->app->log->debug("Fine script creazione pdf");
+            };
+        }
+        else {
+            $self->app->log->debug("Lancio script creazione pdf");
+            # system('perl /var/www/bobo_latex/anagrafica/stazioni/report-anagrafica.pl '.$user->{portal_id}.' '.$stid);
+            $self->app->log->debug("Fine script creazione pdf");
+        }
+    }
+
+    my $json;
+
+    $self->app->log->debug("check system result");
+    $self->app->log->debug($?);
+    if ($? == -1) { # errore if ($? == -1) {
+        $self->app->log->debug("command failed: $!");
+
+        $json = {
+            res => 'ERROR',
+            desc => 'Errore durante la creazione del pdf',
+            id => 0
+        };
+
+        # final render
+        $self->render(json => $json);
+    }
+    else { # comando andato a buon fine
+        $self->app->log->debug('Pdf creato correttamente');
+        $self->app->log->debug("Inizio recupero dati");
+
+        # get application download path .../public/ path
+        my $download_path = $self->app->static->paths->[0].'/downloads/anagrafica/stazioni';
+        $self->app->log->debug("Download path: $download_path");
+
+        # get PDF filename
+        $self->app->log->debug("File PDF");
+        my $pdf_filename = "report-anagrafica-".$stid.".pdf";
+
+        # get full zip filename
+        my $full_pdf_filename = $download_path.'/'.$pdf_filename;
+        # log
+        $self->app->log->debug("PDF filename: $full_pdf_filename");
+
+        # last check
+        if (-e $full_pdf_filename) {
+            # encode filename to support "à"
+            $pdf_filename = encode_utf8($pdf_filename);
+
+            # downloadPdfFile | render_file
+            $self->render_file(
+                'filepath' => $full_pdf_filename,
+                'filename' => $pdf_filename,
+                'format' => 'pdf', # will change Content-Type "application/x-download" to "application/pdf"
+                'content_disposition' => 'attachment', # will change Content-Disposition from "attachment" to "inline"
+                'cleanup' => 0 # delete file after completed
+
+                # inline               - is for showing file inline
+                # attachment (default) - is for downloading
+            );
+        }
+        else {
+            $self->app->log->error("Error. PDF file DOES NOT exists!");
+
+            $json = {
+                res => 'ERROR',
+                desc => "Errore durante lo scarico del bollettino."
+            };
+
+            # final render
+            $self->render(json => $json);
+        }
+    }
 }
 
 sub put_station {
@@ -277,6 +381,20 @@ il percorso per le immagini della stazione estratta oppure solamente la risposta
 Funzione per inserire/modificare una determinata stazione. (Attualmente SOLO modifica)
 
 Argomenti:  * id della stazione, se gia' presente ('station-id');
+
+Return:     json contenente 1 o 0:
+
+            - 1: OK;
+
+            - 0: ERROR;
+
+=cut
+
+=head1 put_pdf
+
+Funzione per generare, dato l'id, il download del pdf di anagrafica di una determinata stazione.
+
+Argomenti:  * id della stazione ('id');
 
 Return:     json contenente 1 o 0:
 

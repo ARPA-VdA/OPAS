@@ -81,8 +81,8 @@ $(document).ready(function() {
     });
 
     // hide columns
-    table.column(5).visible(false);
-    table.column(6).visible(false);
+    table.column(7).visible(false);
+    table.column(8).visible(false);
 
     $( "#provinces, #loc-prov, #place-loc-prov, #equipment-networks" ).select2();
     // select2 initialization
@@ -204,10 +204,18 @@ $(document).ready(function() {
             $('#equipment-arpa-id').val(miscellany.miscellany_arpa_id);
             $('#equipment-owner').val(miscellany.miscellany_owner);
             $('#equipment-name').val(miscellany.miscellany_name);
-            $('#equipment-date-dismiss').val('');
-            $('#equipment-date-dismiss').bootstrapMaterialDatePicker('setDate', moment(miscellany.miscellany_dismiss_date).format('DD/MM/YYYY'));
+            $('#equipment-serial-number').val(miscellany.miscellany_serial_num);
+            $('#equipment-brand-model').val(miscellany.miscellany_brand_model);
+            $('#equipment-date-start').val('');
+            if(miscellany.miscellany_delivery_date)
+                $('#equipment-date-start').bootstrapMaterialDatePicker('setDate', moment(miscellany.miscellany_delivery_date).format('DD/MM/YYYY'));
 
-            $('#equipment-active').prop('checked', miscellany.miscellany_active ).trigger('change', false);
+            $('#equipment-date-dismiss').val('');
+            if(miscellany.miscellany_dismiss_date)
+                $('#equipment-date-dismiss').bootstrapMaterialDatePicker('setDate', moment(miscellany.miscellany_dismiss_date).format('DD/MM/YYYY'));
+
+            // destroy and re-itialize bootstraptoggle in order to not trigger change event
+            $('#equipment-active').prop('checked', miscellany.miscellany_active).bootstrapToggle('destroy').bootstrapToggle();
             $('#equipment-networks').val(miscellany.network_types).trigger('change.select2'); // does not trigger main "change" event
 
             // check if miscellany has attachments
@@ -487,13 +495,27 @@ $(document).ready(function() {
     /**
      * Dismission date of the new miscellany.
      */
-    $('#equipment-date-dismiss').bootstrapMaterialDatePicker({
+    $('#equipment-date-start').bootstrapMaterialDatePicker({
         maxDate: moment().format("DD/MM/YYYY"),
         format: 'DD/MM/YYYY',
         lang : 'it',
         cancelText : 'Annulla',
         time: false
     });
+
+    $('#equipment-date-dismiss').bootstrapMaterialDatePicker({
+        maxDate: moment().format("DD/MM/YYYY"),
+        format: 'DD/MM/YYYY',
+        lang : 'it',
+        cancelText : 'Annulla',
+        time: false
+    }).on('change', function() { // change event
+
+        console.log('cambio data');
+        // destroy and re-itialize bootstraptoggle in order to not trigger change event
+        $('#equipment-active').prop('checked', false).bootstrapToggle('destroy').bootstrapToggle();
+    });
+
 
     /**
      * New location start and end insertion datetime.
@@ -520,31 +542,32 @@ $(document).ready(function() {
     $('#equipment-active').bootstrapToggle();
     mySwitch = new Switchery($("#add-location")[0], $("#add-location").data());
 
-    /**
-     * Dismiss date change.
-     */
-    $('#equipment-date-dismiss').on('change', function(e){
-        // set "active" to false
-        $('#equipment-active').prop('checked', false).trigger('change', false);
-    });
+    // /**
+    //  * Dismiss date change.
+    //  */
+    // $('#equipment-date-dismiss').on('change', function(e){
+    //     console.log( $(this).val() );
+    //     // set "active" to false
+    //     $('#equipment-active').prop('checked', false).trigger('change', 0);
+    // });
 
     /**
      * Active flag change.
      */
-    $('#equipment-active').on('change', function(e, flag){
-        if(flag == false)
-            return;
+    $('#equipment-active').on('change', function(){
+        console.log('Active');
 
         var status = $(this).is(':checked');
         // check status
         // if false, set dismiss date value
         if(status == false){
             $('#equipment-date-dismiss').val('');
-            $('#equipment-date-dismiss').bootstrapMaterialDatePicker('setDate', moment().format('DD/MM/YYYY HH:mm'));
+            $('#equipment-date-dismiss').bootstrapMaterialDatePicker('setDate', moment().format('DD/MM/YYYY'));
         }
         else{
             $('#equipment-date-dismiss').val('');
         }
+        
     });
 
     /**
@@ -1401,21 +1424,21 @@ $(document).ready(function() {
                 if (type){ // STANZIAMENTO
 
                     // change table columns visibility
-                    table.column(3).visible(false); // dismesso
-                    $(table.column(4).header()).text('Location');
-                    $(table.column(4).footer()).text('Location');
-                    table.column(5).visible(true);
-                    table.column(6).visible(true);
+                    table.column(5).visible(false); // dismesso
+                    $(table.column(6).header()).text('Location');
+                    $(table.column(6).footer()).text('Location');
+                    table.column(7).visible(true);
+                    table.column(8).visible(true);
 
-                    table.order( [ 5, 'desc' ] );
+                    table.order( [ 7, 'desc' ] );
                 }else{ // DOTAZIONI
 
                     // change table columns visibility
-                    table.column(3).visible(true); // dismesso
-                    $(table.column(4).header()).text('Location attuale');
-                    $(table.column(4).footer()).text('Location attuale');
-                    table.column(5).visible(false);
-                    table.column(6).visible(false);
+                    table.column(5).visible(true); // dismesso
+                    $(table.column(6).header()).text('Location attuale');
+                    $(table.column(6).footer()).text('Location attuale');
+                    table.column(7).visible(false);
+                    table.column(8).visible(false);
 
                     table.order( [ 2, 'asc' ] );
                 }
@@ -1465,6 +1488,9 @@ $(document).ready(function() {
                         html += '    </td>';
                         html += '    <td>'+value.miscellany_arpa_id+'</td>';
                         html += '    <td>'+value.miscellany_name+'</td>';
+                        html += '    <td>'+value.miscellany_brand_model+'</td>';
+                        html += '    <td>'+value.miscellany_serial_num+'</td>';
+
 
                         var t = '<i class="icon-close text-danger"></i>';
                         if(value.miscellany_dismiss_date)
@@ -1607,6 +1633,9 @@ $(document).ready(function() {
              * miscellany_active: 1
              * miscellany_arpa_id: null
              * miscellany_owner: "Arpa Valle d'Aosta"
+             * miscellany_brand_model
+             * miscellany_serial_num
+             * miscellany_delivery_date
              * miscellany_attachments: null
              * miscellany_dismiss_date: null
              * miscellany_locations: "[{\"id\":1,\"location_id\":1004,\"location_name\":\"Aosta - I Maggio\",\"location_prov\":\"Aosta\",\"location_lat\":45.7324,\"location_lon\":7.32189,\"location_start\":\"2021-12-01T10:58:00\",\"location_end\":\"31/12/2022 10:58\",\"stmi_dismiss_date\":\"2022-12-31T10:58:00\",\"location_note\":\"test note location\"}]"
@@ -1624,34 +1653,42 @@ $(document).ready(function() {
             html += '        <h4 class="box-title">Dotazione <strong>'+fullname+'</strong></h4>\n';
             html += '        <hr class="m-t-0 m-b-20">\n';
             html += '        <div class="form-group row">\n';
-            html += '            <label for="" class="control-label col-2 col-form-label">Arpa ID</label>\n';
-            html += '            <div class="col-4 view-param">'+formatTextField(miscellany.miscellany_arpa_id)+'</div>\n';
-            html += '            <label for="" class="control-label col-2 col-form-label">Dismesso il</label>\n';
-            if (miscellany.miscellany_dismiss_date)
-                html += '             <div class="col-4 view-param">' + moment(miscellany.miscellany_dismiss_date).format('DD/MM/YYYY') + '</i></div>\n';
-            else
-                html += '             <div class="col-4 view-param">' + formatFlagField(false) + '</i></div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Arpa ID</label>\n';
+            html += '            <div class="col-md-4 view-param">'+formatTextField(miscellany.miscellany_arpa_id)+'</div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Consegnato il</label>\n';
+            html += '            <div class="col-md-4 view-param">' +( miscellany.miscellany_delivery_date ? moment(miscellany.miscellany_delivery_date).format('DD/MM/YYYY') : '--') + '</div>\n';
             html += '        </div>\n';
-
             html += '        <div class="form-group row">\n';
-            html += '            <label for="" class="control-label col-2 col-form-label">Proprietario</label>\n';
-            html += '            <div class="col-4 view-param">' + formatTextField(miscellany.miscellany_owner) + '</div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Numero di serie</label>\n';
+            html += '            <div class="col-md-4 view-param">'+formatTextField(miscellany.miscellany_serial_num)+'</div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Marca e modello</label>\n';
+            html += '            <div class="col-md-4 view-param">'+formatTextField(miscellany.miscellany_brand_model)+'</div>\n';
+
+            html += '        </div>\n';
+            html += '        <div class="form-group row">\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Proprietario</label>\n';
+            html += '            <div class="col-md-4 view-param">' + formatTextField(miscellany.miscellany_owner) + '</div>\n';
             var isActive;
             if(miscellany.miscellany_active){
                 isActive = "Dotazione attiva";
             }else{
                 isActive = "Dotazione NON attiva";
             }
-            html += '            <label for="" class="control-label col-2 col-form-label">' + isActive + '</label>\n';
-            html += '            <div class="col-4 view-param">' + formatFlagField(miscellany.miscellany_active) + '</i></div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">' + isActive + '</label>\n';
+            html += '            <div class="col-md-4 view-param">' + formatFlagField(miscellany.miscellany_active) + '</i></div>\n';
             html += '        </div>\n';
             html += '        <div class="form-group row">\n';
-            html += '            <label for="" class="control-label col-2 col-form-label">Reti di appartenenza</label>\n';
-            html += '            <div class="col-10 view-param">' + miscellany.network_names.join(', ') + '</div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Reti di appartenenza</label>\n';
+            html += '            <div class="col-md-4 view-param">' + miscellany.network_names.join(', ') + '</div>\n';
+            html += '            <label for="" class="control-label col-md-2 col-form-label">Dismesso il</label>\n';
+            if (miscellany.miscellany_dismiss_date)
+                html += '             <div class="col-md-4 view-param">' + moment(miscellany.miscellany_dismiss_date).format('DD/MM/YYYY') + '</i></div>\n';
+            else
+                html += '             <div class="col-md-4 view-param">' + formatFlagField(false) + '</i></div>\n';
             html += '        </div>\n';
             html += '       <div class="form-group row">\n';
-            html += '           <label for="" class="control-label col-2 col-form-label">Note aggiuntive</label>\n';
-            html += '           <div class="col-10 view-param">'+formatTextField(miscellany.miscellany_note)+'</div>\n';
+            html += '           <label for="" class="control-label col-md-2 col-form-label">Note aggiuntive</label>\n';
+            html += '           <div class="col-md-10 view-param">'+formatTextField(miscellany.miscellany_note)+'</div>\n';
             html += '       </div>\n';
 
             // check if there are attachments
@@ -1659,14 +1696,14 @@ $(document).ready(function() {
                 html += '        <h4 class="box-title">Allegati</strong></h4>\n';
                 html += '        <hr class="m-t-0 m-b-20">\n';
                 html += '        <div class="form-group row">\n';
-                html += '            <label for="" class="control-label col-2 col-form-label">Allegati</label>\n';
-                html += '            <div class="col-10 view-param">\n';
+                html += '            <label for="" class="control-label col-md-2 col-form-label">Allegati</label>\n';
+                html += '            <div class="col-md-10 view-param">\n';
 
                 var htmlImages = '';
                 var htmlFiles = '';
 
                 htmlImages +='        <div class="form-group row attachment-gallery-big">\n';
-                htmlImages +='            <div class="col-10 offset-lg-2">\n';
+                htmlImages +='            <div class="col-md-10 offset-lg-2">\n';
 
                 // loop through attachments
                 // different items depending on the file type
@@ -1715,20 +1752,20 @@ $(document).ready(function() {
                     html += '        <h4 class="box-title m-t-30">Location attuale della dotazione <strong>'+fullname+'</strong></h4>\n';
                     html += '        <hr class="m-t-0 m-b-20">\n';
                     html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Provincia</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_prov+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Stazione</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '            <label for="" class="control-label col-md-2 col-form-label">Provincia</label>\n';
+                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_prov+'</div>\n';
+                    html += '            <label for="" class="control-label col-md-2 col-form-label">Stazione</label>\n';
+                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_name+'</div>\n';
                     html += '        </div>\n';
                     html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora inizio</label>\n';
-                    html += '            <div class="col-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora fine</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_end+'</div>\n';
+                    html += '            <label for="" class="control-label col-md-2 col-form-label">Data/ora inizio</label>\n';
+                    html += '            <div class="col-md-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
+                    html += '            <label for="" class="control-label col-md-2 col-form-label">Data/ora fine</label>\n';
+                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_end+'</div>\n';
                     html += '        </div>\n';
                     html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Note location</label>\n';
-                    html += '            <div class="col-10 view-param">'+actualLoc.location_note+'</div>\n';
+                    html += '            <label for="" class="control-label col-md-2 col-form-label">Note location</label>\n';
+                    html += '            <div class="col-md-10 view-param">'+actualLoc.location_note+'</div>\n';
                     html += '        </div>\n';
                     html += '        <div id="map-view-'+miscid+'" class="mini-map" tabindex="0"></div>\n';
 

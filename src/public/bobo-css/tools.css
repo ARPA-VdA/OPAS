@@ -1723,17 +1723,21 @@ h4.tab-general-title{
 .tabulator-row.row-highlighted:hover{
     background-color: #c1f7fd!important;
 }
-.tabulator-row .cell-valid{
-    background-color: #c0f6ff;
+.tabulator-row .cell-valid,
+.clipboard-enabled .tabulator-row .cell-valid{
+    background-color: #c0f6ff!important;
 }
-.tabulator-row .cell-invalid{
-    background-color: #ffbed0;
+.tabulator-row .cell-invalid,
+.clipboard-enabled .tabulator-row .cell-invalid{
+    background-color: #ffbed0!important;
 }
-.tabulator-row .cell-auto{
-    background-color: #fdf37d;
+.tabulator-row .cell-auto,
+.clipboard-enabled .tabulator-row .cell-auto{
+    background-color: #fdf37d!important;
 }
-.tabulator-row .cell-auto-invalid{
-    background-color: #fac37e;
+.tabulator-row .cell-auto-invalid,
+.clipboard-enabled .tabulator-row .cell-auto-invalid{
+    background-color: #fac37e!important;
 }
 .tabulator-row .cell-checked {
     border-right: solid 4px #39b905!important;
@@ -1775,9 +1779,48 @@ span.valid-level{
 #table-val-codes .valid-level.dis {
     background-color: #e2e2e2!important;
 }
+/* .tabulator-ranges	        Applied to the table container when range selection is enabled */
+/* .tabulator-range-highlight	Applied to a column header or row when a cell in that column is included in a range */
+/* .tabulator-range-selected	Applied to a column header or row header when that entier row or column is included in a range */
+/* .tabulator-range-row-header	Applied to the row header cell for a row */
+/* .tabulator-range-overlay	    The containing element for all range area overlays */
+/* .tabulator-range	            The overlayed area graphic for a range */
+/* .tabulator-range-active	    Applied to the active range overlay area */
+
+.tabulator-row .tabulator-cell.tabulator-range-selected:not(.tabulator-range-only-cell-selected):not(.tabulator-range-row-header){
+    background-color: #edf5ff;
+}
+.tabulator-range-selected{
+    background-color: #edf5ff;
+}
+
+.clipboard-enabled .tabulator-row .tabulator-cell.tabulator-range-selected:not(.tabulator-range-only-cell-selected):not(.tabulator-range-row-header){
+    background-color: transparent;
+}
+.clipboard-enabled .tabulator-range-selected{
+    background-color: transparent;
+}
+.clipboard-enabled.tabulator .tabulator-header .tabulator-col.tabulator-range-highlight,
+.clipboard-enabled .tabulator-row.tabulator-range-highlight .tabulator-cell.tabulator-range-row-header,
+.clipboard-enabled.tabulator .tabulator-header .tabulator-col.tabulator-range-selected{
+    background-color: #FFF;
+    color: #000;
+}
+.clipboard-enabled.tabulator .tabulator-tableholder .tabulator-range-overlay .tabulator-range-cell-active{
+    border: none!important;
+}
+.clipboard-enabled.tabulator .tabulator-tableholder .tabulator-range-overlay .tabulator-range{
+    border: none!important;
+}
+.clipboard-enabled.tabulator .tabulator-tableholder .tabulator-range-overlay .tabulator-range.tabulator-range-active:after{
+    background-color: transparent;
+    width: 0px;
+    height: 0px;
+}
+
 .tabulator-row .cell-alarm {
     font-weight: bold;
-    color: #ea1951;
+    color: #ea1951!important;
 }
 .clipboard-enabled .tabulator-row{
     border-bottom: 1px dashed #b50435;
@@ -1788,10 +1831,11 @@ span.valid-level{
 .clipboard-enabled .tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-left{
     border-right: 2px dashed #b50435;
 }
-.clipboard-enabled .cell-modified{
+.clipboard-enabled  .tabulator-row .cell-modified{
     color: #FFF!important;
-    background-color: #b50435;
+    background-color: #b50435!important;
 }
+
 .tabulator .tabulator-row .tabulator-cell.cell-selected{
     background-color: #edf5ff;
     border: 1px solid #8ac8ed!important;
@@ -1933,16 +1977,16 @@ span.valid-level{
     background-color: #e1e1e1;
 }
 #codes-detail ul.val-history span.cell-invalid{
-    background-color: #ffbed0;
+    background-color: #ffbed0!important;
 }
 #codes-detail ul.val-history span.cell-valid{
-    background-color: #c0f6ff;
+    background-color: #c0f6ff!important;
 }
 #codes-detail ul.val-history span.cell-auto{
-    background-color: #fdf37d;
+    background-color: #fdf37d!important;
 }
 #codes-detail ul.val-history span.cell-auto-invalid{
-    background-color: #fac37e;
+    background-color: #fac37e!important;
 }
 #codes-detail i{
     opacity: 0.8;

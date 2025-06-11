@@ -8,7 +8,12 @@ import Row from '../../core/row/Row.js';
 
 import defaultCalculations from './defaults/calculations.js';
 
-class ColumnCalcs extends Module{
+export default class ColumnCalcs extends Module{
+
+	static moduleName = "columnCalcs";
+
+	//load defaults
+	static calculations = defaultCalculations;
 	
 	constructor(table){
 		super(table);
@@ -274,8 +279,14 @@ class ColumnCalcs extends Module{
 	}
 	
 	initializeTopRow(){
+		var	fragment = document.createDocumentFragment();
+		
 		if(!this.topInitialized){
-			this.table.columnManager.getContentsElement().insertBefore(this.topElement, this.table.columnManager.headersElement.nextSibling);
+
+			fragment.appendChild(document.createElement("br"));
+			fragment.appendChild(this.topElement);
+
+			this.table.columnManager.getContentsElement().insertBefore(fragment, this.table.columnManager.headersElement.nextSibling);
 			this.topInitialized = true;
 		}
 	}
@@ -391,19 +402,19 @@ class ColumnCalcs extends Module{
 	}
 	
 	rowsToData(rows){
-		var data = [];
-		
+		var data = [],
+		hasDataTreeColumnCalcs = this.table.options.dataTree && this.table.options.dataTreeChildColumnCalcs,
+		dataTree = this.table.modules.dataTree;
+
 		rows.forEach((row) => {
 			data.push(row.getData());
-			
-			if(this.table.options.dataTree && this.table.options.dataTreeChildColumnCalcs){
-				if(row.modules.dataTree && row.modules.dataTree.open){
-					var children = this.rowsToData(this.table.modules.dataTree.getFilteredTreeChildren(row));
-					data = data.concat(children);
-				}
+
+			if(hasDataTreeColumnCalcs && row.modules.dataTree?.open){
+				this.rowsToData(dataTree.getFilteredTreeChildren(row)).forEach(dataRow =>{
+					data.push(row);
+				});
 			}
 		});
-		
 		return data;
 	}
 	
@@ -446,12 +457,12 @@ class ColumnCalcs extends Module{
 				
 				if(column.definition[pos + "CalcFormatter"] && this.table.modExists("format")){
 					this.genColumn.modules.format = {
-						formatter: this.table.modules.format.getFormatter(column.definition[pos + "CalcFormatter"]),
+						formatter: this.table.modules.format.lookupFormatter(column.definition[pos + "CalcFormatter"]),
 						params: column.definition[pos + "CalcFormatterParams"] || {},
 					};
 				}else{
 					this.genColumn.modules.format = {
-						formatter: this.table.modules.format.getFormatter("plaintext"),
+						formatter: this.table.modules.format.lookupFormatter("plaintext"),
 						params:{}
 					};
 				}
@@ -573,10 +584,3 @@ class ColumnCalcs extends Module{
 		}
 	}
 }
-
-ColumnCalcs.moduleName = "columnCalcs";
-
-//load defaults
-ColumnCalcs.calculations = defaultCalculations;
-
-export default ColumnCalcs;

@@ -14,6 +14,7 @@ $(document).ready(function() {
             }
         ],
         "order": [[ 0, "asc" ]],
+        "columnDefs": [{ className: 'text-center', targets: [0,2,3] }],
         "language": {
             "url": "/bobo-js/italian.json"
         }
@@ -31,6 +32,7 @@ $(document).ready(function() {
             }
         ],
         "order": [[ 0, "asc" ]],
+        "columnDefs": [{ className: 'text-center', targets: [0, 2, 3] }],
         "language": {
             "url": "/bobo-js/italian.json"
         }
@@ -48,6 +50,7 @@ $(document).ready(function() {
             }
         ],
         "order": [[ 0, "asc" ]],
+        "columnDefs": [{ className: 'text-center', targets: [0, 2, 3] }],
         "language": {
             "url": "/bobo-js/italian.json"
         }
@@ -65,6 +68,7 @@ $(document).ready(function() {
             }
         ],
         "order": [[ 0, "asc" ]],
+        "columnDefs": [{ className: 'text-center', targets: [0, 2, 3] }],
         "language": {
             "url": "/bobo-js/italian.json"
         }
@@ -112,18 +116,14 @@ function loadCodes(){
                 }else{
                     var def = '';
                 }
-                var rowNode = tblPer.row.add( [  value.pvc_code_id, value.pvc_code_desc, valid, def ] ).draw().node();
+                tblPer.row.add( [  value.pvc_code_id, value.pvc_code_desc, valid, def ] ).draw();
 
-                tblPer.row(rowNode).column(0).nodes().to$().addClass('text-center');
-                tblPer.row(rowNode).column(2).nodes().to$().addClass('text-center');
-                tblPer.row(rowNode).column(3).nodes().to$().addClass('text-center');
             });
             tblPer.columns.adjust();
 
             // re-initialize tooltip plugin
-            tblPer.rows({page: 'all'}).every(function() { // the containers for all your galleries
+            tblPer.rows({ page: 'all' }).every(function () { // the containers for all your galleries
                 var row = this;
-
                 // get all tr node and transform it into a jquery items
                 // in order to find all tooltip elements
                 $(row.node())
@@ -152,11 +152,7 @@ function loadCodes(){
             }else{
                 var def = '';
             }
-            var rowNode = tblAuto.row.add( [  value.avc_code_id, value.avc_code_desc, valid, def ] ).draw().node();
-
-            tblAuto.row(rowNode).column(0).nodes().to$().addClass('text-center');
-            tblAuto.row(rowNode).column(2).nodes().to$().addClass('text-center');
-            tblAuto.row(rowNode).column(3).nodes().to$().addClass('text-center');
+            tblAuto.row.add( [  value.avc_code_id, value.avc_code_desc, valid, def ] ).draw();
         });
         tblAuto.columns.adjust();
 
@@ -190,11 +186,7 @@ function loadCodes(){
             }else{
                 var def = '';
             }
-            var rowNode = tblVal.row.add( [  value.uvc_code_id, value.uvc_code_desc, valid, def ] ).draw().node();
-
-            tblVal.row(rowNode).column(0).nodes().to$().addClass('text-center');
-            tblVal.row(rowNode).column(2).nodes().to$().addClass('text-center');
-            tblVal.row(rowNode).column(3).nodes().to$().addClass('text-center');
+            tblVal.row.add( [  value.uvc_code_id, value.uvc_code_desc, valid, def ] ).draw();
         });
         tblVal.columns.adjust();
 
@@ -242,11 +234,7 @@ function loadCodes(){
 
             var color = '<div class="valid-level code-'+value.fvc_code_id+'"></div>';
 
-            var rowNode = tblFin.row.add( [  value.fvc_code_id, value.fvc_code_desc, color, valid, def ] ).draw().node();
-
-            tblFin.row(rowNode).column(0).nodes().to$().addClass('text-center');
-            tblFin.row(rowNode).column(2).nodes().to$().addClass('text-center');
-            tblFin.row(rowNode).column(3).nodes().to$().addClass('text-center');
+            tblFin.row.add( [  value.fvc_code_id, value.fvc_code_desc, color, valid, def ] ).draw();
         });
         tblFin.columns.adjust();
 

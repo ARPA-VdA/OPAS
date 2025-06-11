@@ -547,7 +547,7 @@ $(document).ready(function() {
                 var flagPolarAnnulus = 0;
 
                 // built html tab label to add at the list
-                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#charts'+jobid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">Stazione '+stationPName+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger btn-close-view" data-close="charts'+jobid+'"></i></a></li>';
+                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#charts'+jobid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">Stazione '+stationPName+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger btn-close-view" data-close="charts'+jobid+'"></i></a></li>';
                 $('.nav').append(html);
 
                 // built html tab content to add at the group

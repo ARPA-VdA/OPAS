@@ -198,7 +198,39 @@ $(document).ready(function() {
     $('#table-stations').on('click', '.pdf-el', function(e){
         e.preventDefault();
 
-        console.log('scarica pdf');
+        console.log('Download report\'s PDF');
+        // get station id stored in table tr element
+        var stid = parseInt($(this).parent().parent().data("id"));
+
+        // show preloader, waiting for the end of the process
+        $(".inner-preloader").show();
+        var url = "/cnf_stazioni_get_pdf";
+
+        /**
+         * http://johnculviner.com/category/jquery-file-download/
+         */
+        $.fileDownload(url, {
+            httpMethod: 'GET',
+            data: {
+                stid: stid
+            },
+            successCallback: function(url) {
+                console.log("PDF scaricato correttamente");
+                // at the end of the process hide preloader
+                $(".inner-preloader").hide();
+            },
+            failCallback: function(responseHtml, url, error) {
+                // take care of any errors from ajax call
+                // error message
+                swal("Errore!", "Il file pdf non è stato creato oppure errore durante lo scarico", "error");
+                // at the end of the process hide preloader
+                $(".inner-preloader").hide();
+            }
+        });
+
+        console.log('End download');
+        // this is critical to stop the click event which will trigger a normal file download!
+        return false;
     });
     /////////////////////////////////////////////////////////////////////
     // END TABLE FUNCTIONS
@@ -841,6 +873,8 @@ $(document).ready(function() {
                         rows += '        <a href="javascript:void(0)" class="show-el" data-toggle="tooltip" data-original-title="Visualizza"> <i class="ti-zoom-in text-info"></i> </a>';
                         if(update_grant)
                             rows += '        <a href="javascript:void(0)" class="edit-el" data-toggle="tooltip" data-original-title="Modifica"> <i class="icon-pencil text-info"></i> </a>';
+                        // download pdf
+                        rows += '        <a href="javascript:void(0)" class="pdf-el" data-toggle="tooltip" data-original-title="Scarica PDF"> <i class="ti-download text-danger"></i> </a>';
                         if(delete_grant)    
                         rows += '        <a href="javascript:void(0)" class="delete-el" data-toggle="tooltip" data-original-title="Elimina"> <i class="icon-trash text-danger"></i> </a>';
 
@@ -850,7 +884,6 @@ $(document).ready(function() {
                             rows += '        <a href="/dat_istantanei/'+value.station_id+'" target="_blank" data-toggle="tooltip" data-original-title="Dati istantanei"><i class="fa-regular fa-calendar-clock text-success"></i></a>';
                             rows += '        <a href="/cnf_parametri/'+value.station_id+'" target="_blank" data-toggle="tooltip" data-original-title="Parametri di stazione"><i class="fa-solid fa-signal-stream text-success"></i></a>';
                         }
-                        // rows += '        <a href="javascript:void(0)" class="pdf-el" data-toggle="tooltip" data-original-title="Scarica PDF"> <i class="ti-download text-danger"></i> </a>';
                         rows += '    </td>';
                         rows += '    <td>'+value.station_id+'</td>';
                         rows += '    <td>'+value.station_name+'</td>';

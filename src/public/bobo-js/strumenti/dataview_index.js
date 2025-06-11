@@ -399,8 +399,9 @@ $( document ).ready(function() {
         "columnDefs": [
             {
                 "targets": 0,
-                "defaultContent": "",
-                "className": "select-checkbox"
+                // "defaultContent": "",
+                // "className": "select-checkbox",
+                "render": DataTable.render.select(),
             },
             {
                 "targets": 1 ,

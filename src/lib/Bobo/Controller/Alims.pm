@@ -1,7 +1,9 @@
 package Bobo::Controller::Alims;
 use Mojo::Base 'Mojolicious::Controller';
 
-use Mojo::File qw(path);
+use Mojo::File 'path';
+use Time::Moment;
+
 use Mojo::JSON qw(decode_json encode_json);
 use Data::Dumper;
 use Sys::Hostname;
@@ -104,6 +106,143 @@ sub get_reports {
     # render
     $self->render(json => $json);
 }
+
+sub get_csv_reports {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Alims sub get_csv_reports");
+
+    my $from = $self->param('from'); # post
+    my $to = $self->param('to'); # post
+    my $prid = $self->param('prid'); # post
+    my $stid = $self->param('stid'); # post
+    my $pack = $self->param('pack'); # post
+
+    $self->app->log->debug("From: $from - To: $to");
+    $self->app->log->debug("ID province: $prid");
+    $self->app->log->debug("ID station: $stid");
+
+    my $user_id = $self->session('it.ecometer.bobo');
+
+    # get application path .../public/ path
+    my $app_path = $self->app->home->rel_file('public/downloads/report/alims');
+    $self->app->log->debug("Application path: $app_path");
+
+    # get times
+    $self->app->log->debug("Formattazione date");
+    my $tm = Time::Moment->now;
+    my $head_time = $tm->strftime("{%Y%m%d_%H%M%S}");
+
+    my $dateFromISO = $from;
+    $dateFromISO .= 'T00:00:00Z';
+    $self->app->log->debug("From: $dateFromISO");
+    $tm = Time::Moment->from_string($dateFromISO);
+    $head_time .= '-' . $tm->strftime("[%Y%m%d");
+
+    my $dateToISO = $to;
+    $dateToISO =~ s/ /T/;
+    $dateToISO .= 'Z';
+    $tm = Time::Moment->from_string($dateToISO);
+    $head_time .= '-' . $tm->strftime("%Y%m%d]");
+
+    # build filename
+    # my $csv_filename = '/Dati_'.$stid.'-'.$prid.'.csv';
+    my $csv_filename = '/Lista_reports_'.$head_time.'.csv';
+    $csv_filename = encode_utf8( $csv_filename );
+    my $full_csv_filename = $app_path.'/'.$csv_filename;
+    $self->app->log->debug("File csv : $full_csv_filename");
+
+    # write header
+    my $eco_file_header;
+    $eco_file_header .= "Data;";
+    $eco_file_header .= "Operatore;";
+    $eco_file_header .= "Codice;";
+    $eco_file_header .= "Provincia;";
+    $eco_file_header .= "Stazione;";
+    $eco_file_header .= "Strumento;";
+    $eco_file_header .= "S.N.;";
+    $eco_file_header .= "ArpaID;";
+    $eco_file_header .= "Pacchetti analitici;";
+    $eco_file_header .= "Filtri validi;";
+    $eco_file_header .= "Filtri annullati;";
+    $eco_file_header .= "Multiplo;";
+    $eco_file_header .= "Inviato;";
+    $eco_file_header .= "Ricevuto;";
+    # $eco_file_header .= ";";
+    # $eco_file_header .= ";";
+
+    my $data_rows;
+
+    if ($stid == -1) {
+        # get report
+        $data_rows = $self->dbalims->get_reports_by_date_province($user_id, $from, $to, $prid, $pack);
+    }
+    else {
+        $data_rows = $self->dbalims->get_reports_by_date_station($from, $to, $stid, $pack);
+    }
+
+    my $csv_rows = '';
+    foreach my $row (@{$data_rows}) {
+            my $csv_row = '';
+            $csv_row .= $row->{'report_fulldate_formatted'} .';';
+            $csv_row .= $row->{'user_fullname'} .';';
+            $csv_row .= $row->{'report_number'} .';';
+            $csv_row .= $row->{'province_name'} .';';
+            $csv_row .= $row->{'station_name'} .';';
+            $csv_row .= $row->{'instr_type_fullname'} .';';
+            $csv_row .= $row->{'instr_serial_num'} .';';
+            $csv_row .= $row->{'instr_arpa_id'} .';';
+            $csv_row .= $row->{'analytics_desc'} .';';
+            $csv_row .= $row->{'report_num_valid'} .';';
+            $csv_row .= $row->{'report_num_cancelled'} .';';
+            $csv_row .= ( $row->{'report_multi_filters'} == 1 ? 'Si' : 'No' ).';';
+            $csv_row .= ( $row->{'report_sent'} == 1 ? 'Si' : 'No' ) .';';
+            $csv_row .= ( $row->{'report_received'} == 1 ? 'Si' : 'No' );
+            $csv_rows .= $csv_row ."\n";
+
+    } # foreach my $row (@{$data_rows})
+
+    # open single data file
+    $self->app->log->debug("Open CSV data file");
+    open(FH, '>', $full_csv_filename) or die $!;
+    # print header & pubs
+    print FH $eco_file_header ."\n";
+
+    # print rows with values
+    $self->app->log->debug("Print rows with values...");
+    print FH $csv_rows ."\n";
+
+    # close data file
+    $self->app->log->debug("Close CSV data file");
+    close(FH);
+
+    # last check
+    $self->app->log->debug("Check zip file exists");
+    if (-e $full_csv_filename) {
+        # Open file in browser(do not show save dialog)
+        $self->app->log->debug("Render file back to browser");
+
+        $self->render_file(
+            'filepath' => $full_csv_filename,
+            'format' => 'csv', # will change Content-Type "application/x-download" to "application/pdf"
+            'content_disposition' => 'attachment', # will change Content-Disposition from "attachment" to "inline"
+            'cleanup' => 0, # delete file after completed
+        );
+
+    }
+    else {
+        $self->app->log->error("Error. Zip file DOES NOT exists!");
+
+        my $json = {
+            res => 'ERROR',
+            desc => "Errore durante lo scarico dei dati."
+        };
+
+        # final render
+        $self->render(json => $json);
+    }
+};
 
 sub get_selected_report {
     my $self = shift;

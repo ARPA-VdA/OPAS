@@ -274,7 +274,7 @@ $(document).ready(function() {
     $.fn.DataTable.ext.pager.numbers_length = 5;
     var tableCalendar = $('#daily-table').DataTable({
         // "dom": "Bfrtip",
-        "dom": '<"row"<"col-6" B><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-12 col-sm-12 text-right"p>>',
+        "dom": '<"row"<"col-12"fr>>t<"row m-t-10"<"col-lg-12 col-sm-12 text-right"p>>',
         // 'copy', 'csv', 'excel', 'pdf', 'print'
         "pagingType": 'simple_numbers',
         "layout": {

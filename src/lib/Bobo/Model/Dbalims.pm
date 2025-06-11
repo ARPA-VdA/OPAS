@@ -111,6 +111,7 @@ sub get_reports_by_date_province {
             r.rep_id                               AS report_id  ,
             r.rep_seq                              AS report_seq,
             r.rep_fulldate                         AS report_fulldate,
+            TO_CHAR(r.rep_fulldate, 'DD/MM/YYYY HH24:MI') AS report_fulldate_formatted,
             r.rep_number                           AS report_number,
             r.rep_pdf                              AS report_pdf,
             r.rep_sent                             AS report_sent,
@@ -123,6 +124,11 @@ sub get_reports_by_date_province {
             r.rep_multi_filters                    AS report_multi_filters,
             -- analytic
             r.ana_ids                              AS analytics_id,
+            array_to_string( ARRAY(
+                SELECT ana_desc
+                FROM client_lig_alims.analytics
+                WHERE ana_id = ANY(r.ana_ids)
+            ), ', ')                               AS analytics_desc,
             -- (
             --     SELECT COUNT(*)
             --     FROM client_lig_alims.filters f
@@ -141,6 +147,7 @@ sub get_reports_by_date_province {
                 AND f.filter_cancelled IS TRUE
             )                                       AS report_num_cancelled,
             -- station
+            vsm.province_name                       AS province_name,
             r.station_id                            AS station_id,
             s.station_name                          AS station_name,
             -- user
@@ -209,6 +216,7 @@ sub get_reports_by_date_station {
             r.rep_id                               AS report_id  ,
             r.rep_seq                              AS report_seq,
             r.rep_fulldate                         AS report_fulldate,
+            TO_CHAR(r.rep_fulldate, 'DD/MM/YYYY HH24:MI') AS report_fulldate_formatted,
             r.rep_number                           AS report_number,
             r.rep_pdf                              AS report_pdf,
             r.rep_sent                             AS report_sent,
@@ -221,6 +229,11 @@ sub get_reports_by_date_station {
             r.rep_multi_filters                    AS report_multi_filters,
             -- analytic
             r.ana_ids                              AS analytics_id,
+            array_to_string( ARRAY(
+                SELECT ana_desc
+                FROM client_lig_alims.analytics
+                WHERE ana_id = ANY(r.ana_ids)
+            ), ', ')                               AS analytics_desc,
             -- (
             --     SELECT COUNT(*)
             --     FROM client_lig_alims.filters f
@@ -239,6 +252,7 @@ sub get_reports_by_date_station {
                 AND f.filter_cancelled IS TRUE
             )                                       AS report_num_cancelled,
             -- station
+            vsm.province_name                       AS province_name,
             r.station_id                            AS station_id,
             s.station_name                          AS station_name,
             -- user
@@ -263,6 +277,7 @@ sub get_reports_by_date_station {
         FROM
             client_lig_alims.reports r
             LEFT JOIN metadata.stations s                       USING (station_id)
+            LEFT JOIN metadata.view_stations_municipality vsm   USING (station_id)
             LEFT JOIN bobo.users u                              USING (us_id)
             LEFT JOIN equipments.instruments i                  USING (instr_id)
             LEFT JOIN equipments.instruments_type it            USING (instr_type_id)

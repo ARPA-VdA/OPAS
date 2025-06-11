@@ -2,7 +2,7 @@ publiccodeYmlVersion: "0.4"
 name: OPAS v2
 applicationSuite: OPen Air System
 url: https://github.com/ARPA-VdA/OPAS
-releaseDate: 2024-12-31
+releaseDate: 2025-03-31
 platforms:
   - web
   - windows

@@ -1,8 +1,8 @@
 -- +----------------------------------------------------------------------------------------------+
--- | - Script Name : foreign_keys.sql                                                             |
--- | - Author      : Ecometer s.n.c.                                                              |
--- | - Create Date : 2024-12-31                                                                   |
--- | - Description : Script to create PostgreSQL 'opas' database foreign keys.                    |
+-- | - Script Name   : foreign_keys.sql                                                           |
+-- | - Author        : Ecometer s.n.c.                                                            |
+-- | - Creation Date : 2025-03-31                                                                 |
+-- | - Description   : Script to create PostgreSQL 'opas' database foreign keys.                  |
 -- +----------------------------------------------------------------------------------------------+
 
 

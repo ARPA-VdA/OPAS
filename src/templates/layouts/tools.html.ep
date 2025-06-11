@@ -90,7 +90,7 @@
     <!-- Jquery color picker http://jscolor.com/examples/ -->
     <script src="<%=url_for('/node_modules/jscolor.js')%>"></script>
 
-    <!-- Highstock -->
+    <!-- Highstock v12.1.2-->
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/accessibility.js'))%>"></script>
@@ -98,7 +98,6 @@
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/exporting.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/offline-exporting.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/export-data.js'))%>"></script>
-    <!-- <script src="<%=url_for('/node_modules/highstock/map.js')%>"></script> -->
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost-canvas.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/boost.js'))%>"></script>
 
@@ -111,22 +110,12 @@
     <!-- Tabulator plugin -->
     <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator.min.css'))%>" rel="stylesheet">
     <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_bootstrap3.min.css'))%>" rel="stylesheet">
-    <!-- <link href="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/css/tabulator_simple.min.css'))%>" rel="stylesheet"> -->
     <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/tabulator.js'))%>"></script>
-    <!-- <script type="text/javascript" src="<%=url_for(helperGetFileVersion('/node_modules/tabulator/dist/js/jquery_wrapper.js'))%>"></script> -->
 
-    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/css/dataTables.bootstrap4.min.css')%>" rel="stylesheet">
-    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/css/buttons.dataTables.min.css')%>" rel="stylesheet">
-    <link href="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/css/select.bootstrap4.min.css')%>" rel="stylesheet">
-
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/DataTables-1.13.8/js/jquery.dataTables.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/dataTables.buttons.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/buttons.html5.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Buttons-2.4.2/js/buttons.print.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/JSZip-3.10.1/jszip.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/pdfmake-0.2.7/pdfmake.min.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/pdfmake-0.2.7/vfs_fonts.js')%>"></script>
-    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables-v1.13.8/Select-1.7.0/js/dataTables.select.min.js')%>"></script>
+    <!-- Start DataTable plugin -->
+    <!-- v2.2.2 -->
+    <link href="<%=url_for('/node_modules/DataTables/bootstrap4_datatables.min.css')%>" rel="stylesheet">
+    <script type="text/javascript" src="<%=url_for('/node_modules/DataTables/bootstrap4_datatables.min.js')%>"></script>
 
     <script type="text/javascript" src="<%=url_for('/node_modules/datatables-plugins/sorting/datetime-moment.js')%>"></script>
 

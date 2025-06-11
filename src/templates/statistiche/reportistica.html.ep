@@ -20,7 +20,10 @@
                 <div class="last-reporting" data-id="">
                     <h4 class="box-title"><strong>Calcola e scarica</strong> le statistiche della tua rete</h4>
                     <hr class="m-t-0 m-b-10">
-                    <p>Calcola le statistiche selezionando il giorno e la zona, in seguito scaricale in versione PDF.</p>
+                    <p>
+                        <!-- Calcola le statistiche selezionando il giorno e la zona, in seguito scaricale in versione PDF.<br> -->
+                        <span class="text-danger font-bold">ATTENZIONE:</span> le statistiche vengono <strong>calcolate solamente per gli inquinanti con degli strumenti stanziati</strong> nelle stazioni.
+                    </p>
                     <form class="form" id="stats-form" name="stats-form">
                         <div class="form-group row">
                             <label for="stats-type" class="col-md-2 col-form-label">Tipologia <span class="text-danger">*</span></label>

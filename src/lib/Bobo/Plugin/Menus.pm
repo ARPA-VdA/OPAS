@@ -24,7 +24,7 @@ sub register {
         $active_page =~ /(\/\w*)(\/.+)?/;
         $active_page = "$1";
         # log debug message
-        $app->log->debug('Bobo::Plugin::Menus :: helperGetHomepageStash()');
+        $app->log->debug('Bobo::Plugin::Menus :: helperGetMenusStash()');
         $app->log->debug('Active page: '.$active_page);
 
         # -------------------------------------------------------
@@ -49,7 +49,6 @@ sub register {
                 }
             }
         }
-
 
         $self->stash( user => $user );
         $self->stash( portal_favicon => $portal_favicon );
@@ -102,6 +101,24 @@ sub register {
     });
 
     # -----------------------------------------------------------------------------
+    # -- helperGetSysAdminOptions
+    # -----------------------------------------------------------------------------
+    $app->helper(helperGetSysAdminOptions => sub {
+        my $self = shift;
+
+        # log debug message
+        $app->log->debug('Bobo::Plugin::Menus :: helperGetSysAdminOptions()');
+
+        # -------------------------------------------------------
+        # get portal options based on the portal
+        # -------------------------------------------------------
+        my $sysadmin_options = $self->dbmain->get_sys_admin_options(  );
+        
+        # $self->app->log->debug(Dumper($sidebar_usermenu));
+        return decode_json(encode_utf8($sysadmin_options));
+    });
+
+    # -----------------------------------------------------------------------------
     # -- helperGetPortalPageOptions
     # -----------------------------------------------------------------------------
     $app->helper(helperGetPortalPageOptions => sub {
@@ -143,13 +160,21 @@ Return:     valore 1
 
 =cut
 
+=head1 helperGetSysAdminOptions
+
+Funzione che recupera le opzioni di sistema settate dal System Admin
+
+Argomenti:  /;
+
+Return:     Oggetto json con le impostazioni
+
 =head1 helperGetPortalPageOptions
 
 Funzione che recupera le opzioni della pagina attualmente attiva, in base al portale.
 
-Argomenti:  * pagina visualizzata ('active_page');
+Argomenti:  * id portale dell'utente;
 
-           * oggetto contenente le informazioni relative all'utente ('user');
+            * pagina visualizzata ('active_page');
 
 Return:     valore 1
 

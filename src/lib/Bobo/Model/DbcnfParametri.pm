@@ -87,7 +87,7 @@ sub get_parameters_from_config {
 
     # query
     my $sql = qq{
-        SELECT metadata.f_get_parameters_from_station_config_v2( ( ? ):: jsonb ) AS params_obj;
+        SELECT metadata.f_get_parameters_from_station_config_v3( ( ? ):: jsonb ) AS params_obj;
     };
 
     # return

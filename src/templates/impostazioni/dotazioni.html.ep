@@ -84,6 +84,8 @@
                                     <th class="bobo-nowrap"></th>
                                     <th class="bobo-nowrap">Arpa ID</th>
                                     <th>Dotazione</th>
+                                    <th>Marca modello</th>
+                                    <th>S.N.</th>
                                     <th>Dismesso</th>
                                     <th>Location attuale</th>
                                     <th>Dal</th>
@@ -99,6 +101,8 @@
                                     <th class="bobo-nowrap"></th>
                                     <th class="bobo-nowrap">Arpa ID</th>
                                     <th>Dotazione</th>
+                                    <th>Marca modello</th>
+                                    <th>S.N.</th>
                                     <th>Dismesso</th>
                                     <th>Location attuale</th>
                                     <th>Dal</th>
@@ -115,32 +119,45 @@
                         <form class="form" id="equipment-form" name="equipment-form">
                             <input type="hidden" class="clear-input" id="equipment-id" name="equipment-id" value="">
                             <div class="form-group row">
-                                <label for="equipment-name" class="col-2 col-form-label">Dotazione <span class="text-danger">*</span></label>
-                                <div class="col-4">
+                                <label for="equipment-name" class="col-md-2 col-form-label">Dotazione <span class="text-danger">*</span></label>
+                                <div class="col-md-4">
                                     <input type="text" class="form-control clear-input" id="equipment-name" name="equipment-name" placeholder="Dotazione">
                                 </div>
-                                <label for="equipment-arpa-id" class="col-2 col-form-label">Arpa ID</label>
-                                <div class="col-4">
+                                <label for="equipment-arpa-id" class="col-md-2 col-form-label">Arpa ID</label>
+                                <div class="col-md-4">
                                     <input type="text" class="form-control clear-input" id="equipment-arpa-id" name="equipment-arpa-id" placeholder="Arpa ID">
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="equipment-owner" class="col-2 col-form-label">Proprietario</label>
-                                <div class="col-4">
-                                    <input type="text" class="form-control clear-input" id="equipment-owner" name="equipment-owner" placeholder="Proprietario">
+                                <label for="equipment-serial-number" class="col-md-2 col-form-label">Numero di serie </label>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control clear-input" id="equipment-serial-number" name="equipment-serial-number" placeholder="Numero di serie">
                                 </div>
-                                <label for="equipment-date-dismiss" class="col-2 col-form-label">Dismesso il</label>
-                                <div class="col-4 input-group">
+                                <label for="equipment-brand-model" class="col-md-2 col-form-label">Marca e modello</label>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control clear-input" id="equipment-brand-model" name="equipment-brand-model" placeholder="Marca e modello">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="equipment-date-start" class="col-md-2 col-form-label">Consegnato il</label>
+                                <div class="col-md-4 input-group">
+                                    <input type="text" class="form-control clear-input" id="equipment-date-start" name="equipment-date-start" placeholder="mm/dd/yyyy">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="icon-calender"></i></span>
+                                    </div>
+                                </div>
+                                <label for="equipment-date-dismiss" class="col-md-2 col-form-label">Dismesso il</label>
+                                <div class="col-md-4 input-group">
                                     <input type="text" class="form-control clear-input" id="equipment-date-dismiss" name="equipment-date-dismiss" placeholder="mm/dd/yyyy">
                                     <div class="input-group-append">
                                         <span class="input-group-text"><i class="icon-calender"></i></span>
                                     </div>
                                 </div>
-                                <!-- <div class="col-4 offset-2">
+                                <!-- <div class="col-md-4 offset-2">
                                     Dotazione attiva&nbsp;&nbsp;<input type="checkbox" checked data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android"  id="equipment-active" name="equipment-active" />
                                 </div> -->
-                                <!-- <label for="equipment-networks" class="col-2 col-form-label">Reti di appartenenza</label>
-                                <div class="col-4">
+                                <!-- <label for="equipment-networks" class="col-md-2 col-form-label">Reti di appartenenza</label>
+                                <div class="col-md-4">
                                     <select class="custom-select clear-select col-12" id="equipment-networks" name="equipment-networks" multiple>
                                         <option value="1">Rete 1</option>
                                         <option value="2">Rete 2</option>
@@ -149,22 +166,26 @@
                                 </div> -->
                             </div>
                             <div class="form-group row">
-                                <div class="col-4 offset-8">
+                                <label for="equipment-owner" class="col-md-2 col-form-label">Proprietario</label>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control clear-input" id="equipment-owner" name="equipment-owner" placeholder="Proprietario">
+                                </div>
+                                <div class="col-md-4 offset-md-2 m-t-5">
                                     Dotazione attiva&nbsp;&nbsp;<input type="checkbox" checked data-onstyle="success" data-offstyle="danger" data-on="SI" data-off="NO" data-size="xs" data-style="android"  id="equipment-active" name="equipment-active" />
                                 </div>
                             </div>
                             <h5 class="divider-title">Ulteriori dettagli</h5>
                             <div class="form-group row">
-                                <label for="equipment-networks" class="col-2 col-form-label">Reti di appartenenza <span class="text-danger">*</span></label>
-                                <div class="col-3">
+                                <label for="equipment-networks" class="col-md-2 col-form-label">Reti di appartenenza <span class="text-danger">*</span></label>
+                                <div class="col-md-3">
                                     <select class="custom-select clear-select col-12" id="equipment-networks" name="equipment-networks" data-dest="loc-stat" multiple>
                                         % foreach my $network (@{$networks}){
                                             <option value="<%= $network->{st_network_id}%>"><%= $network->{st_network_name} %></option>
                                         % }
                                     </select>
                                 </div>
-                                <label for="equipment-attach" class="col-2 col-form-label">Allegati</label>
-                                <div class="col-5">
+                                <label for="equipment-attach" class="col-md-2 col-form-label">Allegati</label>
+                                <div class="col-md-5">
                                     <div id="equipment-attach" class="dropzone"></div>
                                     <div class="row attachment-gallery-big m-t-10 m-b-10">
                                         <div class="col-md-12" id="img-container">
@@ -176,8 +197,8 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="equipment-note" class="col-2 col-form-label">Note aggiuntive</label>
-                                <div class="col-10">
+                                <label for="equipment-note" class="col-md-2 col-form-label">Note aggiuntive</label>
+                                <div class="col-md-10">
                                     <textarea class="form-control clear-input" rows="6" id="equipment-note" name="equipment-note"></textarea>
                                 </div>
                             </div>
@@ -190,8 +211,8 @@
                                 <div id="add-location-fields">
                                     <h5 class="divider-title">Inserisci location</h5>
                                     <div class="form-group row">
-                                        <label for="loc-prov" class="col-2 col-form-label">Provincia</label>
-                                        <div class="col-4">
+                                        <label for="loc-prov" class="col-md-2 col-form-label">Provincia</label>
+                                        <div class="col-md-4">
                                             <select class="custom-select clear-select col-12" id="loc-prov" name="loc-prov" data-dest="loc-stat">
                                                 <option value="-1">Seleziona provincia...</option>
                                                 % my $region = '';
@@ -215,23 +236,23 @@
                                             </select>
 
                                         </div>
-                                        <label for="loc-stat" class="col-2 col-form-label">Stazione <span class="text-danger">*</span></label>
-                                        <div class="col-4">
+                                        <label for="loc-stat" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                        <div class="col-md-4">
                                             <select class="custom-select clear-select col-12" id="loc-stat" name="loc-stat">
                                                 <option value="-1">Seleziona...</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="loc-start-date" class="col-2 col-form-label">Data/ora inizio <span class="text-danger">*</span></label>
-                                        <div class="input-group col-4">
+                                        <label for="loc-start-date" class="col-md-2 col-form-label">Data/ora inizio <span class="text-danger">*</span></label>
+                                        <div class="input-group col-md-4">
                                             <input type="text" class="form-control clear-input" id="loc-start-date" name="loc-start-date" placeholder="mm/dd/yyyy hh:mm">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="icon-calender"></i></span>
                                             </div>
                                         </div>
-                                        <label for="loc-end-date" class="col-2 col-form-label">Data/ora fine</label>
-                                        <div class="input-group col-4">
+                                        <label for="loc-end-date" class="col-md-2 col-form-label">Data/ora fine</label>
+                                        <div class="input-group col-md-4">
                                             <input type="text" class="form-control clear-input" id="loc-end-date" name="loc-end-date" placeholder="mm/dd/yyyy hh:mm">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="icon-calender"></i></span>
@@ -239,8 +260,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="loc-notes" class="col-2 col-form-label">Note location</label>
-                                        <div class="col-10">
+                                        <label for="loc-notes" class="col-md-2 col-form-label">Note location</label>
+                                        <div class="col-md-10">
                                             <textarea class="form-control clear-input" rows="6" id="loc-notes" name="loc-notes"></textarea>
                                         </div>
                                     </div>
@@ -264,8 +285,8 @@
                             <input type="hidden" class="clear-input" id="place-networks" name="place-networks" value="">
 
                             <div class="form-group row">
-                                <label for="place-loc-equipment" class="col-2 col-form-label">Dotazione</label>
-                                <div class="col-10">
+                                <label for="place-loc-equipment" class="col-md-2 col-form-label">Dotazione</label>
+                                <div class="col-md-10">
                                     <select class="custom-select clear-select col-12" id="place-loc-equipment" name="place-loc-equipment">
                                         <option value="-1">Seleziona...</option>
                                     </select>
@@ -276,8 +297,8 @@
                                 <h5 class="divider-title">Inserisci location</h5>
 
                                 <div class="form-group row">
-                                    <label for="place-loc-prov" class="col-2 col-form-label">Provincia</label>
-                                    <div class="col-4">
+                                    <label for="place-loc-prov" class="col-md-2 col-form-label">Provincia</label>
+                                    <div class="col-md-4">
                                         <select class="custom-select clear-select col-12" id="place-loc-prov" name="place-loc-prov" data-dest="place-loc-stat">
                                             <option value="-1">Seleziona provincia...</option>
                                             % $region = '';
@@ -301,23 +322,23 @@
                                         </select>
 
                                     </div>
-                                    <label for="place-loc-stat" class="col-2 col-form-label">Stazione <span class="text-danger">*</span></label>
-                                    <div class="col-4">
+                                    <label for="place-loc-stat" class="col-md-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                    <div class="col-md-4">
                                         <select class="custom-select clear-select col-12" id="place-loc-stat" name="place-loc-stat">
                                             <option value="-1">Seleziona...</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="place-loc-start-date" class="col-2 col-form-label">Data/ora inizio <span class="text-danger">*</span></label>
-                                    <div class="input-group col-4">
+                                    <label for="place-loc-start-date" class="col-md-2 col-form-label">Data/ora inizio <span class="text-danger">*</span></label>
+                                    <div class="input-group col-md-4">
                                         <input type="text" class="form-control clear-input" id="place-loc-start-date" name="place-loc-start-date" placeholder="mm/dd/yyyy hh:mm">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="icon-calender"></i></span>
                                         </div>
                                     </div>
-                                    <label for="place-loc-end-date" class="col-2 col-form-label">Data/ora fine</label>
-                                    <div class="input-group col-4">
+                                    <label for="place-loc-end-date" class="col-md-2 col-form-label">Data/ora fine</label>
+                                    <div class="input-group col-md-4">
                                         <input type="text" class="form-control clear-input" id="place-loc-end-date" name="place-loc-end-date" placeholder="mm/dd/yyyy hh:mm">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="icon-calender"></i></span>
@@ -325,8 +346,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="place-loc-notes" class="col-2 col-form-label">Note location</label>
-                                    <div class="col-10">
+                                    <label for="place-loc-notes" class="col-md-2 col-form-label">Note location</label>
+                                    <div class="col-md-10">
                                         <textarea class="form-control clear-input" rows="6" id="place-loc-notes" name="place-loc-notes"></textarea>
                                     </div>
                                 </div>
@@ -345,34 +366,34 @@
                             <h4 class="box-title"><strong>Dotazione XXXX YZZZ</strong></h4>
                             <hr class="m-t-0 m-b-20">
                             <div class="form-group row">
-                                <label for="" class="control-label col-2 col-form-label">Arpa ID</label>
-                                <div class="col-4 view-param">00518</div>
-                                <label for="" class="control-label col-2 col-form-label">Dismesso il</label>
-                                <div class="col-4 view-param">25/07/2020</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Arpa ID</label>
+                                <div class="col-md-4 view-param">00518</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Dismesso il</label>
+                                <div class="col-md-4 view-param">25/07/2020</div>
                             </div>
                             <div class="form-group row">
-                                <label for="" class="control-label col-2 col-form-label">Reti di appartenenza</label>
-                                <div class="col-4 view-param">Rete 1 - Rete 2</div>
-                                <div class="col-4 offset-2 view-param"><i class="icon-check text-info"></i> Dotazione attiva</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Reti di appartenenza</label>
+                                <div class="col-md-4 view-param">Rete 1 - Rete 2</div>
+                                <div class="col-md-4 offset-2 view-param"><i class="icon-check text-info"></i> Dotazione attiva</div>
                             </div>
                             <div class="form-group row">
-                                <label for="" class="control-label col-2 col-form-label">Note aggiuntive</label>
-                                <div class="col-10 view-param">Massa massa ultricies mi quis hendrerit dolor magna. Urna porttitor rhoncus dolor purus non enim. Ornare arcu dui vivamus arcu felis bibendum ut. Lacus vestibulum sed arcu non odio euismod. Mattis vulputate enim nulla aliquet porttitor lacus. </div>
+                                <label for="" class="control-label col-md-2 col-form-label">Note aggiuntive</label>
+                                <div class="col-md-10 view-param">Massa massa ultricies mi quis hendrerit dolor magna. Urna porttitor rhoncus dolor purus non enim. Ornare arcu dui vivamus arcu felis bibendum ut. Lacus vestibulum sed arcu non odio euismod. Mattis vulputate enim nulla aliquet porttitor lacus. </div>
                             </div>
 
                             <h4 class="box-title m-t-30">Location attuale della dotazione</h4>
                             <hr class="m-t-0 m-b-20">
                             <div class="form-group row">
-                                <label for="" class="control-label col-2 col-form-label">Stazione attuale</label>
-                                <div class="col-4 view-param">Plouves - Aosta</div>
-                                <label for="" class="control-label col-2 col-form-label">Note location</label>
-                                <div class="col-4 view-param">Scrivo qui un testo relativo al posizionamento :)</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Stazione attuale</label>
+                                <div class="col-md-4 view-param">Plouves - Aosta</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Note location</label>
+                                <div class="col-md-4 view-param">Scrivo qui un testo relativo al posizionamento :)</div>
                             </div>
                             <div class="form-group row">
-                                <label for="" class="control-label col-2 col-form-label">Data/ora inizio</label>
-                                <div class="col-4 view-param">25/05/2019 14:30</div>
-                                <label for="" class="control-label col-2 col-form-label">Data/ora fine</label>
-                                <div class="col-4 view-param">25/05/2022 14:30</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Data/ora inizio</label>
+                                <div class="col-md-4 view-param">25/05/2019 14:30</div>
+                                <label for="" class="control-label col-md-2 col-form-label">Data/ora fine</label>
+                                <div class="col-md-4 view-param">25/05/2022 14:30</div>
                             </div>
                             <div class="form-group row">
                                 <div class="col-12 view-param">

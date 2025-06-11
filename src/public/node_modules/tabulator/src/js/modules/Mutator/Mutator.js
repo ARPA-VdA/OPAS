@@ -2,12 +2,17 @@ import Module from '../../core/Module.js';
 
 import defaultMutators from './defaults/mutators.js';
 
-class Mutator extends Module{
+export default class Mutator extends Module{
+
+	static moduleName = "mutator";
+
+	//load defaults
+	static mutators = defaultMutators;
 
 	constructor(table){
 		super(table);
 
-		this.allowedTypes = ["", "data", "edit", "clipboard"]; //list of mutation types
+		this.allowedTypes = ["", "data", "edit", "clipboard", "import"]; //list of mutation types
 		this.enabled = true;
 
 		this.registerColumnOption("mutator");
@@ -18,6 +23,8 @@ class Mutator extends Module{
 		this.registerColumnOption("mutatorEditParams");
 		this.registerColumnOption("mutatorClipboard");
 		this.registerColumnOption("mutatorClipboardParams");
+		this.registerColumnOption("mutatorImport");
+		this.registerColumnOption("mutatorImportParams");
 		this.registerColumnOption("mutateLink");
 	}
 
@@ -87,6 +94,8 @@ class Mutator extends Module{
 		var key = "mutator" + (type.charAt(0).toUpperCase() + type.slice(1)),
 		value;
 
+		// console.log("key", key)
+
 		if(this.enabled){
 
 			this.table.columnManager.traverse((column) => {
@@ -153,10 +162,3 @@ class Mutator extends Module{
 		this.enabled = false;
 	}
 }
-
-Mutator.moduleName = "mutator";
-
-//load defaults
-Mutator.mutators = defaultMutators;
-
-export default Mutator;

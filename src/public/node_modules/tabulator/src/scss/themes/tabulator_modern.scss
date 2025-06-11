@@ -41,6 +41,15 @@ $handleWidth:10px !default; //width of the row handle
 $handleColor: $primary !default; //color for odd numbered rows
 $handleColorAlt: lighten($primary, 10%) !default; //color for even numbered rows
 
+//range selection
+$rangeBorderColor: #{darken($primary, 10%)} !default; //range border color
+$rangeHandleColor: $rangeBorderColor !default; //range handle color
+$rangeHeaderSelectedBackground: $rangeBorderColor !default; //header background color when selected
+$rangeHeaderHighlightBackground: $primary !default; //header background color when highlighted
+$rangeHeaderTextHighlightBackground: #fff !default; //header text color when highlighted
+
+
+
 @import "../tabulator.scss";
 
 .tabulator{
@@ -140,6 +149,20 @@ $handleColorAlt: lighten($primary, 10%) !default; //color for even numbered rows
 				border-bottom:none !important;
 			}
 		}
+
+		.tabulator-spreadsheet-tabs{
+			.tabulator-spreadsheet-tab{
+				border-color:$footerBorderColor;
+				
+				color:$rowTextColor;
+				font-weight: normal;
+				
+				&.tabulator-spreadsheet-tab-active{
+					font-weight: bold;
+					color:$footerTextColor;
+				}
+			}
+		}
 	}
 }
 
@@ -150,6 +173,11 @@ $handleColorAlt: lighten($primary, 10%) !default; //color for even numbered rows
 	.tabulator-cell{
 		&:first-child{
 			border-left: $handleWidth solid $handleColor;
+		}
+
+		&.tabulator-row-header{
+			background-color: $handleColor;
+			color:#fff;
 		}
 	}
 
@@ -162,6 +190,10 @@ $handleColorAlt: lighten($primary, 10%) !default; //color for even numbered rows
 
 			&:first-child{
 				border-left: $handleWidth solid $handleColorAlt;
+			}
+
+			&.tabulator-row-header{
+				background-color: $handleColorAlt;
 			}
 		}
 	}
@@ -216,6 +248,12 @@ $handleColorAlt: lighten($primary, 10%) !default; //color for even numbered rows
 		span{
 			color:$primary;
 		}
+	}
+}
+
+.tabulator-toggle{
+	&.tabulator-toggle-on{
+		background:$primary;
 	}
 }
 

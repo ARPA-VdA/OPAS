@@ -661,9 +661,10 @@ $( document ).ready(function() {
                     {
                         title: 'Data & ora',
                         className: 'td-strong',
-                        render: function ( data, type, row ) {
-                            return (getFormattedDatePublic(row[0] , dateFormat));
+                        render: function ( data, type, row, meta ) {
+                            return (getFormattedDatePublic(data , dateFormat));
                         },
+                        data: 'fulldate',
                         visible: true
                     }
                 ];
@@ -677,7 +678,8 @@ $( document ).ready(function() {
                         columnsConfig.push({
                             title: param.parameter_fullname,
                             visible: true,
-                            type: 'setlow'
+                            type: 'setlow',
+                            data: 'col' + index
                         });
                     }
                     else{
@@ -688,32 +690,13 @@ $( document ).ready(function() {
                             columnsConfig.push({
                                 title: param.parameter_fullname,
                                 visible: true,
-                                type: 'setlow'
+                                type: 'setlow',
+                                data: 'col' + index
                             });
-                        }
+                    }
                     }
 
                 });
-
-                // dynamically create table body based on number of added parameters in the columns configuration object
-                var html_body = '';
-
-                // loop through all retrieved data
-                // for each element build a row to be added to the table
-                $.each(values, function(index, value){
-                    html_body += '<tr>\n';
-                    // first column contains the data fulldate
-                    html_body += '    <td>'+value['fulldate']+'</td>\n';
-                    for(var i=0; i<n_params; i++){
-
-                        html_body += '    <td>'+value['col'+i]+'</td>\n';
-                    }
-
-                    html_body += '</tr>\n';
-                });
-
-                // append html table body
-                $('#station-table tbody').append(html_body);
 
                 // initialize datatable plugin passing the columns configuration object
                 table = $('#station-table').DataTable({
@@ -721,6 +704,7 @@ $( document ).ready(function() {
                     searching: false,
                     responsive: true,
                     pageLength: 24,
+                    data: values,
                     columns: columnsConfig,
                     "language": {
                         "url": "/bobo-js/italian.json"

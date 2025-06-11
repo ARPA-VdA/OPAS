@@ -3,7 +3,12 @@ import Helpers from '../../core/tools/Helpers.js';
 
 import defaultEditors from './defaults/editors.js';
 
-class Edit extends Module{
+export default class Edit extends Module{
+
+	static moduleName = "edit";
+
+	//load defaults
+	static editors = defaultEditors;
 	
 	constructor(table){
 		super(table);
@@ -13,12 +18,19 @@ class Edit extends Module{
 		this.recursionBlock = false; //prevent focus recursion
 		this.invalidEdit = false;
 		this.editedCells = [];
+		this.convertEmptyValues = false;
 		
 		this.editors = Edit.editors;
-		
+	
+		this.registerTableOption("editTriggerEvent", "focus");
+		this.registerTableOption("editorEmptyValue");
+		this.registerTableOption("editorEmptyValueFunc", this.emptyValueCheck.bind(this));
+
 		this.registerColumnOption("editable");
 		this.registerColumnOption("editor");
 		this.registerColumnOption("editorParams");
+		this.registerColumnOption("editorEmptyValue");
+		this.registerColumnOption("editorEmptyValueFunc");
 		
 		this.registerColumnOption("cellEditing");
 		this.registerColumnOption("cellEdited");
@@ -55,13 +67,30 @@ class Edit extends Module{
 		this.subscribe("row-deleting", this.rowDeleteCheck.bind(this));
 		this.subscribe("row-layout", this.rowEditableCheck.bind(this));
 		this.subscribe("data-refreshing", this.cancelEdit.bind(this));
+		this.subscribe("clipboard-paste", this.pasteBlocker.bind(this));
 		
 		this.subscribe("keybinding-nav-prev", this.navigatePrev.bind(this, undefined));
 		this.subscribe("keybinding-nav-next", this.keybindingNavigateNext.bind(this));
-		this.subscribe("keybinding-nav-left", this.navigateLeft.bind(this, undefined));
-		this.subscribe("keybinding-nav-right", this.navigateRight.bind(this, undefined));
+		
+		// this.subscribe("keybinding-nav-left", this.navigateLeft.bind(this, undefined));
+		// this.subscribe("keybinding-nav-right", this.navigateRight.bind(this, undefined));
 		this.subscribe("keybinding-nav-up", this.navigateUp.bind(this, undefined));
 		this.subscribe("keybinding-nav-down", this.navigateDown.bind(this, undefined));
+
+		if(Object.keys(this.table.options).includes("editorEmptyValue")){
+			this.convertEmptyValues = true;
+		}
+	}
+	
+	
+	///////////////////////////////////
+	///////// Paste Negation //////////
+	///////////////////////////////////
+	
+	pasteBlocker(e){
+		if(this.currentCell){
+			return true;
+		}
 	}
 	
 	
@@ -72,27 +101,30 @@ class Edit extends Module{
 	keybindingNavigateNext(e){
 		var cell = this.currentCell,
 		newRow = this.options("tabEndNewRow");
-		
+
 		if(cell){
 			if(!this.navigateNext(cell, e)){
 				if(newRow){
 					cell.getElement().firstChild.blur();
 					
-					if(newRow === true){
-						newRow = this.table.addRow({});
-					}else{
-						if(typeof newRow == "function"){
-							newRow = this.table.addRow(newRow(cell.row.getComponent()));
+					if(!this.invalidEdit){
+						
+						if(newRow === true){
+							newRow = this.table.addRow({});
 						}else{
-							newRow = this.table.addRow(Object.assign({}, newRow));
+							if(typeof newRow == "function"){
+								newRow = this.table.addRow(newRow(cell.row.getComponent()));
+							}else{
+								newRow = this.table.addRow(Object.assign({}, newRow));
+							}
 						}
-					}
-					
-					newRow.then(() => {
-						setTimeout(() => {
-							cell.getComponent().navigateNext();
+						
+						newRow.then(() => {
+							setTimeout(() => {
+								cell.getComponent().navigateNext();
+							});
 						});
-					});
+					}
 				}
 			}
 		}
@@ -348,7 +380,7 @@ class Edit extends Module{
 			this.cancelEdit();
 		}
 	}
-
+	
 	rowEditableCheck(row){
 		row.getCells().forEach((cell) => {
 			if(cell.column.modules.edit && typeof cell.column.modules.edit.check === "function"){
@@ -359,34 +391,49 @@ class Edit extends Module{
 	
 	//initialize column editor
 	initializeColumn(column){
+		var convertEmpty = Object.keys(column.definition).includes("editorEmptyValue");
+
 		var config = {
 			editor:false,
 			blocked:false,
 			check:column.definition.editable,
-			params:column.definition.editorParams || {}
+			params:column.definition.editorParams || {},
+			convertEmptyValues:convertEmpty,
+			editorEmptyValue:column.definition.editorEmptyValue,
+			editorEmptyValueFunc:column.definition.editorEmptyValueFunc,
 		};
 		
 		//set column editor
-		switch(typeof column.definition.editor){
+		config.editor = this.lookupEditor(column.definition.editor, column);
+		
+		if(config.editor){
+			column.modules.edit = config;
+		}
+	}
+
+	lookupEditor(editor, column){
+		var editorFunc;
+
+		switch(typeof editor){
 			case "string":
-				if(this.editors[column.definition.editor]){
-					config.editor = this.editors[column.definition.editor];
+				if(this.editors[editor]){
+					editorFunc = this.editors[editor];
 				}else{
-					console.warn("Editor Error - No such editor found: ", column.definition.editor);
+					console.warn("Editor Error - No such editor found: ", editor);
 				}
 				break;
 			
 			case "function":
-				config.editor = column.definition.editor;
+				editorFunc = editor;
 				break;
 			
 			case "boolean":
-				if(column.definition.editor === true){
+				if(editor === true){
 					if(typeof column.definition.formatter !== "function"){
 						if(this.editors[column.definition.formatter]){
-							config.editor = this.editors[column.definition.formatter];
+							editorFunc = this.editors[column.definition.formatter];
 						}else{
-							config.editor = this.editors["input"];
+							editorFunc = this.editors["input"];
 						}
 					}else{
 						console.warn("Editor Error - Cannot auto lookup editor for a custom formatter: ", column.definition.formatter);
@@ -394,10 +441,8 @@ class Edit extends Module{
 				}
 				break;
 		}
-		
-		if(config.editor){
-			column.modules.edit = config;
-		}
+
+		return editorFunc;
 	}
 	
 	getCurrentCell(){
@@ -458,12 +503,6 @@ class Edit extends Module{
 			this.updateCellClass(cell);
 			element.setAttribute("tabindex", 0);
 			
-			element.addEventListener("click", function(e){
-				if(!element.classList.contains("tabulator-editing")){
-					element.focus({preventScroll: true});
-				}
-			});
-			
 			element.addEventListener("mousedown", function(e){
 				if (e.button === 2) {
 					e.preventDefault();
@@ -471,12 +510,33 @@ class Edit extends Module{
 					self.mouseClick = true;
 				}
 			});
+
+			if(this.options("editTriggerEvent") === "dblclick"){
+				element.addEventListener("dblclick", function(e){
+					if(!element.classList.contains("tabulator-editing")){
+						element.focus({preventScroll: true});
+						self.edit(cell, e, false);
+					}
+				});
+			}
 			
-			element.addEventListener("focus", function(e){
-				if(!self.recursionBlock){
-					self.edit(cell, e, false);
-				}
-			});
+			
+			if(this.options("editTriggerEvent") === "focus" || this.options("editTriggerEvent") === "click"){
+				element.addEventListener("click", function(e){
+					if(!element.classList.contains("tabulator-editing")){
+						element.focus({preventScroll: true});
+						self.edit(cell, e, false);
+					}
+				});
+			}
+			
+			if(this.options("editTriggerEvent") === "focus"){
+				element.addEventListener("focus", function(e){
+					if(!self.recursionBlock){
+						self.edit(cell, e, false);
+					}
+				});
+			}
 		}
 	}
 	
@@ -535,7 +595,7 @@ class Edit extends Module{
 	
 	allowEdit(cell) {
 		var check = cell.column.modules.edit ? true : false;
-
+		
 		if(cell.column.modules.edit){
 			switch(typeof cell.column.modules.edit.check){
 				case "function":
@@ -543,17 +603,17 @@ class Edit extends Module{
 						check = cell.column.modules.edit.check(cell.getComponent());
 					}
 					break;
-
+				
 				case "string":
 					check = !!cell.row.data[cell.column.modules.edit.check];
 					break;
-
+				
 				case "boolean":
 					check = cell.column.modules.edit.check;
 					break;
 			}
 		}
-
+		
 		return check;
 	}
 	
@@ -562,10 +622,11 @@ class Edit extends Module{
 		allowEdit = true,
 		rendered = function(){},
 		element = cell.getElement(),
+		editFinished = false,
 		cellEditor, component, params;
-		
-		//prevent editing if another cell is refusing to leave focus (eg. validation fail)
 
+		//prevent editing if another cell is refusing to leave focus (eg. validation fail)
+		
 		if(this.currentCell){
 			if(!this.invalidEdit && this.currentCell !== cell){
 				this.cancelEdit();
@@ -575,12 +636,14 @@ class Edit extends Module{
 		
 		//handle successful value change
 		function success(value){
-			if(self.currentCell === cell){
+			if(self.currentCell === cell && !editFinished){
 				var valid = self.chain("edit-success", [cell, value], true, true);
-				
+
 				if(valid === true || self.table.options.validationMode === "highlight"){
+
+					editFinished = true;
+
 					self.clearEditor();
-					
 					
 					if(!cell.modules.edit){
 						cell.modules.edit = {};
@@ -591,14 +654,21 @@ class Edit extends Module{
 					if(self.editedCells.indexOf(cell) == -1){
 						self.editedCells.push(cell);
 					}
+
+					value = self.transformEmptyValues(value, cell);
 					
 					cell.setValue(value, true);
-					
+
 					return valid === true;
 				}else{
+					editFinished = true;
 					self.invalidEdit = true;
 					self.focusCellNoEvent(cell, true);
 					rendered();
+
+					setTimeout(() => {
+						editFinished = false;
+					}, 10);
 					return false;
 				}
 			}else{
@@ -608,7 +678,9 @@ class Edit extends Module{
 		
 		//handle aborted edit
 		function cancel(){
-			if(self.currentCell === cell){
+			// editFinished = true;
+
+			if(self.currentCell === cell && !editFinished){
 				self.cancelEdit();
 			}else{
 				// console.warn("Edit Success Error - cannot call cancel on a cell that is no longer being edited");
@@ -627,7 +699,6 @@ class Edit extends Module{
 			allowEdit = this.allowEdit(cell);
 			
 			if(allowEdit || forceEdit){
-				
 				self.cancelEdit();
 				
 				self.currentCell = cell;
@@ -677,24 +748,50 @@ class Edit extends Module{
 						}
 					}else{
 						console.warn("Edit Error - Editor should return an instance of Node, the editor returned:", cellEditor);
-						element.blur();
+						this.blur(element);
 						return false;
 					}
 				}else{
-					element.blur();
+					this.blur(element);
 					return false;
 				}
 				
 				return true;
 			}else{
 				this.mouseClick = false;
-				element.blur();
+				this.blur(element);
 				return false;
 			}
 		}else{
 			this.mouseClick = false;
-			element.blur();
+			this.blur(element);
 			return false;
+		}
+	}
+
+	emptyValueCheck(value){
+		return value === "" || value === null || typeof value === "undefined";
+	}
+
+	transformEmptyValues(value, cell){
+		var mod = cell.column.modules.edit, 
+		convert = mod.convertEmptyValues || this.convertEmptyValues,
+		checkFunc;
+		
+		if(convert){
+			checkFunc = mod.editorEmptyValueFunc || this.options("editorEmptyValueFunc");
+
+			if(checkFunc && checkFunc(value)){
+				value = mod.convertEmptyValues ? mod.editorEmptyValue : this.options("editorEmptyValue");
+			}
+		}
+		
+		return value;
+	}
+	
+	blur(element){
+		if(!this.confirm("edit-blur", [element]) ){
+			element.blur();
 		}
 	}
 	
@@ -724,11 +821,3 @@ class Edit extends Module{
 		}
 	}
 }
-
-Edit.moduleName = "edit";
-
-//load defaults
-Edit.editors = defaultEditors;
-
-
-export default Edit;

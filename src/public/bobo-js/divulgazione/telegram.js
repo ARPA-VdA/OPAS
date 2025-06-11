@@ -139,7 +139,7 @@ $(document).ready(function() {
                 };
 
                 // add link for the new tab
-                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#msg'+msg.id+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+msg.chat+' '+msg.insert_date+'</span>&nbsp&nbsp<i class="fa fa-times text-danger close_tab" data-close="msg'+msg.id+'"></i></a> </li>';
+                var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#msg'+msg.id+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+msg.chat+' '+msg.insert_date+'</span>&nbsp&nbsp<i class="fa fa-times text-danger close_tab" data-close="msg'+msg.id+'"></i></a> </li>';
                 // append new content to tabs list
                 $('.nav-tabs').append(html);
 

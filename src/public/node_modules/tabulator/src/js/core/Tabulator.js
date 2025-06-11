@@ -14,18 +14,34 @@ import ExternalEventBus from './tools/ExternalEventBus.js';
 import InternalEventBus from './tools/InternalEventBus.js';
 
 import DeprecationAdvisor from './tools/DeprecationAdvisor.js';
+import DependencyRegistry from './tools/DependencyRegistry.js';
 
-import TableRegistry from './tools/TableRegistry.js';
 import ModuleBinder from './tools/ModuleBinder.js';
 
 import OptionsList from './tools/OptionsList.js';
 
 import Alert from './tools/Alert.js';
 
-class Tabulator {
-	
-	constructor(element, options){
-		
+class Tabulator extends ModuleBinder{
+
+	//default setup options
+	static defaultOptions = defaultOptions;
+
+	static extendModule(){
+		Tabulator.initializeModuleBinder();
+		Tabulator._extendModule(...arguments);
+	}
+
+	static registerModule(){
+		Tabulator.initializeModuleBinder();
+		Tabulator._registerModule(...arguments);
+	}
+
+	constructor(element, options, modules){
+		super();
+
+		Tabulator.initializeModuleBinder(modules);
+
 		this.options = {};
 		
 		this.columnManager = null; // hold Column Manager
@@ -51,6 +67,8 @@ class Tabulator {
 		
 		this.deprecationAdvisor = new DeprecationAdvisor(this);
 		this.optionsList = new OptionsList(this, "table constructor");
+
+		this.dependencyRegistry = new DependencyRegistry(this);
 		
 		this.initialized = false;
 		this.destroyed = false;
@@ -65,7 +83,7 @@ class Tabulator {
 			});
 		}
 		
-		TableRegistry.register(this); //register table for inter-device communication
+		this.constructor.registry.register(this); //register table for inter-device communication
 	}
 	
 	initializeElement(element){
@@ -94,7 +112,7 @@ class Tabulator {
 		this.dataLoader = new DataLoader(this);
 		this.alertManager = new Alert(this);
 		
-		this.bindModules();
+		this._bindModules();
 		
 		this.options = this.optionsList.generate(Tabulator.defaultOptions, options);
 		
@@ -108,14 +126,14 @@ class Tabulator {
 		this.interactionMonitor = new InteractionMonitor(this);
 		
 		this.dataLoader.initialize();
-		// this.columnManager.initialize();
-		// this.rowManager.initialize();
 		this.footerManager.initialize();
+
+		this.dependencyRegistry.initialize();
 	}
 	
 	//convert deprecated functionality to new functions
 	_mapDeprecatedFunctionality(){
-		//all previously deprecated functionality removed in the 5.0 release
+		//all previously deprecated functionality removed in the 6.0 release
 	}
 	
 	_clearSelection(){
@@ -145,12 +163,14 @@ class Tabulator {
 		this._buildElement();
 		
 		this._initializeTable();
-		
-		this._loadInitialData();
-		
+
 		this.initialized = true;
 		
-		this.externalEvents.dispatch("tableBuilt");
+		this._loadInitialData()
+			.finally(() => {
+				this.eventBus.dispatch("table-initialized");
+				this.externalEvents.dispatch("tableBuilt");
+			});	
 	}
 	
 	_rtlCheck(){
@@ -276,7 +296,10 @@ class Tabulator {
 	}
 	
 	_loadInitialData(){
-		this.dataLoader.load(this.options.data);
+		return this.dataLoader.load(this.options.data)
+			.finally(() => {
+				this.columnManager.verticalAlignHeaders();
+			});		
 	}
 	
 	//deconstructor
@@ -285,7 +308,7 @@ class Tabulator {
 		
 		this.destroyed = true;
 		
-		TableRegistry.deregister(this); //deregister table from inter-device communication
+		this.constructor.registry.deregister(this); //deregister table from inter-device communication
 		
 		this.eventBus.dispatch("table-destroy");
 		
@@ -829,7 +852,7 @@ class Tabulator {
 		this.options.height = isNaN(height) ? height : height + "px";
 		this.element.style.height = this.options.height;
 		this.rowManager.initializeRenderer();
-		this.rowManager.redraw();
+		this.rowManager.redraw(true);
 	}
 	
 	//////////////////// Event Bus ///////////////////
@@ -885,11 +908,5 @@ class Tabulator {
 		return mod;
 	}
 }
-
-//default setup options
-Tabulator.defaultOptions = defaultOptions;
-
-//bind modules and static functionality
-new ModuleBinder(Tabulator);
 
 export default Tabulator;
