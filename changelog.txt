@@ -1,0 +1,36 @@
+-- CHANGELOG
+
+-- 2025-03-31 - V2.0.0
+
+- Aggiunta sezione System Admin per gestire la sospensione del sistema OPAS
+- Aggiunte informazioni versioning
+- Aggiunti link rapidi tra le pagine di Anagrafica, Mapper, Istantanei
+- Aggiunta in Analyser il recupero dei dati per stanziamento dei mezzi mobili
+  > creazione vista metadata.view_sites_parameters
+  > aggiornamento funzione clients.f_data_extraction
+  > aggiornamento funzione clients.f_calc_dynamic_moving_mean
+  > aggiornamento funzione clients.f_sldavg_data_extraction
+  > aggiornamento funzione metadata.f_get_conversion_by_date_stprid
+  > creata nuova funzione metadata.f_get_view_sites_parameters
+- Aggiornata funzione metadata.f_get_parameters_from_station_config_v3 con gestione paramID che arriva dalla configurazione di periferia e assegnazione parametro generico per parametri non trovati
+- Aggiornata funzione template.f_create_opas_tables con gestione trigger specifici per agenzia
+- Aggiornate funzioni template.f_create_cc_view e metadata.f_get_cc_from_station_config per gestione CC H2S.
+- Aggiunta funzione webservice.f_data_extraction_v2 per estrazione serie giornaliere
+- Aggiunti campi dotazioni: marca, modello e data di consegna. Aggiornate viste
+- Aggiornamento plugin DataTables, Highcharts e Tabulator e modifiche per mantenimento funzionalità
+  > evoluzione sistema di selezione dei dati nel tool Validazione
+- Ottimizzazione query di estrazione dati 
+- Backend: Script import dati, tarature, dati tarature istantanee ecc; configurazione SFTP
+  > aggiunto file "~/scripts/backend/import/import-cal.pl"
+  > aggiunto file "~/scripts/backend/import/import-data.pl"
+  > aggiunto file "~/scripts/backend/import/import-data.sh"
+  > aggiunto file "~/scripts/backend/import/import-inst.pl"
+  > aggiunto file "~/scripts/backend/import/import-inst.sh"
+  > aggiunto file "~/scripts/backend/import/library-dbh.pl"
+  > aggiunto file "~/scripts/backend/import/library-utils.pl"
+  > aggiunto file "~/scripts/backend/import/settings.pl"
+- Backend: Script export dati (trigger, tabella script); configurazione SFTP
+  > aggiunto file "~/scripts/backend/export/exporter_data.py"
+  > aggiunto file "~/scripts/backend/export/exporter.sql": trigger e tabella
+- Aggiornati file "README.md" e "INSTALL.md" su Github
+- Correzione bachi vari
