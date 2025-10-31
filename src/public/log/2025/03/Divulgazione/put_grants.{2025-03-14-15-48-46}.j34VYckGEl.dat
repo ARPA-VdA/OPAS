@@ -1,0 +1,3 @@
+{
+  "grants" => "[{\"stid\":1000,\"email\":true,\"telegram\":true}]"
+}

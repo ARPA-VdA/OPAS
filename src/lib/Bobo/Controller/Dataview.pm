@@ -48,9 +48,18 @@ sub dataview {
     $self->stash(stations => $stations);
 
     my $params = $self->dbdataview->get_dataview_params();
-    $self->stash(params => $params);
 
     my $params_live = $self->dbdataview->get_dataview_params_live();
+
+    # HACK to filter out the "Gamma" from the list of parameters
+    # check if the region is not defined or it is not Valle d'Aosta
+    if(!defined $self->stash('reg') || $self->stash('reg') != 2){
+        # all except the gamma
+        @{$params} = grep { $_->{'parameter_id'} != 151 } @{$params};
+        @{$params_live} = grep { $_->{'parameter_id'} != 151 } @{$params_live};
+    }
+
+    $self->stash(params => $params);
     $self->stash(params_live => $params_live);
 
     my $params_ind = $self->dbdataview->get_dataview_params_indicator();
@@ -229,9 +238,6 @@ sub get_map_last_data {
         unless looks_like_number($param_id);
 
     my $stations;
-
-    $self->app->log->debug("Aggregazione: $param_aggr");
-    # $self->helperDumper
 
     # get params from dateFrom to dateTo
     if (defined $user_id) {

@@ -563,6 +563,7 @@ sub get_info_params {
             SELECT
                 stpr_id                                             AS st_pr_id,
                 p.param_name || COALESCE(' - '|| sp.stpr_note, '')  AS name,
+                param_id                                            AS param_id,
                 station_name                                        AS station,
                 station_name||' '||p.param_name
                     ||COALESCE(' - '|| sp.stpr_note, '')

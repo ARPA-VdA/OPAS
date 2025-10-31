@@ -256,6 +256,68 @@ sub get_location_by_id {
     return $self->pg->db->query($sql, $stcyid)->hash();
 }
 
+sub get_cylinder_locations_history{
+    my ( $self, $cyid ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::DbcnfBombole sub get_cylinder_locations_history");
+
+    # query
+    my $sql = qq{
+        WITH t AS (
+            SELECT
+                row_number() OVER (PARTITION BY cy_id ORDER BY stcy_startup_date ASC) AS rownum,
+                stcy_id,
+                station_id AS main_station_id,
+                CASE
+                    WHEN stcy_dismiss_date = 'infinity' THEN metadata.f_get_stationid_by_date(station_id, CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome')
+                    ELSE metadata.f_get_stationid_by_date(station_id, stcy_dismiss_date)
+                END AS station_id,
+                stcy_startup_date,
+                CASE
+                    WHEN stcy_dismiss_date = 'infinity' THEN CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome'
+                    ELSE stcy_dismiss_date
+                END AS stcy_dismiss_date,
+                stcy_note
+            FROM
+                metadata.stations_cylinders
+            WHERE
+                cy_id = ?
+            ORDER BY 
+                stcy_startup_date ASC
+        )
+        SELECT 
+            vc.cylinder_mixture ||
+            COALESCE(' - '||vc.cylinder_name, '') ||
+            COALESCE(' ['||vc.cylinder_arpa_id||']', '') AS cylinder_name,
+            (
+            SELECT 
+                to_json(ARRAY_AGG(json_strip_nulls(row_to_json(l))))
+                FROM (
+                    SELECT 
+                        t.rownum::text AS id,
+                        vsi.station_name AS name,
+                        t.stcy_startup_date AS start,
+                        t.stcy_dismiss_date AS end,
+                        CASE
+                            WHEN t.rownum = 1 THEN NULL
+                            ELSE (t.rownum-1)::text 
+                        END 				AS dependency
+                    FROM
+                        t
+                        LEFT JOIN metadata.view_stations_info vsi USING (station_id)
+                    ORDER BY
+                        rownum
+                ) l 
+            ) AS cylinder_locations	
+        FROM equipments.view_cylinders vc
+        WHERE cy_id = ?;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $cyid, $cyid)->hash();
+}
+
 sub insert_new_cylinder {
     my( $self, $userid, $params ) = @_;
 
@@ -828,6 +890,17 @@ Return:     Risultato della query.
 Funzione che, dato l'id, recupera le informazioni di una determinata location dal database.
 
 Argomenti:  * id della location ('stcyid');
+
+Return:     Risultato della query.
+
+=cut
+
+=head1 get_cylinder_locations_history
+
+Funzione che dato l'id della bombola ne recupera lo storico degli stanziamenti, organizzandoli in un unico jsonb.
+L'oggetto viene utilizzato per la costruzione di un GANTT
+
+Argomenti:  * id della bombola ('cyid');
 
 Return:     Risultato della query.
 

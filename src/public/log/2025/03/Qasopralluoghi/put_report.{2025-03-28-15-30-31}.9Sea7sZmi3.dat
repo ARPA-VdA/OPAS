@@ -1,0 +1,9 @@
+{
+  "survey-datetime" => "28/03/2025 16:28",
+  "survey-district" => 1,
+  "survey-id" => "",
+  "survey-operators" => 1,
+  "survey-place" => "test",
+  "survey-prov" => 1,
+  "survey-text" => "<p>test<b>&nbsp;test</b></p>"
+}

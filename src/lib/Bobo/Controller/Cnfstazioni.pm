@@ -4,6 +4,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 use Unicode::UTF8 qw[decode_utf8 encode_utf8];
+use Mojo::File qw(path);
 use Sys::Hostname;
 
 sub stazioni {
@@ -90,26 +91,35 @@ sub get_station_by_id {
     # ATTENZIONE: non uso la dbcommon perché in questo caso non deve recuperare l'anagrafica del sito con stanziamento
     my $station = $self->dbcnfstazioni->get_station_by_id($stid);
     my $grants = $self->dbcommon->get_user_station_grants($userid, $stid);
+    my $locations;
+    # check if it is a roaming station
+    if($station->{station_roaming_type_id} == 2){
+        $locations = $self->dbcnfcampagne->get_mm_history($stid);
+    }   
 
-    my $image; # = @{$files->{'img_files'}}[0]; (old) gets the first image randomly
-
+    my $types = Mojolicious::Types->new;
+    my $image;
+    my @list;
     if (defined $station->{'station_media_path'}) {
-        my $files = $self->helperGetStationFiles($station->{'station_media_path'});
+        my $path = $self->app->home->rel_file("/public/".$station->{'station_media_path'}."/");
+        for my $item (path($path)->list({dir => 0})->each) {
 
-        # loop all images
-        for my $img (@{$files->{'img_files'}}) {
-            $self->app->log->debug("File immagine: $img");
-            # regular expression contain the 'station_id'
-            # examples:
-            # 1000.jpg        <-- get only this one
-            # 1000_map.png
-            # 1000_vdamap.png
-            # 1000_graph.png
-            # 1000_idro.png
-            my $reg = ".*(media.*".$stid."\.(jpg|png|jpeg))";
-            if ($img =~ /$reg/) {
-                $image = "/$1";
+            my $file_type = $types->file_type($item);
+            my $file_name = decode_utf8( $item->to_rel($self->app->home->rel_file('/'))->basename );
+
+            my $o = {
+                rel_path =>'/'.$station->{'station_media_path'}.'/'.$file_name,
+                basename => $file_name,
+                ext      => $item->extname, 
+                is_image => ( defined $file_type && $file_type =~ /^image/ ) ? 1 : 0 
+            };
+
+            my $reg = '^'.$stid.'\.'.$item->extname.'$';
+            if( defined $file_type && $file_type =~ /^image/ && $file_name =~ /$reg/){
+                $image = '/'.$station->{'station_media_path'}.'/'.$file_name;
             }
+
+            push @list, $o;
         }
     }
 
@@ -118,15 +128,15 @@ sub get_station_by_id {
         $image= "/media/no-photo-dataview.png";
     }
 
-    $self->app->log->debug("$image");
-
     my $json;
     if (defined $station) {
         $json = {
             res => "OK",
             station => $station,
             grants => $grants,
-            image => $image
+            gantt_locations => $locations,
+            image => $image,
+            files => \@list
         };
     }
     else {
@@ -165,7 +175,7 @@ sub get_pdf{
             eval{
                 # create remote report
                 $self->app->log->debug("[LOCALE] Lancio script creazione pdf");
-                my $cmd = '~/perl5/perlbrew/perls/perl-5.38.0/bin/perl ~/bin/anagrafica/stazioni/report-anagrafica.pl '.$user->{portal_id}.' '.$stid;
+                my $cmd = '~/perl5/perlbrew/perls/perl-5.38.0/bin/perl ~/PATH/report-anagrafica.pl '.$user->{portal_id}.' '.$stid;
                 $self->app->log->debug($cmd);
                 system($cmd) or $self->app->log->warn("CMD failed: $!");
                 $self->app->log->debug("Fine script creazione pdf");
@@ -173,7 +183,6 @@ sub get_pdf{
         }
         else {
             $self->app->log->debug("Lancio script creazione pdf");
-            # system('perl /var/www/bobo_latex/anagrafica/stazioni/report-anagrafica.pl '.$user->{portal_id}.' '.$stid);
             $self->app->log->debug("Fine script creazione pdf");
         }
     }

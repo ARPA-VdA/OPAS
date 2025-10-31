@@ -391,6 +391,66 @@ sub get_location_by_id {
     return $self->pg->db->query($sql, $stsiid)->hash();
 }
 
+sub get_mm_history{
+    my ( $self, $stid ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::DbcnfCampagne sub get_mm_history");
+
+    # query
+    my $sql = qq{
+        WITH t AS (
+            SELECT
+                row_number() OVER (PARTITION BY station_id ORDER BY stsi_startup_date ASC) AS rownum,
+                stsi_id,
+                station_id,
+                site_id,
+                stsi_startup_date,
+                CASE
+                    WHEN stsi_dismiss_date = 'infinity' THEN CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome'
+                    ELSE stsi_dismiss_date
+                END AS stin_dismiss_date,
+                stsi_note
+            FROM
+                metadata.stations_sites
+            WHERE
+                station_id = ?
+            ORDER BY 
+                stsi_startup_date ASC
+        )
+        SELECT 
+            s.station_name,
+            (
+            SELECT 
+                to_json(ARRAY_AGG(json_strip_nulls(row_to_json(l))))
+                FROM (
+                    SELECT 
+                        t.rownum::text AS id,
+                        vs.site_name||' - '||vs.site_locality||' ('|| vs.province_name ||')'  AS name,
+                        t.stsi_startup_date AS start,
+                        t.stin_dismiss_date AS end,
+                        vs.site_wgs84_lat,
+                        vs.site_wgs84_lon,
+                        COALESCE(t.stsi_note, '--') AS note,
+                        CASE
+                            WHEN t.rownum = 1 THEN NULL
+                            ELSE (t.rownum-1)::text 
+                        END 				AS dependency
+                    FROM
+                        t
+                        LEFT JOIN metadata.view_sites vs USING (site_id)
+                    ORDER BY
+                        rownum
+                ) l 
+            ) AS mm_locations	
+        FROM metadata.stations s
+        WHERE station_id = ?;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $stid, $stid)->hash();
+}
+
 sub insert_new_campaign {
     my( $self, $params ) = @_;
 
@@ -1049,6 +1109,17 @@ Return:     Risultato della query.
 Funzione che recupera dal database le informazioni di una determinata location.
 
 Argomenti:  * id della location ('stsiid');
+
+Return:     Risultato della query.
+
+=cut
+
+=head1 get_mm_history
+
+Funzione che dato l'id del mezzo mobile ne recupera lo storico degli stanziamenti, organizzandoli in un unico jsonb.
+L'oggetto viene utilizzato per la costruzione di un GANTT
+
+Argomenti:  * id del mezzo mobile ('stid');
 
 Return:     Risultato della query.
 

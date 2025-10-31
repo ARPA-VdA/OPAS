@@ -154,7 +154,7 @@
                 </select>
                 <select class="form-control mb-2" id="select-prov" name="select-prov">
                     <option value="-1">provincia...</option>
-                    % my $region = '';
+                    % $region = '';
                     % foreach my $province (@{$provinces}){
 
                         % if ($region eq ''){

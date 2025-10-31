@@ -1,9 +1,9 @@
 // preload icons
-document.fonts.load('normal 900 32px/1 "Font Awesome 6 Pro"', String.fromCharCode(parseInt('f3c5', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-location-dot"></i>
-document.fonts.load('normal 900 32px/1 "Font Awesome 6 Pro"', String.fromCharCode(parseInt('f3b3', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
-document.fonts.load('normal 900 32px/1 "Font Awesome 6 Pro"', String.fromCharCode(parseInt('f495', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
-document.fonts.load('normal 900 32px/1 "Font Awesome 6 Pro"', String.fromCharCode(parseInt('f0d1', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-truck"></i>
-document.fonts.load('normal 900 32px/1 "Font Awesome 6 Pro"', String.fromCharCode(parseInt('f6e2', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f3c5', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-location-dot"></i>
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f3b3', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f495', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f0d1', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-truck"></i>
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f6e2', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
 
 // "\uf34e" mdi-map-marker
 // "\uf390" mdi-navigation
@@ -356,7 +356,7 @@ function defaultStyleFunction(feature){
     return new ol.style.Style({
         text: new ol.style.Text({
             // font: "normal normal normal 36px/1 Material Design Icons",
-            font: 'normal 900 32px/1 "Font Awesome 6 Pro"',
+            font: 'normal 900 32px/1 "Font Awesome 7 Pro"',
             text: String.fromCharCode(parseInt('f3c5', 16)), //mdi-map-marker
             textBaseline: 'bottom',
             fill: new ol.style.Fill({
@@ -387,7 +387,7 @@ function multiplePointsStyleFunction(feature) {
     return new ol.style.Style({
         text: new ol.style.Text({
             // font: "normal normal normal "+size+"px/1 Material Design Icons",
-            font: 'normal 900 '+size+'px/1 "Font Awesome 6 Pro"',
+            font: 'normal 900 '+size+'px/1 "Font Awesome 7 Pro"',
             text: String.fromCharCode(parseInt(icon, 16)), //mdi-map-marker
             // offsetY: -25,
             textBaseline: 'bottom',
@@ -413,7 +413,7 @@ function selectedPointStyleFunction(feature) {
 
     return new ol.style.Style({
         text: new ol.style.Text({
-            font: 'normal 900 38px/1 "Font Awesome 6 Pro"',
+            font: 'normal 900 38px/1 "Font Awesome 7 Pro"',
             text: String.fromCharCode(parseInt(feature.get('icon'), 16)),
             // offsetY: -25,
             textBaseline: 'bottom',

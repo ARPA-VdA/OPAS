@@ -1,0 +1,21 @@
+{
+  "add-location" => "on",
+  "loc-end-date" => "",
+  "loc-notes" => "",
+  "loc-prov" => -1,
+  "loc-start-date" => "15/03/2025 16:43",
+  "loc-stat" => 1000,
+  "tank-active" => "on",
+  "tank-arpa-id" => "",
+  "tank-category" => 1,
+  "tank-cy-id" => "",
+  "tank-date-built" => "14/03/2025",
+  "tank-date-expiry" => "31/03/2025",
+  "tank-description" => 123,
+  "tank-name" => "",
+  "tank-networks" => 1,
+  "tank-note" => "",
+  "val-first" => "3.7",
+  "val-second" => "",
+  "val-third" => ""
+}

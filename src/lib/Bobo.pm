@@ -36,6 +36,7 @@ use Bobo::Model::Dbindicatori;
 use Bobo::Model::Dbinfoaria;
 use Bobo::Model::Dbmain;
 use Bobo::Model::Dboptions;
+use Bobo::Model::DbplanCentro;
 use Bobo::Model::DbplanPeriferia;
 use Bobo::Model::Dbprofile;
 use Bobo::Model::Dbqamanutenzioni;
@@ -43,6 +44,7 @@ use Bobo::Model::Dbqasopralluoghi;
 use Bobo::Model::Dbqatarature;
 use Bobo::Model::Dbreportistica;
 use Bobo::Model::Dbstatistiche;
+use Bobo::Model::Dbsysadmin;
 use Bobo::Model::DbtaratureAut;
 use Bobo::Model::Dbtelegram;
 use Bobo::Model::Dbutilities;
@@ -97,6 +99,7 @@ sub startup {
     $self->plugin('Bobo::Plugin::Helpers'   , $config);
     $self->plugin('Bobo::Plugin::Menus'     , $config); #functions for the menu
     $self->plugin('Bobo::Plugin::RenderFile'); # custom plugin to support file download event
+    $self->plugin('Bobo::Plugin::FileSystem');
 
     # ----------------------------------------------------------------------------------------------
     # load database models
@@ -176,6 +179,9 @@ sub startup {
     $self->helper(dboptions => sub {
         state $dboptions = Bobo::Model::Dboptions->new( pg => shift->pg, app => $self->app )
     });
+    $self->helper(dbplancentro => sub {
+        state $dbplancentro = Bobo::Model::DbplanCentro->new( pg  => shift->pg, app => $self->app )
+    });
     $self->helper(dbplanperiferia => sub {
         state $dbplanperiferia = Bobo::Model::DbplanPeriferia->new( pg => shift->pg, app => $self->app )
     });
@@ -196,6 +202,9 @@ sub startup {
     });
     $self->helper(dbstatistiche => sub {
         state $dbstatistiche = Bobo::Model::Dbstatistiche->new( pg => shift->pg, app => $self->app )
+    });
+    $self->helper(dbsysadmin => sub {
+        state $dbsysadmin = Bobo::Model::Dbsysadmin->new( pg  => shift->pg, app => $self->app )
     });
     $self->helper(dbtaratureaut => sub {
         state $dbtaratureaut = Bobo::Model::DbtaratureAut->new( pg => shift->pg, app => $self->app )
@@ -495,29 +504,31 @@ sub startup {
     $auth->get('/usr_options' )->requires(has_priv => '/usr_options')->to( controller => 'options'  , action => 'options'  );
 
     # MENU USER ADMIN PERMISSIONS - AJAX
-    $auth->post('/usr_admin_get_groups'               )->to( controller => 'admin', action => 'get_groups'                );
-    $auth->post('/usr_admin_get_users'                )->to( controller => 'admin', action => 'get_users'                 );
-    $auth->post('/usr_admin_get_user_byid'            )->to( controller => 'admin', action => 'get_user_byid'             );
-    $auth->post('/usr_admin_get_comp_detail'          )->to( controller => 'admin', action => 'get_comp_detail'           );
-    $auth->post('/usr_admin_get_groups_detail'        )->to( controller => 'admin', action => 'get_groups_detail'         );
-    $auth->post('/usr_admin_get_group_pages_grants'   )->to( controller => 'admin', action => 'get_group_pages_grants'    );
-    $auth->post('/usr_admin_get_group_stations_grants')->to( controller => 'admin', action => 'get_group_stations_grants' );
-    $auth->post('/usr_admin_get_group_others_grants'  )->to( controller => 'admin', action => 'get_group_others_grants'   );
-    $auth->post('/usr_admin_get_user_password'        )->to( controller => 'admin', action => 'recover_user_password'     );
-    $auth->post('/usr_admin_put_group'                )->to( controller => 'admin', action => 'put_group'                 );
-    $auth->post('/usr_admin_put_user'                 )->to( controller => 'admin', action => 'put_user'                  );
-    $auth->post('/usr_admin_put_group_pages_grants'   )->to( controller => 'admin', action => 'put_group_pages_grants'    );
-    $auth->post('/usr_admin_put_group_stations_grants')->to( controller => 'admin', action => 'put_group_stations_grants' );
-    $auth->post('/usr_admin_put_group_others_grants'  )->to( controller => 'admin', action => 'put_group_others_grants'   );
-    $auth->post('/usr_admin_put_group_channels_grants')->to( controller => 'admin', action => 'put_group_channels_grants' );
-    $auth->post('/usr_admin_put_widget_destination'   )->to( controller => 'admin', action => 'put_widget_destination'    );
-    $auth->post('/usr_admin_del_group'                )->to( controller => 'admin', action => 'del_group'                 );
+    $auth->post('/usr_admin_get_groups'                  )->to(controller => 'admin', action => 'get_groups'                 );
+    $auth->post('/usr_admin_get_users'                   )->to(controller => 'admin', action => 'get_users'                  );
+    $auth->post('/usr_admin_get_user_byid'               )->to(controller => 'admin', action => 'get_user_byid'              );
+    $auth->post('/usr_admin_get_comp_detail'             )->to(controller => 'admin', action => 'get_comp_detail'            );
+    $auth->post('/usr_admin_get_groups_detail'           )->to(controller => 'admin', action => 'get_groups_detail'          );
+    $auth->post('/usr_admin_get_group_pages_grants'      )->to(controller => 'admin', action => 'get_group_pages_grants'     );
+    $auth->post('/usr_admin_get_page_groups_grants'      )->to(controller => 'admin', action => 'get_page_groups_grants'     );
+    $auth->post('/usr_admin_get_group_stations_grants'   )->to(controller => 'admin', action => 'get_group_stations_grants'  );
+    $auth->post('/usr_admin_get_group_others_grants'     )->to(controller => 'admin', action => 'get_group_others_grants'    );
+    $auth->post('/usr_admin_get_user_password'           )->to(controller => 'admin', action => 'recover_user_password'      );
+    $auth->post('/usr_admin_put_group'                   )->to(controller => 'admin', action => 'put_group'                  );
+    $auth->post('/usr_admin_put_user'                    )->to(controller => 'admin', action => 'put_user'                   );
+    $auth->post('/usr_admin_put_group_pages_grants'      )->to(controller => 'admin', action => 'put_group_pages_grants'     );
+    $auth->post('/usr_admin_put_group_stations_grants'   )->to(controller => 'admin', action => 'put_group_stations_grants'  );
+    $auth->post('/usr_admin_put_group_others_grants'     )->to(controller => 'admin', action => 'put_group_others_grants'    );
+    $auth->post('/usr_admin_put_group_channels_grants'   )->to(controller => 'admin', action => 'put_group_channels_grants'  );
+    $auth->post('/usr_admin_put_widget_destination'      )->to(controller => 'admin', action => 'put_widget_destination'     );
+    $auth->post('/usr_admin_del_group'                   )->to(controller => 'admin', action => 'del_group'                  );
 
     # MENU USER ADMIN SETTINGS - AJAX
     $auth->post('/usr_admin_get_portal_options'       )->to( controller => 'admin', action => 'get_options'               );
     $auth->post('/usr_admin_put_validation_options'   )->to( controller => 'admin', action => 'put_validation_options'    );
     # MENU USER SYSTEM ADMIN - AJAX
     $auth->post('/usr_sysadmin_get_options'              )->to(controller => 'sysadmin', action => 'get_options' );
+    $auth->post('/usr_sysadmin_get_system_emails'        )->to(controller => 'sysadmin', action => 'get_system_emails'  );
     $auth->post('/usr_sysadmin_put_options'              )->to(controller => 'sysadmin', action => 'put_options' );
 
     # MENU USER PROFILE - AJAX
@@ -820,17 +831,34 @@ sub startup {
     $auth->post('/rep_automatici_get_ws_status'   )->to(controller => 'utilities' ,  action => 'get_ws_status_bydate'   );
 
     # !! TICKETS
-    $auth->get('/plan_attivita'         )->requires(has_priv => '/plan_attivita')->to( controller => 'planperiferia', action => 'attivita'              );
+    $auth->get('/plan_attivita'         )->requires(has_priv => '/plan_attivita'     )->to(controller => 'planperiferia',    action => 'attivita'    );
+    $auth->get('/plan_centro/<tkid:num>')->requires(has_priv => '/plan_centro'       )->to(controller => 'plancentro'   ,    action => 'centro'  , tkid => undef     );
 
     # TICKETS - ATTIVITÀ - AJAX
-    $auth->post('/plan_attivita_get_stations'       )->to( controller => 'common'       , action => 'get_stations'        );
-    $auth->post('/plan_attivita_get_equipments'     )->to( controller => 'planperiferia', action => 'get_equipments'      );
-    $auth->post('/plan_attivita_get_maintenances'   )->to( controller => 'planperiferia', action => 'get_maintenances'    );
-    $auth->post('/plan_attivita_get_tickets'        )->to( controller => 'planperiferia', action => 'get_tickets'         );
-    $auth->post('/plan_attivita_get_selected_ticket')->to( controller => 'planperiferia', action => 'get_selected_ticket' );
-    $auth->post('/plan_attivita_put_ticket'         )->to( controller => 'planperiferia', action => 'put_ticket'          );
-    $auth->post('/plan_attivita_put_ticket_status'  )->to( controller => 'planperiferia', action => 'put_ticket_status'   );
-    $auth->post('/plan_attivita_del_selected_ticket')->to( controller => 'planperiferia', action => 'del_selected_ticket' );
+    $auth->post('/plan_attivita_get_stations'       )->to(controller => 'common',       action => 'get_stations'           );
+    $auth->post('/plan_attivita_get_equipments'     )->to(controller => 'planperiferia',     action => 'get_equipments'         );
+    $auth->post('/plan_attivita_get_maintenances'   )->to(controller => 'planperiferia',     action => 'get_maintenances'       );
+    $auth->post('/plan_attivita_get_tickets'        )->to(controller => 'planperiferia',     action => 'get_tickets'            );
+    $auth->post('/plan_attivita_get_selected_ticket')->to(controller => 'planperiferia',     action => 'get_selected_ticket'    );
+
+    $auth->post('/plan_attivita_put_ticket'         )->to(controller => 'planperiferia',     action => 'put_ticket'             );
+    $auth->post('/plan_attivita_put_ticket_status'  )->to(controller => 'planperiferia',     action => 'put_ticket_status'      );
+    $auth->post('/plan_attivita_del_selected_ticket')->to(controller => 'planperiferia',     action => 'del_selected_ticket'    );
+
+    # TICKETS - CENTRO - AJAX
+    $auth->post('/plan_centro_get_metadata'       )->to(controller => 'plancentro',     action => 'get_metadata'           );
+    $auth->post('/plan_centro_get_tickets'        )->to(controller => 'plancentro',     action => 'get_tickets'            );
+    $auth->post('/plan_centro_get_selected_ticket')->to(controller => 'plancentro',     action => 'get_selected_ticket'    );
+
+    $auth->post('/plan_centro_put_ticket'               )->to(controller => 'plancentro',     action => 'put_ticket'             );
+    $auth->post('/plan_centro_put_ticket_status'        )->to(controller => 'plancentro',     action => 'put_ticket_status'      );
+    $auth->post('/plan_centro_put_ticket_usefulness'    )->to(controller => 'plancentro',     action => 'put_ticket_usefulness'  );
+    $auth->post('/plan_centro_del_selected_ticket'      )->to(controller => 'plancentro',     action => 'del_selected_ticket'    );
+    $auth->post('/plan_centro_del_selected_attachment'  )->to(controller => 'plancentro',     action => 'del_selected_attachment');
+
+
+    # !! STANZIAMENTI
+    $auth->get('/stnz_strumenti' )->requires(has_priv => '/stnz_strumenti' )->to(controller => 'cnfstrumenti',    action => 'stnz_strumenti'     );
 
     # !! IMPOSTAZIONI
     $auth->get('/cnf_stazioni/<stid:num>' )->requires(has_priv => '/cnf_stazioni' )->to( controller => 'cnfstazioni' , action => 'stazioni' , stid => undef );
@@ -973,11 +1001,23 @@ sub startup {
     $auth->post('/info_dataset_e_put_status'                   )->to( controller => 'infoaria', action => 'put_status'                    );
     $auth->post('/info_dataset_e_put_e1a_creation'             )->to( controller => 'infoaria', action => 'put_e1a_creation'              );
 
+    # !!MEDIA
+    $auth->get('/media')->requires(has_priv => '/media')->to(controller => 'media', action => 'media');
+
+    # MEDIA AJAX
+    $auth->post('/media_navigate_filesystem'          )->to(controller => 'media', action => 'navigate_filesystem'          );
+    $auth->post('/media_put_folder'                   )->to(controller => 'media', action => 'put_folder'                   );
+    $auth->post('/media_put_files'                    )->to(controller => 'media', action => 'put_files'                    );
+    $auth->post('/media_put_file_name'                )->to(controller => 'media', action => 'put_file_name'                );
+    $auth->post('/media_del_file'                     )->to(controller => 'media', action => 'del_file'                     );
+    $auth->post('/media_del_folder'                   )->to(controller => 'media', action => 'del_folder'                   );
+
     $auth->get('/demo')->requires(has_priv => '/demo')->to( controller => 'demo', action => 'demo' );
 
     # !! PAGINE CUSTOM
-    $auth->get('/dat_horiba'       )->requires(has_priv => '/dat_horiba')->to( controller => 'customized'  , action => 'horiba'     );
-    $auth->get('/custom_get_report')->requires(has_priv => '/'          )->to( controller => 'customized'  , action => 'get_report' );
+    $auth->get('/dat_horiba'        )->requires(has_priv => '/dat_horiba')->to( controller => 'customized'  , action => 'horiba'     );
+    $auth->get('/custom_get_report' )->requires(has_priv => '/'          )->to( controller => 'customized'  , action => 'get_report' );
+    $auth->get('/custom_vda_scripta')->requires(has_priv => '/'          )->to(controller => 'customized', action => 'vda_scripta');
 
     # AJAX HORIBA
     $auth->post('/dat_horiba_get_images')->to(controller => 'customized' , action => 'get_horiba_images'    );
@@ -1148,6 +1188,10 @@ Pagina di visualizzazione, creazione e modifica dei report di analisi di dati in
 
 Pagina di pianificazione, attraverso l'uso di diversi tipi di ticket, delle attività necessarie.
 
+=item /plan_centro/<tkid:num>          GET
+
+Pagina di gestione dei ticket del centro.
+
 =item /cnf_parametri                          GET
 
 Pagina di visualizzazione di tutti i parametri (attivi e non attivi) della propria rete di appartenenza.
@@ -1184,7 +1228,9 @@ Strumento di gestione dell'invio, e delle eventuali eliminazioni, dei messaggi s
 
 Pagina di visualizzazione e gestione delle mailing list della propria rete, aggiungendo e modificando gruppi a seconda delle necessità.
 
+=item /media                                  GET
 
+Pagina per la gestione dei file delle stazioni.
 
 =item /faq                                    GET
 
@@ -1666,6 +1712,22 @@ Le successive route vengono utilizzate dai form per l'invio di dati al backend
 
 =item /plan_attivita_del_selected_ticket               POST
 
+=item /plan_centro_get_metadata                    POST
+
+=item /plan_centro_get_tickets                     POST
+
+=item /plan_centro_get_selected_ticket             POST
+
+=item /plan_centro_put_ticket                      POST
+
+=item /plan_centro_put_ticket_status               POST
+
+=item /plan_centro_put_ticket_usefulness           POST
+
+=item /plan_centro_del_selected_ticket             POST
+
+=item /plan_centro_del_selected_attachment         POST
+
 =item /cnf_stazioni_get_provinces                      POST
 
 =item /cnf_stazioni_get_municipalities                 POST
@@ -1849,6 +1911,18 @@ Le successive route vengono utilizzate dai form per l'invio di dati al backend
 =item /info_dataset_e_put_status                       POST
 
 =item /info_dataset_e_put_e1a_creation                 POST
+
+=item /media_navigate_filesystem                       POST
+
+=item /media_put_folder                                POST
+
+=item /media_put_files                                 POST
+
+=item /media_put_file_name                             POST
+
+=item /media_del_file                                  POST
+
+=item /media_del_folder                                POST
 
 =item /faq_get_argument                                POST
 

@@ -122,24 +122,6 @@ sub get_pdf {
                 system("ls") or $self->app->log->warn("Scp failed: $!");
                 $self->app->log->debug("Fine copia");
             };
-
-            #     $self->app->log->debug("Check system result: $res");
-            #     if ($@ || $res != 0) {
-            #         $self->app->log->error("Errore esecuzione script ssh");
-            #         $json = {
-            #             res  => 'ERROR',
-            #             desc => 'Errore durante la creazione del report pdf.'
-            #         };
-            #     }
-            #     else {
-            #         $self->app->log->debug("updating db ...");
-            #         $self->dbbolmonthly->insert_publish_bull_byid( $userid, $rpid );
-            #         $json = {
-            #             res  => 'OK',
-            #             desc => 'Report creato correttamente.'
-            #         };
-            #     }
-
         }
         else {
             $self->app->log->debug("Lancio script creazione pdf");

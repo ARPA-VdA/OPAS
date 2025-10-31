@@ -437,7 +437,7 @@ $( document ).ready(function() {
                 },
                 color: '#0372A6',
                 dashStyle: 'ShortDashDot',
-                value: value.limit_value,
+                value: parseFloat(value.limit_value),
                 width:2,
                 zIndex: 3
             };

@@ -12,7 +12,6 @@ $(document).ready(function() {
 
     var mySwitchParamActive;
     var mySwitchParamExport;
-    var mySwitchParamWs;
 
     $('.show-selected').hide();
     $('#all-params').hide();
@@ -138,18 +137,10 @@ $(document).ready(function() {
     //datatable
     table = $('#table-params').DataTable({
         "dom": '<"row"<"col-6"l><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
-        // "dom": '<"row"<"col-lg-6 col-sm-4"B><"col-lg-3 col-sm-4"l><"col-lg-3 col-sm-4 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
         pageLength: 25,
         lengthMenu: [[25, 50, 75, 100, -1], [25, 50, 75, 100, "Tutti"]],
         // autoWidth: false,
-        buttons: [
-        //     'csv',
-        //     'pdf',
-        //     {
-        //         "extend": 'print',
-        //         "text"  : 'STAMPA'
-        //     }
-        ],
+        buttons: [],
         order: [[ 1, "asc" ]],
         responsive: {
             details: {
@@ -209,16 +200,35 @@ $(document).ready(function() {
         // get row element
         var tr = $(this).parent().parent();
 
+        // html to inject into the swal
+        var txt = '';
+        txt += 'Non sarà possibile eliminare il parametro se sono presenti degli elementi associati (strumenti, statistiche ... ).<br>';
+        txt += '<strong>Tutti i dati del parametro saranno persi definitivamente!</strong><br><br>';
+        txt += 'Sei proprio sicuro di voler proseguire all\'eliminazione?<br>';
+        txt += '<input type="checkbox" id="delete-confirm" name="delete-confirm" /> <label for="delete-confirm">Confermo</label>';
+
+
         // show confirm message before proceed
         swal({
             title: "Stai per eliminare il parametro",
-            text: "Sei proprio sicuro di voler proseguire all'eliminazione?",
+            text: txt,
             type: "warning",
+            html: true,
             showCancelButton: true,
-            confirmButtonText: "Si, elimina",
+            confirmButtonText: "Prosegui",
             closeOnConfirm: false,
+            showLoaderOnConfirm: true,
             cancelButtonText: "Annulla"
-        }, function () {
+        }, function (isConfirm) {
+
+            // if Annulla then return
+            if (isConfirm === false) return false;
+            // if checkbox not checked then show validation error
+            if (!$('#delete-confirm').is(':checked')) {
+                swal.showInputError("E' necessario confermare l'eliminazione");
+                return false;
+            }
+
             // delete the selected report
             var jqxhr = $.ajax({
                 url: '/cnf_parametri_del_station_param',
@@ -231,14 +241,25 @@ $(document).ready(function() {
             .done(function(result) {
 
                 // check result
-                // if TRUE remove row reloading the entire list
-                // else show ERROR
-                if(result){
+                // if 1 then remove parameter and clear edit form
+                // else if -1 then there are linked elements
+                // else generic error
+                if(result == 1){
                     swal("Parametro eliminato", "Il parametro è stato eliminato con successo!", "success");
                     var stid   = parseInt($("#stations").val());
                     var type   = parseInt($("#categories").val());
 
                     loadStationParams(stid, type, ( configParams != null ) );
+
+                    clearFields();
+                }
+                else if (result == -1) {
+                    swal({
+                        title: "Attenzione",
+                        text: "Non è stato possibile eliminare il parametro.<br>Sono presenti degli <strong>elementi associati allo stesso</strong>!",
+                        type: "warning",
+                        html: true
+                    });
                 }
                 else{
                     swal("Errore!", "Errore durante l'eliminazione del parametro", "error");
@@ -261,7 +282,6 @@ $(document).ready(function() {
 
     mySwitchParamActive = new Switchery($("#param-active")[0], $("#edit-param-active").data());
     mySwitchParamExport = new Switchery($("#param-export-active")[0], $("#edit-param-export-active").data());
-    mySwitchParamWs     = new Switchery($("#param-ws-active")[0], $("#edit-param-ws-active").data());
 
     // date picker
     $('#param-startup-date').bootstrapMaterialDatePicker({
@@ -270,8 +290,6 @@ $(document).ready(function() {
         lang : 'it',
         cancelText : 'Annulla',
         time: false
-        // autoclose: true,
-        // todayHighlight: true
     });
     $('#param-startup-date').bootstrapMaterialDatePicker('setDate', moment().format('DD/MM/YYYY'));
 
@@ -282,8 +300,6 @@ $(document).ready(function() {
         lang : 'it',
         cancelText : 'Annulla',
         time: false
-        // autoclose: true,
-        // todayHighlight: true
     });
     $("#param-dismiss-date").prop("disabled", true);
 
@@ -806,7 +822,6 @@ $(document).ready(function() {
             $(this).tooltip('hide').attr('data-original-title', 'Inserisci nella configurazione');
 
             for(let i= offset; i< tds.length; i++){
-                // console.log('From '+i+' to '+(i-offset));
 
                 let copyTo = $(tds[i]).clone();
                 let copyFrom = $(tds[i-offset]).clone();
@@ -971,7 +986,7 @@ $(document).ready(function() {
             txt += 'Per eseguire la modifica cliccare sulla <i class="icon-pencil text-info"></i> nella prima scheda di questa pagina.<br><br>';
             txt += 'Confermi di aver preso visione della segnalazione?<br>';
             txt += '<input type="checkbox" id="warning-confirm" name="warning-confirm" /> <label for="warning-confirm">Confermo</label>';
-    
+
             // show confirm message
             swal({
                 title: "Attenzione",
@@ -984,7 +999,7 @@ $(document).ready(function() {
                 showLoaderOnConfirm: true,
                 cancelButtonText: "Annulla"
             }, function (isConfirm) {
-    
+
                 // if Annulla then return
                 if (isConfirm === false) return false;
                 // if checkbox not checked then show validation error
@@ -1091,7 +1106,7 @@ $(document).ready(function() {
                 swal("Errore!", 'Errore durante il salvataggio delle modifiche', "error");
             });
         }
-        
+
     });
 
     /**
@@ -1172,7 +1187,6 @@ $(document).ready(function() {
         // manage Switchery
         setSwitchery(mySwitchParamActive   , true);
         setSwitchery(mySwitchParamExport  , false);
-        setSwitchery(mySwitchParamWs      , false);
 
         $('#param-startup-date').bootstrapMaterialDatePicker('setDate', moment().format('DD/MM/YYYY'));
         $("#param-dismiss-date").prop("disabled", true);
@@ -1414,11 +1428,11 @@ $(document).ready(function() {
 
                         html += '<tr data-stprid="'+value.stpr_id+'">';
                         html += '    <td class="bobo-nowrap icons-little">';
-                        html += '        <a href="javascript:void(0)" class="show-param" data-toggle="tooltip" data-original-title="Visualizza"> <i class="ti-zoom-in text-info"></i> </a>';
+                        html += '        <a href="javascript:void(0)" class="show-param" data-toggle="tooltip" data-original-title="Visualizza"> <i class="fa-light fa-magnifying-glass-plus text-info"></i> </a>';
                         if(update_grant)
-                            html +='        <a href="javascript:void(0)" class="edit-param" data-toggle="tooltip" data-original-title="Modifica"> <i class="icon-pencil text-info"></i> </a>';
+                            html +='        <a href="javascript:void(0)" class="edit-param" data-toggle="tooltip" data-original-title="Modifica"> <i class="fa-light fa-pencil text-info"></i> </a>';
                         if(delete_grant)
-                            html +='        <a href="javascript:void(0)" class="delete-param" data-toggle="tooltip" data-original-title="Elimina"> <i class="icon-trash text-danger"></i> </a>';
+                            html +='        <a href="javascript:void(0)" class="delete-param" data-toggle="tooltip" data-original-title="Elimina"> <i class="fa-light fa-trash-can text-danger"></i> </a>';
                         html += '    </td>';
                         html += '    <td>'+value.stpr_table_id+'</td>';
                         html += '    <td>'+value.param_id+'</td>';
@@ -1735,7 +1749,6 @@ $(document).ready(function() {
                 $('#param-exportid-1').val(el.stpr_export_id1);
                 $('#param-exportid-2').val(el.stpr_export_id2);
 
-                setSwitchery(mySwitchParamWs, el.stpr_ws_publish);
                 $('#param-ws-id').val(el.stpr_info_ws_id);
 
                     // show the detail tab

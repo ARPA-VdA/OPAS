@@ -784,6 +784,46 @@ sub get_horiba_images {
 }
 # arpa vda horiba panel END
 
+sub vda_scripta {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Customized sub vda_scripta");
+
+    my $json;
+
+    # system
+    eval{
+        $self->app->log->debug("[SSH] Lancio script creazione pdf via ssh");
+
+        # percorso script
+        my $cmd = 'ls';
+        $self->app->log->debug("Running system: $cmd");
+
+        # execute with backtick to catch the STDOUT stream
+        #my $output = system($cmd);
+        my $output = `$cmd`;
+        $self->app->log->debug("Fine esecuzione script SCRIPTA");
+
+        # build json return
+        $json = {
+            desc => 'OK',
+            content => $output
+        };
+    };
+    # error check
+    if ($@) {
+        $self->app->log->warning("Command failed: $@");
+        $json = {
+            res => 'ERR',
+            desc => "Errore durante l\'esecuzione dello script 'scripta_import.sh'"
+        };
+    }
+
+    # render back response
+    $self->render(json => $json);
+}
+
 1;
 
 =head1 get_report
@@ -825,5 +865,15 @@ Funzione che recupera i dati e le relative immagini dello strumento Horiba PX-37
 Argomenti:  * data per il recupero dei dati ('date');
 
 Return:     json contenente il messaggio "OK", i dati e le immagini, oppure il messaggio "ERR".
+
+=cut
+
+=head1 vda_scripta
+
+Funzione che lancia lo script SCRIPTA per l'import dei dati di laboratorio e restituisce l'esito dell'operazione
+
+Argomenti:  /
+
+Return:     json contenente il messaggio "OK" e l'output dello script, oppure il messaggio "ERR".
 
 =cut

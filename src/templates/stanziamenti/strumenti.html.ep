@@ -1,0 +1,237 @@
+% layout 'default';
+% title 'Stanziamento degli strumenti';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/stanziamenti/strumenti.js'))%>" type="text/javascript"></script>
+<style>
+    .select2-results .select2-disabled,  .select2-results__option[aria-disabled=true] {
+        display: none;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Posiziona gli strumenti nelle tue stazioni</h4>
+                        <h6 class="card-subtitle">Da questa pagina puoi visualizzare gli strumenti e posizionarli nelle stazioni appartenenti alla tua rete</h6>
+                    </div>
+                </div>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs customtab main-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#list" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-list-dropdown"></i></span> <span class="hidden-xs-down">Elenco</span></a> </li>
+                    <!-- if user has insert grant -->
+                    % if ($user_grants->{user_insert}){
+                        <li class="nav-item"> <a class="nav-link text-info" data-toggle="tab" href="#new-location" id="new-loc" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-thumbtack-angle"></i></span> <span class="hidden-xs-down" id="inner-new-loc"> Stanziamento</span></a> </li>
+                    % }
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane p-20 active" id="list" role="tabpanel">
+                        <div class="row">
+                            <div class="input-group col-lg-6 m-b-5">
+                                <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fa-regular fa-calendars"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 m-b-5">
+                                <select class="custom-select col-12" id="categories" name="categories">
+                                    <option value="-1">Tutte le categorie</option>
+                                    % foreach my $category (@{$categories}){
+                                        <option value="<%= $category->{'category_id'} %>"><%= $category->{'category_name'} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-3 m-b-5">
+                                <div class="custom-control custom-checkbox m-t-5">
+                                    <input type="checkbox" class="custom-control-input" id="all-allocations" name="all-allocations">
+                                    <label class="custom-control-label" for="all-allocations">Tutti gli stanziamenti</label>
+                                    <a class="mytooltip" href="javascript:void(0)">
+                                        <i class="fa-regular fa-circle-info text-info"></i>
+                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Consente di disattivare il filtro calendario per estrarre <strong>TUTTI</strong> gli stanziamenti presenti nel sistema <strong>senza limiti temporali</strong>.</span></span></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row m-b-5">
+                            <div class="col-lg-4 m-b-5">
+                                <select class="custom-select col-12" id="nets" name="nets">
+                                    <option value="-1">Seleziona rete...</option>
+                                    % foreach my $network (@{$networks}){
+                                        <option value="<%= $network->{st_network_id}%>"><%= $network->{st_network_desc} %></option>
+                                    % }
+                                </select>
+                            </div>
+                            <div class="col-lg-4 m-b-5">
+                                <select class="custom-select col-12" id="provinces" name="provinces" data-change="stations">
+                                    <option value="-1">Seleziona provincia...</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4 m-b-5">
+                                <select class="custom-select col-12" id="stations" name="stations">
+                                    <option value="-1">Seleziona stazione...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table id="list-table" class="display responsive table table-hover table-striped tbl-va-center table-compressed" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Tipo</th>
+                                    <th class="bobo-nowrap">Nome</th>
+                                    <th class="bobo-nowrap">S.N.</th>
+                                    <th>Categoria</th>
+                                    <th>Arpa ID</th>
+                                    <th>Location</th>
+                                    <th>Dal</th>
+                                    <th>Al</th>
+                                    <th>Reti</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- <tr>
+                                    <td class="bobo-nowrap icons-little">
+                                        <a href="javascript:void(0)" class="show-element" data-toggle="tooltip" data-original-title="Visualizza strumento"> <i class="ti-zoom-in text-info"></i> </a>
+                                        <a href="javascript:void(0)" class="edit-element" data-toggle="tooltip" data-original-title="Modifica strumento"> <i class="icon-pencil text-info"></i> </a>
+                                        <br>
+                                        <a href="javascript:void(0)" class="edit-loc-el" data-toggle="tooltip" data-original-title="Modifica location"> <i class="icon-location-pin text-success"></i> </a>
+                                        <a href="javascript:void(0)" class="close-loc-el" data-toggle="tooltip" data-original-title="Chiudi location corrente"> <i class="icon-close text-success"></i> </a>
+                                        <a href="javascript:void(0)" class="delete-element" data-toggle="tooltip" data-original-title="Elimina tutto"> <i class="icon-trash text-danger"></i> </a>
+                                    </td>
+                                    <td>AMA GC5000 Type PID</td>
+                                    <td>Sostitutivo ORION</td>
+                                    <td>--</td>
+                                    <td>Analizzatore BTX</td>
+                                    <td>i0479</td>
+                                    <td>Genova - Quarto</td>
+                                    <td class="sorting_1">05/09/2025 11:12</td>
+                                    <td>infinito</td>
+                                    <td>Arpa Liguria</td>
+                                    <td></td>
+                                </tr> -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="bobo-nowrap"></th>
+                                    <th class="bobo-nowrap">Tipo</th>
+                                    <th class="bobo-nowrap">Nome</th>
+                                    <th class="bobo-nowrap">S.N.</th>
+                                    <th>Categoria</th>
+                                    <th>Arpa ID</th>
+                                    <th>Location</th>
+                                    <th>Dal</th>
+                                    <th>Al</th>
+                                    <th>Reti</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tab-pane p-20" id="new-location" role="tabpanel">
+                        <h4 class="box-title">Inserisci nuovo stanziamento</h4>
+                        <hr class="m-t-0 m-b-20">
+                        <form id="add-place-instr-form" name="add-place-instr-form">
+                            <input type="hidden" class="clear-input" id="place-id" name="place-id" value="">
+                            <input type="hidden" class="clear-input" id="place-networks" name="place-networks" value="">
+
+                            <div class="form-group row">
+                                <label for="place-instr-id" class="col-2 col-form-label">Strumento <span class="text-danger">*</span></label>
+                                <div class="col-10">
+                                    <select class="custom-select clear-select col-12" id="place-instr-id" name="place-instr-id">
+                                        <option value="-1">Seleziona...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="hide-loc">
+                                <h5 class="divider-title">Inserisci location</h5>
+                                <div class="form-group row">
+                                    <label for="place-instr-prov" class="col-2 col-form-label">Provincia</label>
+                                    <div class="col-4">
+                                        <select class="custom-select clear-select col-12" id="place-instr-prov" name="place-instr-prov" data-change="place-instr-stat">
+                                            <option value="-1">Seleziona provincia...</option>
+                                            % my $region = '';
+                                            % foreach my $province (@{$provinces}){
+
+                                                % if ($region eq ''){
+                                                    <optgroup label="<%= $province->{'region_name'} %>">
+                                                    <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                % }else{
+                                                    % if ($region eq $province->{'region_id'}){
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % } else {
+                                                        </optgroup>
+                                                        <optgroup label="<%= $province->{'region_name'} %>">
+                                                        <option value="<%= $province->{'province_id'} %>"><%= $province->{'province_name'} %></option>
+                                                    % }
+                                                % }
+                                                % $region = $province->{'region_id'};
+                                            % }
+                                            </optgroup>
+                                        </select>
+
+                                    </div>
+                                    <label for="place-instr-stat" class="col-2 col-form-label">Stazione <span class="text-danger">*</span></label>
+                                    <div class="col-4">
+                                        <select class="custom-select clear-select col-12" id="place-instr-stat" name="place-instr-stat" data-change="place-instr-params">
+                                            <option value="-1">Seleziona...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="place-instr-start-date" class="col-2 col-form-label">Data/ora inizio <span class="text-danger">*</span></label>
+                                    <div class="input-group col-4">
+                                        <input type="text" class="form-control clear-input" id="place-instr-start-date" name="place-instr-start-date" placeholder="mm/dd/yyyy hh:mm">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="fa-regular fa-calendar-lines"></i></span>
+                                        </div>
+                                    </div>
+                                    <label for="place-instr-end-date" class="col-2 col-form-label">Data/ora fine</label>
+                                    <div class="input-group col-4">
+                                        <input type="text" class="form-control clear-input" id="place-instr-end-date" name="place-instr-end-date" placeholder="mm/dd/yyyy hh:mm">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="fa-regular fa-calendar-lines"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-4 offset-2">
+                                        <div class="custom-control custom-checkbox m-t-10">
+                                            <input type="checkbox" class="custom-control-input" id="place-instr-first" name="place-instr-first" checked>
+                                            <label class="custom-control-label" for="place-instr-first">Strumento primario</label>
+                                        </div>
+                                    </div>
+                                    <label for="place-instr-params" class="col-2 col-form-label">Parametri collegati <span class="text-danger">*</span></label>
+                                    <div class="col-4">
+                                        <select class="custom-select clear-select col-12" id="place-instr-params" name="place-instr-params">
+                                            <option value="-1">Seleziona...</option>
+                                            <option value="0">Nessun parametro associabile</option>
+                                        </select>
+                                        <p class="font-italic text-primary"><strong>ATTENZIONE!</strong> Selezionando "Nessun parametro associabile" non sarà possibile risalire alla fonte di produzione dei dati.</p>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="place-tool-notes" class="col-2 col-form-label">Note location</label>
+                                    <div class="col-10">
+                                        <textarea class="form-control clear-input" rows="6" id="place-instr-notes" name="place-instr-notes"></textarea>
+                                    </div>
+                                </div>
+                                <hr class="m-t-30">
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-info" name="btn-place-instr-form" id="btn-place-instr-form"> <i class="fa-regular fa-arrow-down-to-arc"></i> Inserisci</button>
+                                        <button type="button" class="btn btn-inverse" name="cancel-place-instr-form" id="cancel-place-instr-form">Annulla</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

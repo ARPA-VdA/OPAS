@@ -5,7 +5,7 @@ export default class MainController {
    * @returns Json app info
    */
   async index(ctx) {
-    ctx.log.info('index');
+    ctx.log.info('Function index');
 
     const client = ctx.whois();
     ctx.log.debug(`Request from ${client}`);
@@ -24,7 +24,7 @@ export default class MainController {
    * @returns Json oranization info
    */
   async organization(ctx) {
-    ctx.log.info('organization');
+    ctx.log.info('Function organization');
 
     // get data from db
     var json_data = await ctx.models.main.getOrganization();
@@ -37,7 +37,7 @@ export default class MainController {
    * @returns Json object with result and valid token if login is successful
    */
   async login(ctx) {
-    ctx.log.info('login');
+    ctx.log.info('Function login');
 
     // ctx.logObj("method", ctx.req.method);
     // ctx.logObj("path", ctx.req.path);
@@ -47,7 +47,7 @@ export default class MainController {
 
     // Retrieve request body as parsed JSON
     const data = await ctx.req.json();
-    ctx.logObj('data', data);
+    // ctx.logObj('data', data);
     const loginData = {
       email: data['email'],
       password: data['password']
@@ -58,7 +58,7 @@ export default class MainController {
     // ctx.log.debug(`email: ${loginData.email}`);
     // ctx.log.debug(`password: ${loginData.password}`);
     // ctx.log.debug(`config secret: ${ctx.config.jwt.secret}`);
-    ctx.log.debug(`Config tokenLife: ${ctx.config.jwt.tokenLife}`);
+    // ctx.log.debug(`Config tokenLife: ${ctx.config.jwt.access.tokenLife}`);
 
     // Sanity check
     ctx.log.debug("Sanity check");
@@ -75,8 +75,9 @@ export default class MainController {
     // do the database authentication here, with user name and password combination.
     // encryptedPassword = await bcrypt.hash(password, 10);
     ctx.log.debug("Database authentication");
-    ctx.logObj('getUser', loginData);
-    var user = await ctx.models.main.getUser(loginData);
+    // ctx.logObj('getUser', loginData);
+    // ctx.logObj('groups', ctx.config.groups);
+    var user = await ctx.models.main.getUser(loginData, ctx.config.groups);
     if (user === undefined) {
       ctx.log.info('User not found');
       await ctx.render({
@@ -118,7 +119,7 @@ export default class MainController {
   * @returns Jwt token
   */
   async refreshToken(ctx) {
-    ctx.log.info('refreshToken');
+    ctx.log.info('Function refreshToken');
 
     // Retrieve request body as parsed JSON
     const data = await ctx.req.json();
@@ -161,7 +162,7 @@ export default class MainController {
   * @returns Json logout data
   */
   async logout(ctx) {
-    ctx.log.info('logout');
+    ctx.log.info('Function logout');
 
     // jwt.sign(authHeader, "", { expiresIn: 1 }, (logout, err) => {
     // Render back json
@@ -201,7 +202,7 @@ export default class MainController {
    * @returns Json dashboard info
    */
   async dashboard(ctx) {
-    ctx.log.info("dashboard");
+    ctx.log.info("Function dashboard");
 
     // get token
     const token = await ctx.authExtractToken();

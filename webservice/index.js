@@ -1,4 +1,4 @@
-import mojo, { yamlConfigPlugin } from '@mojojs/core';
+import mojo, { yamlConfigPlugin, Logger } from '@mojojs/core';
 import Pg from '@mojojs/pg';
 import Path from '@mojojs/path';
 import { Main } from './models/main.js';
@@ -6,7 +6,11 @@ import { Metadata } from './models/metadata.js';
 import { Data } from './models/data.js';
 import { Quasar } from './models/quasar.js';
 import helperPlugin from './plugin/helper.js';
-import * as fs from 'fs'; // see https://github.com/mojolicious/mojo.js/blob/main/src/logger.ts
+import * as rfs from 'rotating-file-stream'
+// const rfs = require("rotating-file-stream");
+// import * as fs from 'fs'; // see https://github.com/mojolicious/mojo.js/blob/main/src/logger.ts
+// import 'dotenv/config'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+//ctx.log.debug(process.env); // remove this after you've confirmed it is working
 
 // Main app
 export const app = mojo({
@@ -49,15 +53,24 @@ app.secrets = app.config.secrets;
 // Logging
 if (app.config.log.filename !== null) {
   // Create a new stream
-  let writer = fs.createWriteStream(
-    app.config.log.filename, {
-    flags: 'w', encoding: 'utf8'
+  const stream = rfs.createStream(app.config.log.filename, {
+    size: "10M", // rotate every 10 MegaBytes written
+    interval: "1d", // rotate daily
+    compress: "gzip" // compress rotated files
   });
+
+  // // Create a new stream
+  // let writer = fs.createWriteStream(
+  //   app.config.log.filename, {
+  //   flags: 'w', encoding: 'utf8'
+  // });
+
   // Assign to logger
-  app.log.destination = writer;
+  app.log.destination = stream;
 }
 // Apply log level
 app.log.level = app.config.log.level;
+// app.log.formatter = Logger.systemdFormatter;
 // app.log.formatter = Logger.colorFormatter;
 
 // To use .env variables
@@ -107,11 +120,15 @@ app.post('/refresh-token').to('main#refreshToken');
 
 // Authentication via jwt token
 const auth = router.under('/', async ctx => {
-  ctx.log.debug("under route");
+  ctx.log.debug("Router under route");
 
   // Get token
   const token = ctx.authExtractToken();
-  ctx.log.trace(`under token: ${token}`);
+  ctx.log.trace(`Token: ${token}`);
+
+  // get user
+  const user = await ctx.jwtDecodeUser(token);
+  ctx.log.info(`User: ${user.us_name} ${user.us_surname}`);
 
   // Authenticated
   // ctx.logObj('jwt', ctx.config.jwt.access);
@@ -157,6 +174,7 @@ auth.get('/stations/:id', { id: /\d{2}/ }).to('metadata#stationsRegion').name('s
 auth.get('/stations/:id', { id: /\d{4,6}/ }).to('metadata#station').name('station');
 
 auth.get('/parameters').to('metadata#parameters').name('parameters_list');
+auth.get('/parameters-type').to('metadata#parametersType').name('parameters_type_list');
 auth.get('/parameters/:id', { id: /\d+/ }).to('metadata#parameter').name('parameter');
 
 auth.get('/stations-parameters/:stid/:prid', { stid: /\d{4,6}/, prid: /\d+/ })
@@ -171,7 +189,7 @@ auth.get('/campaigns/:id/:ep', { id: /\d{4,6}/, ep: /\d+/ })
 auth.get('/campaigns/:id/:ep', { id: /\d{4,6}/, ep: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ })
   .to('metadata#campaignsDates').name('campaigns_date');
 
-// Data
+// Hourly data
 auth.get('/series').to('metadata#series').name('series_list');
 auth.get('/series/:id', { id: /\d{2}/ }).to('metadata#seriesRegion').name('series_list_region');
 auth.get('/series/:id', { id: /\d{4,6}/ }).to('metadata#seriesStation').name('series_list_station');
@@ -187,18 +205,53 @@ auth.get('/series-data/:id/:ep1/:ep2', {
 }
 ).to('data#seriesFrame').name('series_data_frame');
 
+// Daily data
+// series-data-dd/{series-id}/{num-days}
+auth.get('/series-data-dd/:id/:dd', { id: /\d+/, dd: /\d+/ })
+  .to('data#dailySeries').name('series_data');
+
+// series-data-dd/{series-id}/{date-from}/{date-to}
+// 'epx' multiple accepted value (example:  1711584000 | 2024-03-28)
+auth.get('/series-data-dd/:id/:ep1/:ep2', { id: /\d+/, ep1: /\d+/, ep2: /\d+/ })
+  .to('data#dailySeriesFrame').name('series_data_frame');
+auth.get('/series-data-dd/:id/:ep1/:ep2', {
+  id: /\d+/,
+  ep1: /\d{4}-\d{2}-\d{2}/,
+  ep2: /\d{4}-\d{2}-\d{2}/
+}
+).to('data#dailySeriesFrame').name('series_data_frame');
+
+// series-data-synchro-all/{region_istat_code}/{last-ie-date_time}
 // 'ep' multiple accepted value (example:  1711584000 | 2024-03-28T00:00:00)
 auth.get('/series-data-synchro/:id/:ep', { id: /\d+/, ep: /\d{8,10}|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ })
-  .to('data#seriesSynchroFrame').name('series_synchro_data_frame');
-
+  .to('data#seriesSynchroFrameSeries').name('series_synchro_data_frame_series');
 
 // series-data-synchro-all/{region_istat_code}/{last-ie-date_time}
 // 'ep' multiple accepted value (example:  1711584000 | 2024-03-28T00:00:00)
 auth.get('/series-data-synchro-all/:id/:ep', { id: /\d{2}/, ep: /\d{8,10}|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ })
   .to('data#seriesSynchroFrameRegion').name('series_synchro_data_frame_region');
+
 // series-data-synchro-all/{station-id}/{last-ie-date_time}
+// 'ep' multiple accepted value (example:  1711584000 | 2024-03-28T00:00:00)
 auth.get('/series-data-synchro-all/:id/:ep', { id: /\d{4,6}/, ep: /\d{8,10}|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ })
   .to('data#seriesSynchroFrameStation').name('series_synchro_data_frame_station');
+
+
+// get log data per station
+auth.get('/stations-log/:stid/:ep1/:ep2', {
+  stid: /\d+/,
+  ep1: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+  ep2: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+}
+).to('data#stationLog').name('stations_log');
+
+
+
+// Quasar app routes
+auth.get('/qapp-stations').to('quasar#stations');
+auth.get('/qapp-stations/:id', { id: /\d{4,6}/ }).to('quasar#station');
+auth.get('/qapp-users-online').to('quasar#usersOnline');
+auth.get('/qapp-users/:id', { id: /\d{1,4}/ }).to('quasar#user');
 
 // Catch all route
 app.any('/*whatever').to({

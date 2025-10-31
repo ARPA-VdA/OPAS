@@ -1,0 +1,19 @@
+{
+  "main-ext-id" => "",
+  "main-loc-campaign" => -1,
+  "main-loc-end-date" => "",
+  "main-loc-lab" => -1,
+  "main-loc-notes" => "",
+  "main-loc-start-date" => "",
+  "site-altitude" => "",
+  "site-district" => 1,
+  "site-id" => "",
+  "site-latitude" => "45.802038",
+  "site-locality" => "TEST",
+  "site-longitude" => "7.586978",
+  "site-name" => "TEST",
+  "site-networks" => 1,
+  "site-note" => "",
+  "site-prov" => 1,
+  "site-region" => 2
+}

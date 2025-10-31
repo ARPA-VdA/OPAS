@@ -461,6 +461,57 @@ sub get_group_pages_grants {
     $self->pg->db->query($sql, $userid, $grid, $grid)->hashes;
 }
 
+sub get_page_groups_grants {
+    my ($self, $userid, $page) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbadmin sub get_page_groups_grants");
+
+    # query
+    my $sql = qq{
+        SELECT 
+            page_id, 
+            page_name, 
+            g.gr_id, 
+            g.gr_name, 
+            gp.gp_iud_grants,
+            CASE
+                WHEN gp_iud_grants NOTNULL THEN 'checked'
+                ELSE ''
+            END AS page_visibility,
+            CASE
+                WHEN (SELECT bit_and(temp.bit)::integer FROM ( SELECT * FROM (VALUES (COALESCE(gp_iud_grants, '000')), (b'100')) AS t (bit)) AS temp)::boolean IS TRUE THEN 'checked'
+                ELSE ''
+            END AS page_insert,
+            CASE
+                WHEN (SELECT bit_and(temp.bit)::integer FROM ( SELECT * FROM (VALUES (COALESCE(gp_iud_grants, '000')), (b'010')) AS t (bit)) AS temp)::boolean IS TRUE THEN 'checked'
+                ELSE ''
+            END AS page_update,
+            CASE
+                WHEN (SELECT bit_and(temp.bit)::integer FROM ( SELECT * FROM (VALUES (COALESCE(gp_iud_grants, '000')), (b'001')) AS t (bit)) AS temp)::boolean IS TRUE THEN 'checked'
+                ELSE ''
+            END AS page_delete
+        FROM 
+            bobo.groups g
+            LEFT JOIN bobo.group_pages gp ON (g.gr_id = gp.gr_id AND page_id = ?)
+            LEFT JOIN bobo.pages p USING (page_id)
+        WHERE 
+            g.gr_id IN (
+                SELECT UNNEST(linked_gr_id) AS gr_id
+                FROM bobo.portal_properties
+                WHERE admin_gr_id IN (
+                    SELECT gr_id
+                    FROM bobo.user_groups
+                    WHERE us_id = ?
+                )
+            )
+        ORDER BY gr_name
+    };
+
+    # return
+    $self->pg->db->query($sql, $page, $userid)->hashes;    
+}
+
 sub get_group_stations_grants {
     my ($self, $userid, $grid, $prid, $netid) = @_;
 
@@ -1937,6 +1988,23 @@ Argomenti:  * id del gruppo ('grid');
 Return:     Se tutto OK, restituisce 1;
 
         Se KO, restituisce 0.
+
+=cut
+
+=head1 insert_final_code_grants
+
+Funzione che effettua l'eliminazione dei permessi di un determinato gruppo
+su un determinato codice di validazione finale dal database.
+
+Argomenti:  * id del gruppo ('grid');
+
+           * id del codice di validazione finale ('id');
+
+Return:     valore 1/0:
+
+                - 1: OK
+
+                - 0: ERRORE
 
 =cut
 

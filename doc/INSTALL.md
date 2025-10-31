@@ -55,7 +55,7 @@
 
     ```console
     $ sudo dpkg-reconfigure tzdata
-        - selezionare "None of the above";
+        - selezionare "None of the above" o "Etc";
         - selezionare "UTC";
         (verificare che il "Local time" e lo "Universal Time" siano entrambi ad "UTC")
     Current default time zone: 'Etc/UTC'
@@ -86,9 +86,9 @@
     $ sudo sh /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
         (cliccare "Invio" per continuare)
     $ sudo apt update && sudo apt upgrade -y
-    $ sudo apt install postgresql-17
+    $ sudo apt install postgresql-17 -y
     $ sudo apt install postgresql-plperl-17
-    $ sudo apt install postgresql-plpython3-17
+    $ sudo apt install postgresql-plpython3-17 -y
     $ sudo apt install postgresql-17-postgis-3
     ```
 
@@ -276,7 +276,12 @@
     ```console
     git clone https://github.com/ARPA-VdA/OPAS.git
     ```
-    Una volta lanciato il comando, si ritroveranno le directories *src*, *doc*, *scripts*, *webservice* e *db* contenenti i file dell'applicativo e gli sql.
+    Una volta lanciato il comando, nella cartella *OPAS* si ritroveranno le directories *src*, *doc*, *scripts*, *webservice* e *db* contenenti i file dell'applicativo e gli sql.
+    Spostarsi nella cartella appena creata
+
+    ```console
+    $ cd ./OPAS
+    ```
 
 ## POPOLAMENTO DB (cartella */db*)
 
@@ -285,39 +290,33 @@ La seguente tabella elenca i file .sql necessari a popolare il database:
 | Ordine | Nome del file    |
 | - | - |
 |      1 | db_creation.sql  |
-|      2 | full_fb.sql      |
+|      2 | full_db.sql      |
 |      3 | foreign_keys.sql |
 |      4 | minimum_data.sql |
-
-* Copiare i file sql nella cartella */tmp* per renderli utilizzabili dal comando *psql*:
-
-    ```console
-    $ cp -r db/ /tmp/ # genera /tmp/sql
-    ```
 
 * Creazione del database *opas* e tutti di ruoli/users necessari al corretto funzionamento del portale:
 
     Il file Sql db_creation contiene le insert degli utenti e le password di default. questo possono essere modificare prima di lanciare il comando, oppure dal portale nella propia sezione di impostazioni
     ```console
-    $ sudo -i -u postgres psql -a -f /tmp/sql/db_creation.sql
+    $ psql -h localhost -U postgres -f ./db/db_creation.sql
     ```
 
 * Creazione dello 'scheletro' (tabelle + viste + funzioni) del database:
 
     ```console
-    $ sudo -i -u postgres psql -d opas -a -f /tmp/sql/full_db.sql
+    $ psql -h localhost -U postgres -d opas -f ./db/full_db.sql
     ```
 
 * Creazione delle chiavi esterne del database:
 
     ```console
-    $ sudo -i -u postgres psql -d opas -a -f /tmp/sql/foreign_keys.sql
+    $ psql -h localhost -U postgres -d opas -f ./db/foreign_keys.sql
     ```
 
 * Inserimento dei dati minimi necessario all'avvio del portale:
 
     ```console
-    $ sudo -i -u postgres psql -d opas -a -f /tmp/sql/minimum_data.sql
+    $ psql -h localhost -U postgres -d opas -f ./db/minimum_data.sql
     ```
 
 ## PRIMA DI AVVIARE IL SERVER...
@@ -327,7 +326,7 @@ Modificare il file *bobo.production.conf* inserendo i propri dati nella stringa 
 Stringa di connessione da modificare in base alla configurazione del proprio server postgres, se diversa da quella di default: 'postgresql://user:pass@host:port/dbname?pg_enable_utf8=1&application_name="app.name"'
 
 ```console
-$ vi ~/src/bobo.production.conf
+$ vi ~/OPAS/src/bobo.production.conf
 ...
 ...
 database => 'postgresql://user_bobo:xxxxxxxxxx@localhost:5432/opas?pg_enable_utf8=1&application_name="webapp.opas"',
@@ -345,7 +344,7 @@ $ hypnotoad -f src/script/bobo
 Aprire il browser internet e puntare a:
 
 ```url
-http://[INDIRIZZO_IP_SERVER]
+http://[INDIRIZZO_IP_SERVER]:8080
 ```
 
 Effettuare il login al portale con le seguenti credenziali:

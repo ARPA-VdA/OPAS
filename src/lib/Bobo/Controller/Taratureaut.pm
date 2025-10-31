@@ -40,14 +40,15 @@ sub get_data {
     my $provid = $self->param('provid'); # post
     my $stid   = $self->param('stid');   # post
     my $prid   = $self->param('prid');   # post
-    my $flag   = $self->param('flag');   # post
+    my $result   = $self->param('result');   # post
+    my $failed   = $self->param('failed');   # post
     my $data;
 
     if ($stid == -1) { # se nessuna selezione selezionata estraggo tutte le stazioni associate all'utente
-        $data = $self->dbtaratureaut->get_all_data_by_dates($user_id, $from, $to, $netid, $provid, $prid, $flag);
+        $data = $self->dbtaratureaut->get_all_data_by_dates($user_id, $from, $to, $netid, $provid, $prid, $result, $failed);
     }
     else {
-        $data = $self->dbtaratureaut->get_data_by_station_dates($stid, $from, $to, $prid, $flag);
+        $data = $self->dbtaratureaut->get_data_by_station_dates($stid, $from, $to, $prid, $result, $failed);
     }
 
     my $json = {

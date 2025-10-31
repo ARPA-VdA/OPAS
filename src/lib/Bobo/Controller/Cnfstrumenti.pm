@@ -30,7 +30,36 @@ sub strumenti {
     $self->stash(types => $types);
 
     # Render template "utilities/faq.html.ep" with message
-    $self->render('impostazioni/strumenti');
+    $self->render('impostazioni/strumenti_v2');
+}
+
+sub stnz_strumenti {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Stnzstrumenti");
+
+    # get the menu with active element based on the current route
+    $self->helperGetMenusStash();
+
+    my $userid = $self->session('it.ecometer.bobo');
+
+    # get provinces
+    my $provinces = $self->dbcommon->get_provinces($userid);
+    $self->stash(provinces => $provinces);
+
+    # get networks
+    my $networks = $self->dbcommon->get_all_networks($userid);
+    $self->stash(networks => $networks);
+
+    my $categories = $self->dbcommon->get_equipments_categories();
+    $self->stash(categories => $categories);
+
+    my $types = $self->dbcnfstrumenti->get_instruments_types();
+    $self->stash(types => $types);
+
+    # Render template "utilities/faq.html.ep" with message
+    $self->render('stanziamenti/strumenti');
 }
 
 sub get_instruments {
@@ -89,11 +118,13 @@ sub get_instrument_by_id {
 
     my $json;
     my $instrument = $self->dbcnfstrumenti->get_instrument_by_id($inid);
+    my $locations = $self->dbcnfstrumenti->get_instrument_locations_history($inid);
 
     if (defined $instrument) {
         $json = {
             res => "OK",
-            instrument => $instrument
+            instrument => $instrument,
+            gantt_locations => $locations
         };
     }
     else {

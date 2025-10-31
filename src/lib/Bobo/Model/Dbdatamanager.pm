@@ -2265,7 +2265,7 @@ sub get_table_data_neighborhood {
     my $inner_fields = "fulldate text";
     my $inner_query  = "";
 
-    $ext_fields .= ", field0[1] AS min, field0[2] AS value, field0[3] AS max, field0[4] AS code, field0[5] AS class";
+    $ext_fields .= ", field0[1] AS min, field0[2] AS value, field0[3] AS max, field0[4] AS perc, field0[5] AS code, field0[6] AS class";
     $inner_fields .= qq{, field0 text[]};
 
     $inner_query .= qq{
@@ -2276,6 +2276,7 @@ sub get_table_data_neighborhood {
                 COALESCE(( ROUND( ( $formule_min )::numeric, $decimals ) )::text, ''--''),
                 COALESCE(( ROUND( ( $formule )::numeric, $decimals ) )::text, ''--''),
                 COALESCE(( ROUND( ( $formule_max )::numeric, $decimals ) )::text, ''--''),
+                COALESCE(measure_perc::text, ''--''),
                 post_validity_code::text,
                 CASE
                     WHEN final_validity_code > 0 THEN

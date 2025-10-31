@@ -11,9 +11,57 @@ export class Metadata {
     return (await this.pg.query`
       SELECT array_to_json(array_agg(row_to_json(t))) AS stations FROM (
           SELECT
-              *
+              * -- all fields
           FROM
               webservice.v1_stations
+      ) t
+    `).first;
+  }
+
+  /**
+  *
+  * @param id the station id
+  * @returns single station
+  */
+  async getStation(id) {
+    return (await this.pg.query`
+      SELECT row_to_json(t) AS station FROM (
+          SELECT
+              *, -- all fields as in getStations()
+              (
+                  SELECT array_to_json(array_agg(row_to_json(p))) AS parameters FROM (
+                      SELECT
+                          sp.stpr_id                                                  AS series_id,
+                          wsp.name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS series_name,
+                          sp.stpr_table_id                                            AS database_id,
+                          wsp.id                                                      AS id,
+                          sp.stpr_ext_id                                              AS external_id,
+                          spi.stpr_export_id1                                         AS export_id1,
+                          spi.stpr_export_id2                                         AS export_id2,
+                          mc.measure_cadence_desc                                     AS cadence_type_desc,
+                          mc.measure_cadence_min                                      AS cadence_type_min,
+                          wsp.name                                                    AS name,
+                          wsp.unit                                                    AS unit,
+                          wsp.conversion_factor_curr                                  AS conversion_factor_curr,
+                          wsp.conversion_history                                      AS conversion_history,
+                          wsp.conversion_unit                                         AS conversion_unit,
+                          wsp.decimals                                                AS decimals,
+                          wsp.active                                                  AS active,
+                          wsp.note                                                    AS note
+                      FROM
+                          metadata.stations_parameters sp
+                          LEFT JOIN metadata.stations_params_info spi USING (stpr_id)
+                          LEFT JOIN metadata.stations_info sm USING (station_id)
+                          LEFT JOIN metadata.measures_cadence mc ON mc.measure_cadence_id = coalesce(spi.stpr_info_cadence_fk, sm.st_info_cadence_fk)
+                          LEFT JOIN webservice.v1_parameters wsp ON sp.param_id = wsp.id
+                      WHERE
+                          sp.station_id = wss.id
+                  ) p
+              )
+          FROM
+              webservice.v1_stations wss
+          WHERE
+              wss.id = ${id}
       ) t
     `).first;
   }
@@ -27,7 +75,7 @@ export class Metadata {
     return (await this.pg.query`
       SELECT array_to_json(array_agg(row_to_json(t))) AS stations FROM (
           SELECT
-              *
+              * -- all fields
           FROM
               webservice.v1_stations
           WHERE
@@ -70,48 +118,19 @@ export class Metadata {
   }
 
   /**
- *
- * @param id the station id
- * @returns single station
- */
-  async getStation(id) {
+    * Get all available parameter typologies
+    * @returns list of typologies
+    */
+  async getParametersType() {
     return (await this.pg.query`
-      SELECT row_to_json(t) AS station FROM (
+      SELECT array_to_json(array_agg(row_to_json(t))) AS parameters_type FROM (
           SELECT
-              wss.id          AS id,
-              wss.name        AS name,
-              wss.external_id AS external_id,
-              wss.export_id   AS export_id,
-              (
-                  SELECT array_to_json(array_agg(row_to_json(p))) AS parameters FROM (
-                      SELECT
-                          sp.stpr_id                                                  AS series_id,
-                          wsp.name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS series_name,
-                          sp.stpr_table_id                                            AS database_id,
-                          wsp.id                                                      AS id,
-                          sp.stpr_ext_id                                              AS external_id,
-                          spi.stpr_export_id1                                         AS export_id1,
-                          spi.stpr_export_id2                                         AS export_id2,
-                          wsp.name                                                    AS name,
-                          wsp.unit                                                    AS unit,
-                          wsp.conversion_factor_curr                                  AS conversion_factor_curr,
-                          wsp.conversion_history                                      AS conversion_history,
-                          wsp.conversion_unit                                         AS conversion_unit,
-                          wsp.decimals                                                AS decimals,
-                          wsp.active                                                  AS active,
-                          wsp.note                                                    AS note
-                      FROM
-                          metadata.stations_parameters sp
-                          LEFT JOIN metadata.stations_params_info spi USING (stpr_id)
-                          LEFT JOIN webservice.v1_parameters wsp ON sp.param_id = wsp.id
-                      WHERE
-                          sp.station_id = wss.id
-                  ) p
-              )
+              pm_type_id   AS type_id,
+              pm_type_desc AS type_name
           FROM
-              webservice.v1_stations wss
-          WHERE
-              wss.id = ${id}
+              metadata.parameters_type
+          ORDER BY
+              pm_type_id
       ) t
     `).first;
   }
@@ -140,6 +159,8 @@ export class Metadata {
                           sp.stpr_ext_id                                              AS external_id,
                           spi.stpr_export_id1                                         AS export_id1,
                           spi.stpr_export_id2                                         AS export_id2,
+                          mc.measure_cadence_desc                                     AS cadence_type_desc,
+                          mc.measure_cadence_min                                      AS cadence_type_min,
                           wsp.name                                                    AS name,
                           wsp.unit                                                    AS unit,
                           wsp.conversion_factor_curr                                  AS conversion_factor_curr,
@@ -151,6 +172,8 @@ export class Metadata {
                       FROM
                           metadata.stations_parameters sp
                           LEFT JOIN metadata.stations_params_info spi USING (stpr_id)
+                          LEFT JOIN metadata.stations_info sm USING (station_id)
+                          LEFT JOIN metadata.measures_cadence mc ON mc.measure_cadence_id = coalesce(spi.stpr_info_cadence_fk, sm.st_info_cadence_fk)
                           LEFT JOIN webservice.v1_parameters wsp ON sp.param_id = wsp.id
                       WHERE
                           sp.station_id = wss.id

@@ -2,6 +2,7 @@
 -- | - Script Name   : full_db.sql                                                                |
 -- | - Author        : Ecometer s.n.c.                                                            |
 -- | - Creation Date : 2025-03-31                                                                 |
+-- | - Update Date   : 2025-06-30                                                                 |
 -- | - Description   : Script to create PostgreSQL 'opas' database full structure.                |
 -- +----------------------------------------------------------------------------------------------+
 
@@ -3140,173 +3141,177 @@
         COST 100
         VOLATILE PARALLEL UNSAFE
     AS $BODY$
+            DECLARE
+                    tj jsonb; -- total jsonb
+                    j   text; -- temporary jsonb
+                    u   text; -- unit
+                    f   text; -- formule
+                    c   text; -- chart style
+                    n   text; -- window's name
 
-    DECLARE
-            tj jsonb; -- total jsonb
-            j   text; -- temporary jsonb
-            u   text; -- unit
-            f   text; -- formule
-            c   text; -- chart style
-            n   text; -- window's name
+                    ymin numeric;
+                    ymax numeric;
+                    rec record;
+            BEGIN
 
-            ymin numeric;
-            ymax numeric;
-            rec record;
-    BEGIN
+                /* TEST */
+                /* SELECT bobo_tools.f_visualizer_auto_generate_macro('{1072}'::integer[], '{13}'::integer[], NULL, 2, true) AS macros; */
+                tj := '[]'::jsonb;
 
-        /* TEST */
-        /* SELECT bobo_tools.f_visualizer_auto_generate_macro('{1072}'::integer[], '{13}'::integer[], NULL, 2, true) AS macros; */
-        tj := '[]'::jsonb;
+                -- se è definita una categoria e non sono stati selezionati dei parametri
+                IF cat != -1 AND prid IS NULL THEN
 
-        -- se è definita una categoria e non sono stati selezionati dei parametri
-        IF cat != -1 AND prid IS NULL THEN
+                    SELECT
+                        ARRAY_AGG(param_id) INTO prid
+                    FROM
+                        metadata.parameters_info
+                    WHERE instr_type_ids && ARRAY (
+                                                SELECT instr_type_id
+                                                FROM equipments.instruments_type
+                                                WHERE category_id = cat
+                                            );
+                END IF;
 
-            SELECT
-                ARRAY_AGG(param_id) INTO prid
-            FROM
-                metadata.parameters_info
-            WHERE instr_type_ids && ARRAY (
-                                        SELECT instr_type_id
-                                        FROM equipments.instruments_type
-                                        WHERE category_id = cat
-                                    );
-        END IF;
+                /* loop through all stations and parameters */
+                FOR rec IN
+                    WITH t AS(
+                        SELECT
+                            CASE
+                                WHEN prid NOTNULL THEN ARRAY_AGG(param_id) & prid
+                                ELSE ARRAY_AGG(param_id)
+                            END AS ids
+                        FROM metadata.parameters
+                    )
+                    SELECT
+                        st.station_name,
+                        sp.stpr_id,
+                        p.param_id,
+                        p.param_name,
+                        sp.stpr_note,
+                        COALESCE(pi.pm_info_obj->'general'->>'treatment', 'avg') AS param_treatment,
+                        (pi.pm_info_obj->'general'->>'min')::numeric AS param_min,
+                        (pi.pm_info_obj->'general'->>'max')::numeric AS param_max,
+                        CASE
+                            WHEN param_conv = 0 THEN 'y='||COALESCE(param_offset::text, '0')
+                            ELSE 'y=x'||COALESCE('+'||param_offset::text, '')
+                        END AS param_formule,
+                        p.param_unit,
+                        p.param_unit_conv,
+                        -- 24/07/2024 11:55
+                        -- CASE
+                        --     WHEN param_conv = 0 THEN 'y='||COALESCE(param_offset::text, '0')
+                        --     WHEN param_conv = 1 THEN 'y=x'||COALESCE('+'||param_offset::text, '')
+                        --     ELSE 'y='||param_conv||'*x'||COALESCE('+'||param_offset::text, '')
+                        -- END AS param_formule_conv,
+                        p.param_decimals,
+                        pi.pm_info_type_fk AS param_type
+                    FROM
+                        metadata.stations_parameters sp
+                        LEFT JOIN metadata.stations st USING(station_id)
+                        LEFT JOIN metadata.stations_info si USING(station_id)
+                        LEFT JOIN metadata.parameters p USING (param_id)
+                        LEFT JOIN metadata.parameters_info pi USING (param_id)
+                    WHERE
+                        station_id = ANY(stid)
+                        AND pi.pm_info_type_fk = ANY(types)
+                        AND sp.param_id IN (SELECT UNNEST(ids) FROM t)
+                    ORDER BY
+                        st.station_id, sp.stpr_id
+                LOOP
+                    RAISE NOTICE 'Station: %, stpr id: %', rec.station_name, rec.stpr_id;
 
-        /* loop through all stations and parameters */
-        FOR rec IN
-            WITH t AS(
-                SELECT
+                    f := rec.param_formule;
+
+                    IF conv IS TRUE THEN
+                        u := rec.param_unit_conv;
+                        -- f := rec.param_formule_conv;
+                    ELSE
+                        u := rec.param_unit;
+                        -- f := rec.param_formule;
+                    END IF;
+
+                    n := rec.station_name||' - '||rec.param_name || COALESCE(' - ' || rec.stpr_note, '');
+
+                    c := 'line';
+                    IF rec.param_type = 12 THEN
+                        c := 'point';
+                    END IF;
+
                     CASE
-                        WHEN prid NOTNULL THEN ARRAY_AGG(param_id) & prid
-                        ELSE ARRAY_AGG(param_id)
-                    END AS ids
-                FROM metadata.parameters
-            )
-            SELECT
-                st.station_name,
-                sp.stpr_id,
-                p.param_name,
-                sp.stpr_note,
-                COALESCE(pi.pm_info_obj->'general'->>'treatment', 'avg') AS param_treatment,
-                (pi.pm_info_obj->'general'->>'min')::numeric AS param_min,
-                (pi.pm_info_obj->'general'->>'max')::numeric AS param_max,
-                CASE
-                    WHEN param_conv = 0 THEN 'y='||COALESCE(param_offset::text, '0')
-                    ELSE 'y=x'||COALESCE('+'||param_offset::text, '')
-                END AS param_formule,
-                p.param_unit,
-                p.param_unit_conv,
-                -- CASE
-                --     WHEN param_conv = 0 THEN 'y='||COALESCE(param_offset::text, '0')
-                --     WHEN param_conv = 1 THEN 'y=x'||COALESCE('+'||param_offset::text, '')
-                --     ELSE 'y='||param_conv||'*x'||COALESCE('+'||param_offset::text, '')
-                -- END AS param_formule_conv,
-                p.param_decimals,
-                pi.pm_info_type_fk AS param_type
-            FROM
-                metadata.stations_parameters sp
-                LEFT JOIN metadata.stations st USING(station_id)
-                LEFT JOIN metadata.stations_info si USING(station_id)
-                LEFT JOIN metadata.parameters p USING (param_id)
-                LEFT JOIN metadata.parameters_info pi USING (param_id)
-            WHERE
-                station_id = ANY(stid)
-                AND pi.pm_info_type_fk = ANY(types)
-                AND sp.param_id IN (SELECT UNNEST(ids) FROM t)
-            ORDER BY
-                st.station_id, sp.stpr_id
-        LOOP
-            RAISE NOTICE 'Station: %, stpr id: %', rec.station_name, rec.stpr_id;
+                        WHEN rec.param_min < 0 AND rec.param_max IS NULL THEN
+                            ymin := rec.param_min + ROUND(( rec.param_min / 2 ));
+                            ymax := NULL;
 
-            f := rec.param_formule;
+                        WHEN rec.param_min IS NULL AND rec.param_max > 0 THEN
+                            ymin := NULL;
+                            ymax := rec.param_max + ROUND(( rec.param_max / 2 ), 1);
 
-            IF conv IS TRUE THEN
-                u := rec.param_unit_conv;
-                -- f := rec.param_formule_conv;
-            ELSE
-                u := rec.param_unit;
-                -- f := rec.param_formule;
-            END IF;
+                        WHEN rec.param_min > 0 AND rec.param_max > 0 THEN
+                            ymin := rec.param_min - ROUND(((rec.param_max - rec.param_min) / 2), 1);
+                            ymax := rec.param_max + ROUND(((rec.param_max - rec.param_min) / 2), 1);
 
-            n := rec.station_name||' - '||rec.param_name || COALESCE(' - ' || rec.stpr_note, '');
+                        WHEN rec.param_min < 0 AND rec.param_max > 0 THEN
+                            ymin := rec.param_min - ROUND(((rec.param_max - rec.param_min) / 2), 1);
+                            ymax := rec.param_max + ROUND(((rec.param_max - rec.param_min) / 2), 1);
 
-            c := 'line';
-            IF rec.param_type = 12 THEN
-                c := 'point';
-            END IF;
+                        ELSE
+                            ymin := NULL;
+                            ymax := NULL;
+                    END CASE;
 
-            CASE
-                WHEN rec.param_min < 0 AND rec.param_max IS NULL THEN
-                    ymin := rec.param_min + ROUND(( rec.param_min / 2 ));
-                    ymax := NULL;
+                    RAISE NOTICE 'Unit: %, formula: %', u, f;
+                    /* create dynamic query */
+                    j = '{'||E'\n'
+                        ||'   "macro": {'||E'\n'
+                        ||'       "name": "'||n||'", '||E'\n'
+                        ||'       "type": "chart", '||E'\n'
+                        ||'       "aggregation": "hh", '||E'\n'
+                        ||'       "percent_data": "75", '||E'\n'
+                        ||'       "min": '||COALESCE(quote_ident(rec.param_min::text), 'null')||', '||E'\n'
+                        ||'       "max": '||COALESCE(quote_ident(rec.param_max::text), 'null')||', '||E'\n'
+                        ||'       "Yaxys_min": '||COALESCE(quote_ident(ymin::text), 'null')||', '||E'\n'
+                        ||'       "Yaxys_max": '||COALESCE(quote_ident(ymax::text), 'null')||', '||E'\n'
+                        ||'       "validity_code": ">= 0"'||E'\n'
+                        ||'   },'||E'\n'
+                        ||'   "params": ['||E'\n'
+                        ||'       {'||E'\n'
+                        ||'           "st_pr_id": '||rec.stpr_id||', '||E'\n'
+                        ||'           "name": "'||rec.param_name||'", '||E'\n'
+                        -- added 23/07/2025 11:23
+                        ||'           "param_id": '||rec.param_id||', '||E'\n'
+                        -- added 24/07/2024 11:56
+                        ||'           "converted": '||conv||', '||E'\n'
+                        ||'           "station": "'||rec.station_name||'", '||E'\n'
+                        ||'           "legend": "'||n||' ['|| u ||']", '||E'\n'
+                        ||'           "column_name": "'||rec.param_name||' ['|| u ||'] <br>'||rec.station_name||'", '||E'\n'
+                        ||'           "unit": "'||u||'", '||E'\n'
+                        ||'           "treatment": "'||rec.param_treatment||'", '||E'\n'
+                        ||'           "chartstyle": "'||c||'", '||E'\n'
+                        ||'           "color": "FFFFFF", '||E'\n'
+                        ||'           "line_width": 2, '||E'\n'
+                        ||'           "minval": false, '||E'\n'
+                        ||'           "maxval": false, '||E'\n'
+                        ||'           "formule": "'||f||'", '||E'\n'
+                        ||'           "decimals": '||rec.param_decimals||', '||E'\n'
+                        ||'           "is_limit": false' ||E'\n'
+                        ||'       }'||E'\n'
+                        ||'   ] '||E'\n'
+                        ||'} ';
 
-                WHEN rec.param_min IS NULL AND rec.param_max > 0 THEN
-                    ymin := NULL;
-                    ymax := rec.param_max + ROUND(( rec.param_max / 2 ), 1);
+                    RAISE NOTICE 'JSON parziale: %', j;
 
-                WHEN rec.param_min > 0 AND rec.param_max > 0 THEN
-                    ymin := rec.param_min - ROUND(((rec.param_max - rec.param_min) / 2), 1);
-                    ymax := rec.param_max + ROUND(((rec.param_max - rec.param_min) / 2), 1);
+                    SELECT tj || j::jsonb INTO tj;
 
-                WHEN rec.param_min < 0 AND rec.param_max > 0 THEN
-                    ymin := rec.param_min - ROUND(((rec.param_max - rec.param_min) / 2), 1);
-                    ymax := rec.param_max + ROUND(((rec.param_max - rec.param_min) / 2), 1);
+                END LOOP;
 
-                ELSE
-                    ymin := NULL;
-                    ymax := NULL;
-            END CASE;
+                RAISE NOTICE 'JSON finale: %', tj::text;
+                RETURN tj;
 
-            RAISE NOTICE 'Unit: %, formula: %', u, f;
-            /* create dynamic query */
-            j = '{'||E'\n'
-                ||'   "macro": {'||E'\n'
-                ||'       "name": "'||n||'", '||E'\n'
-                ||'       "type": "chart", '||E'\n'
-                ||'       "aggregation": "hh", '||E'\n'
-                ||'       "percent_data": "75", '||E'\n'
-                ||'       "min": '||COALESCE(quote_ident(rec.param_min::text), 'null')||', '||E'\n'
-                ||'       "max": '||COALESCE(quote_ident(rec.param_max::text), 'null')||', '||E'\n'
-                ||'       "Yaxys_min": '||COALESCE(quote_ident(ymin::text), 'null')||', '||E'\n'
-                ||'       "Yaxys_max": '||COALESCE(quote_ident(ymax::text), 'null')||', '||E'\n'
-                ||'       "validity_code": ">= 0"'||E'\n'
-                ||'   },'||E'\n'
-                ||'   "params": ['||E'\n'
-                ||'       {'||E'\n'
-                ||'           "st_pr_id": '||rec.stpr_id||', '||E'\n'
-                ||'           "name": "'||rec.param_name||'", '||E'\n'
-                ||'           "converted": '||conv||', '||E'\n'
-                ||'           "station": "'||rec.station_name||'", '||E'\n'
-                ||'           "legend": "'||n||' ['|| u ||']", '||E'\n'
-                ||'           "column_name": "'||rec.param_name||' ['|| u ||'] <br>'||rec.station_name||'", '||E'\n'
-                ||'           "unit": "'||u||'", '||E'\n'
-                ||'           "treatment": "'||rec.param_treatment||'", '||E'\n'
-                ||'           "chartstyle": "'||c||'", '||E'\n'
-                ||'           "color": "FFFFFF", '||E'\n'
-                ||'           "line_width": 2, '||E'\n'
-                ||'           "minval": false, '||E'\n'
-                ||'           "maxval": false, '||E'\n'
-                ||'           "formule": "'||f||'", '||E'\n'
-                ||'           "decimals": '||rec.param_decimals||', '||E'\n'
-                ||'           "is_limit": false' ||E'\n'
-                ||'       }'||E'\n'
-                ||'   ] '||E'\n'
-                ||'} ';
-
-            RAISE NOTICE 'JSON parziale: %', j;
-
-            SELECT tj || j::jsonb INTO tj;
-
-        END LOOP;
-
-        RAISE NOTICE 'JSON finale: %', tj::text;
-        RETURN tj;
-
-        /* errors check */
-        EXCEPTION
-            WHEN OTHERS THEN RAISE NOTICE 'ERROR bobo_tools.f_visualizer_auto_generate_macro(): %', SQLERRM;
-            RETURN false;
-    END;
+            /* errors check */
+            EXCEPTION
+                WHEN OTHERS THEN RAISE NOTICE 'ERROR bobo_tools.f_visualizer_auto_generate_macro(): %', SQLERRM;
+                RETURN false;
+            END;
 
     $BODY$;
 
@@ -3397,10 +3402,12 @@
     -- DROP TABLE IF EXISTS metadata.stations_network_type;
     CREATE TABLE metadata.stations_network_type
     (
-        st_network_id   serial NOT NULL,
-        st_network_desc text NOT NULL,
-        st_network_logo text DEFAULT NULL,
-        st_network_name text DEFAULT NULL,
+        st_network_id       serial NOT NULL,
+        st_network_desc     text NOT NULL,
+        st_network_logo     text DEFAULT NULL,
+        st_network_name     text DEFAULT NULL,
+        st_network_basepath text,
+        st_network_obj      jsonb DEFAULT '{}',
 
         CONSTRAINT metadata_stations_network_type_pkey PRIMARY KEY (st_network_id)
     )
@@ -3416,11 +3423,13 @@
     GRANT ALL ON SEQUENCE metadata.stations_network_type_st_network_id_seq TO group_tools;
 
     -- comments
-    COMMENT ON TABLE  metadata.stations_network_type                 IS 'Support table for station network type';
-    COMMENT ON COLUMN metadata.stations_network_type.st_network_id   IS 'Station network type id';
-    COMMENT ON COLUMN metadata.stations_network_type.st_network_desc IS 'Station network type desc';
-    COMMENT ON COLUMN metadata.stations_network_type.st_network_logo IS 'Station network type logo';
-    COMMENT ON COLUMN metadata.stations_network_type.st_network_logo IS 'Station network type name';
+    COMMENT ON TABLE  metadata.stations_network_type                     IS 'Support table for station network type';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_id       IS 'Station network type id';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_desc     IS 'Station network type desc';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_logo     IS 'Station network type logo';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_logo     IS 'Station network type name';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_basepath IS 'Network basepath for media';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_obj      IS 'Station network object';
 
     -- custom station id sequence starting from 1000
     CREATE SEQUENCE metadata.stations_station_id_seq
@@ -3562,6 +3571,7 @@
         st_info_export_id       text,
         st_info_national_code   text,
         st_info_accepted_delay  integer DEFAULT 60, -- minuti di ritardo accettato, prima di evidenziare un problema
+        st_info_obj             jsonb DEFAULT '{}'::jsonb,
         st_info_ws_name         text,
         st_info_import_ws_id    text,
 
@@ -3624,6 +3634,7 @@
     COMMENT ON COLUMN metadata.stations_info.st_info_export_id       IS 'Station export id, for external link';
     COMMENT ON COLUMN metadata.stations_info.st_info_national_code   IS 'Station national code';
     COMMENT ON COLUMN metadata.stations_info.st_info_accepted_delay  IS 'Max accepted delay before raise a problem';
+    COMMENT ON COLUMN metadata.stations_info.st_info_obj             IS 'Station object: refresh_dependents (TRUE to refresh all products after an update of metadata).';
     COMMENT ON COLUMN metadata.stations_info.st_info_ws_name         IS 'Station name for web service aims';
     COMMENT ON COLUMN metadata.stations_info.st_info_import_ws_id    IS 'Station import ID for ws';
 
@@ -5250,7 +5261,7 @@
     GRANT ALL ON TABLE      metadata.view_sites_parameters TO group_tools;
     GRANT SELECT ON TABLE   metadata.view_sites_parameters TO group_readonly;
 
-    COMMENT ON VIEW metadata.view_sites_parameters IS '[BOBO] The view contains all the principal info about the relation site-parameter';
+    COMMENT ON VIEW metadata.view_sites_parameters IS 'The view contains all the principal info about the relation site-parameter';
 
 
     -- --------------------------------------------------------------------------------------------
@@ -5362,531 +5373,637 @@
     -- comment
     COMMENT ON FUNCTION metadata.f_delete_station(integer) IS 'Function that removes station and all linked metadata';
 
+    SET ROLE user_admin;
+
+    -- Funzione che elimina un parametro associato ad una stazione e tutti i relativi metadati
+    -- DROP FUNCTION IF EXISTS metadata.f_delete_station_parameter(integer);
+    CREATE OR REPLACE FUNCTION metadata.f_delete_station_parameter(
+        stprid integer
+    )
+      RETURNS smallint
+      LANGUAGE 'plpgsql'
+      SECURITY DEFINER
+      VOLATILE
+      COST 100
+    AS $BODY$
+    DECLARE
+        q text; -- query
+        t text; -- table
+        i integer; -- measure id
+    BEGIN
+
+        /**
+         * Function that takes care of deleting a parameter linked to a station, all associated metadata and data in station's table.
+         * The deletion is successful only if the parameter has no data in statistics tables and there is none
+         * elements (instruments, dataset e1a / e2a) associated with it.
+         *
+         * The function is launched from the portal and is executed with the owner role (user_admin).
+         *
+         * TEST
+         * SELECT metadata.f_delete_station_parameter(93::integer); -> -1 Foreign key violation
+         */
+
+
+        /* Get station fulltable name */
+        SELECT
+            station_schema ||'.'|| COALESCE(station_prefix, '')|| station_table, stpr_table_id INTO t,i
+        FROM
+            metadata.stations_parameters
+            LEFT JOIN metadata.stations USING (station_id)
+        WHERE stpr_id = stprid;
+
+        /* Check if parameter exists else return generic error */
+        IF NOT FOUND THEN
+            RAISE NOTICE 'Parameter % not found!', stprid ;
+            RETURN 0;
+        END IF;
+
+        /**
+         * Delete metadata
+         * -- OK
+         * metadata.stations_params_status.metadata_stations_params_status_fkey1
+         * metadata.stations_params_info.metadata_stations_params_info_fkey1
+         * clients.stations_alarms.clients_stations_alarms_fkey3
+         * clients.stations_param_limits.clients_stations_param_limits_fkey
+         * clients.auto_validation_results.clients_auto_validation_results_fkey
+         * -- NOT OK
+         * metadata.stations_params_instruments.metadata_stations_params_instruments_fkey1
+         * clients.final_validation_log.clients_final_validation_log_fk2
+         * clients_stats.results.clients_stats_results_fkey1
+         * clients_stats.report_results.clients_stats_report_results_fk1
+         * infoaria.stations_params_e2a.infoaria_stations_params_e2a_fk1
+         * infoaria.stations_params_info.infoaria_stations_params_info_fk1
+         * infoaria.stations_params_status.infoaria_stations_params_status_fk1
+         *
+         */
+        DELETE FROM clients.auto_validation_results WHERE stpr_id = stprid;
+        DELETE FROM clients.stations_alarms WHERE stpr_id = stprid;
+        DELETE FROM clients.stations_param_limits WHERE stpr_id = stprid;
+        DELETE FROM metadata.stations_params_status WHERE stpr_id = stprid;
+        DELETE FROM metadata.stations_params_info WHERE stpr_id = stprid;
+
+        /**
+         * Try to delete main element in metadata.stations_parameters
+         * If any "foreign key violation" occurs then stop deletion and return error
+         */
+        DELETE FROM metadata.stations_parameters WHERE stpr_id = stprid;
+
+
+        /* Delete data from table */
+        q := 'DELETE FROM '||t||' WHERE measure_id = '||i;
+        EXECUTE q;
+
+        /* Return success*/
+        RETURN 1;
+
+        /* Errors check */
+        EXCEPTION
+        WHEN foreign_key_violation THEN
+            -- in case of foreign key violation
+            RAISE NOTICE 'ERROR IN metadata.f_delete_station_parameter() : %', SQLERRM ;
+            RETURN -1;
+        WHEN OTHERS THEN /* in case of any error */
+            RAISE NOTICE 'ERROR IN metadata.f_delete_station_parameter() : %', SQLERRM ;
+            RETURN 0;
+    END;
+
+    $BODY$;
+
+    GRANT EXECUTE ON FUNCTION  metadata.f_delete_station_parameter(integer) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION  metadata.f_delete_station_parameter(integer) TO group_admin;
+    GRANT EXECUTE ON FUNCTION  metadata.f_delete_station_parameter(integer) TO group_tools;
+
+    COMMENT ON FUNCTION  metadata.f_delete_station_parameter(integer) IS 'Function that removes a parameter associated to a station and all linked metadata';
+
+    RESET ROLE;
+
     -- Funzione che restituisce un oggetto contenente i parametri CC e i relativi id recuperati dai moduli della stazione indicati nel file di configurazione
     -- DROP FUNCTION IF EXISTS metadata.f_get_cc_from_station_config(jsonb);
     CREATE OR REPLACE FUNCTION metadata.f_get_cc_from_station_config(
-        mo jsonb
-    )
+        mo jsonb)
         RETURNS jsonb
         LANGUAGE 'plpgsql'
         COST 100
         VOLATILE PARALLEL UNSAFE
     AS $BODY$
+        DECLARE
+            co jsonb;   -- channel object
+            q   text;   -- dynamic query
+            rec record; -- query results
 
-    DECLARE
-        co jsonb;   -- channel object
-        q   text;   -- dynamic query
-        rec record; -- query results
-        cc jsonb;
-    BEGIN
-        /**
-         * Support function for the metadata.f_get_parameters_from_station_config
-         * Given the object of a module as input, the function returns an array of objects containing the list of CC parameters
-         *
-         * TEST SELECT metadata.f_get_cc_from_station_config('...'::jsonb);
-         */
-        cc := array_to_json(ARRAY[]::jsonb[]);
+            cc jsonb;
 
-        CASE
-            /* SO2  */
-            WHEN (mo->>'ModuleType')::integer IN (100, 415, 852, 860, 867, 1230, 1231, 1240, 1522 )  THEN
-                /** so2
-                 * param_id, stpr_table_id 519, 4023  'SO2 Zero'
-                 * param_id, stpr_table_id 520, 4024  'SO2 Span trovato'
-                 * param_id, stpr_table_id 522, 4026  'SO2 Span deriva'
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN 519 THEN 4023
-                            WHEN 520 THEN 4024
-                            WHEN 522 THEN 4026
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (519, 520, 522)
-                    ORDER BY param_id;';
-                    
-            /* H2S  */
-            WHEN (mo->>'ModuleType')::integer IN ( 416 )  THEN
-                /** h2s
-                 * param_id, stpr_table_id 1199,      'H2S Zero'
-                 * param_id, stpr_table_id 1202,      'H2S Span trovato'
-                 * param_id, stpr_table_id 1204,      'H2S Span deriva'
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN 1199 THEN 4050
-                            WHEN 1202 THEN 4051
-                            WHEN 1204 THEN 4053
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (1199, 1202, 1204)
-                    ORDER BY param_id;';
+        BEGIN
 
-            /* SO2 + H2S  */
-            WHEN (mo->>'ModuleType')::integer IN ( 417 )  THEN
-                /** so2 + h2s
-                 * param_id, stpr_table_id  519, 4023 'SO2 Zero'
-                 * param_id, stpr_table_id  520, 4024 'SO2 Span trovato'
-                 * param_id, stpr_table_id  522, 4026 'SO2 Span deriva'
-                 * param_id, stpr_table_id 1199, 4050 'H2S Zero'
-                 * param_id, stpr_table_id 1202, 4051 'H2S Span trovato'
-                 * param_id, stpr_table_id 1204, 4053 'H2S Span deriva'
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN  519 THEN 4023
-                            WHEN  520 THEN 4024
-                            WHEN  522 THEN 4026
-                            WHEN 1199 THEN 4050
-                            WHEN 1202 THEN 4051
-                            WHEN 1204 THEN 4053
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (519, 520, 522, 1199, 1202, 1204)
-                    ORDER BY param_id;';
+            /**
+             * Support function for the metadata.f_get_parameters_from_station_config
+             * Given the object of a module as input, the function returns an array of objects containing the list of CC parameters
+             *
+             * TEST SELECT metadata.f_get_cc_from_station_config('...'::jsonb);
+             */
+            cc := array_to_json(ARRAY[]::jsonb[]);
 
-            /* NOX-NO-NO2 */
-            WHEN (mo->>'ModuleType')::integer IN ( 200, 201, 420, 850, 861, 866, 1200, 1201, 1241, 1532 ) THEN
-                /** nox + hn3
-                 * 496, 4000 NOx Zero
-                 * 497, 4001 NO Zero
-                 * 498, 4002 NO2 Zero
-                 * 499, 4003 NOx Span trovato
-                 * 501, 4005 NOx Span deriva
-                 * 502, 4006 NO Span trovato
-                 * 504, 4008 NO Span deriva
-                 * 505, 4009 NO2 Span trovato
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN 496 THEN 4000
-                            WHEN 497 THEN 4001
-                            WHEN 498 THEN 4002
-                            WHEN 499 THEN 4003
-                            WHEN 501 THEN 4005
-                            WHEN 502 THEN 4006
-                            WHEN 504 THEN 4008
-                            WHEN 505 THEN 4009
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (496,497,498,499,501,502,504,505)
-                    ORDER BY param_id;';
+            CASE
+                /* SO2  */
+                WHEN (mo->>'ModuleType')::integer IN (100, 415, 852, 860, 867, 1230, 1231, 1522 )  THEN
+                    /** so2
+                     * param_id, stpr_table_id 519, 4023  'SO2 Zero'
+                     * param_id, stpr_table_id 520, 4024  'SO2 Span trovato'
+                     * param_id, stpr_table_id 522, 4026  'SO2 Span deriva'
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN 519 THEN 4023
+                                WHEN 520 THEN 4024
+                                WHEN 522 THEN 4026
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (519, 520, 522)
+                        ORDER BY param_id;';
 
-            /* O3 */
-            WHEN (mo->>'ModuleType')::integer IN (400, 410, 851, 862, 864, 1210, 1211, 1542 ) THEN
-                /**  o3
-                 * 509, 4013 O3 Zero
-                 * 510, 4014 O3 Span trovato
-                 * 512, 4016 O3 Span deriva
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN 509 THEN 4013
-                            WHEN 510 THEN 4014
-                            WHEN 512 THEN 4016
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (509,510,512)
-                    ORDER BY param_id;';
+                /* H2S  */
+                WHEN (mo->>'ModuleType')::integer IN ( 416 )  THEN
+                    /** h2s
+                     * param_id, stpr_table_id 1199,      'H2S Zero'
+                     * param_id, stpr_table_id 1202,      'H2S Span trovato'
+                     * param_id, stpr_table_id 1204,      'H2S Span deriva'
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN 1199 THEN 4050
+                                WHEN 1202 THEN 4051
+                                WHEN 1204 THEN 4053
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (1199, 1202, 1204)
+                        ORDER BY param_id;';
 
-            /* CO */
-            WHEN (mo->>'ModuleType')::integer IN (300, 425, 853, 863, 865, 1220, 1221, 1512 ) THEN
-                /** co
-                 * 514, 4018 CO Zero
-                 * 515, 4019 CO Span trovato
-                 * 517, 4021 CO Span deriva
-                 */
-                q := 'SELECT
-                        param_id,
-                        param_name,
-                        param_unit,
-                        CASE param_id
-                            WHEN 514 THEN 4018
-                            WHEN 515 THEN 4019
-                            WHEN 517 THEN 4021
-                            ELSE NULL
-                        END AS table_id
-                    FROM
-                        metadata.parameters
-                    WHERE
-                        param_id IN (514,515,517)
-                    ORDER BY param_id;';
+                /* SO2 + H2S  */
+                WHEN (mo->>'ModuleType')::integer IN ( 101, 417, 1240, 1243 )  THEN
+                    /** so2 + h2s
+                     * param_id, stpr_table_id  519, 4023 'SO2 Zero'
+                     * param_id, stpr_table_id  520, 4024 'SO2 Span trovato'
+                     * param_id, stpr_table_id  522, 4026 'SO2 Span deriva'
+                     * param_id, stpr_table_id 1199, 4050 'H2S Zero'
+                     * param_id, stpr_table_id 1202, 4051 'H2S Span trovato'
+                     * param_id, stpr_table_id 1204, 4053 'H2S Span deriva'
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN  519 THEN 4023
+                                WHEN  520 THEN 4024
+                                WHEN  522 THEN 4026
+                                WHEN 1199 THEN 4050
+                                WHEN 1202 THEN 4051
+                                WHEN 1204 THEN 4053
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (519, 520, 522, 1199, 1202, 1204)
+                        ORDER BY param_id;';
 
-            /* BTX */
-            WHEN (mo->>'ModuleType')::integer IN (800, 804, 805, 806, 807, 808, 809 ) THEN
+                /* NOX-NO-NO2 */
+                WHEN (mo->>'ModuleType')::integer IN ( 200, 201, 420, 850, 861, 866, 1200, 1201, 1241, 1532 ) THEN
+                    /** nox + hn3
+                     * 496, 4000 NOx Zero
+                     * 497, 4001 NO Zero
+                     * 498, 4002 NO2 Zero
+                     * 499, 4003 NOx Span trovato
+                     * 501, 4005 NOx Span deriva
+                     * 502, 4006 NO Span trovato
+                     * 504, 4008 NO Span deriva
+                     * 505, 4009 NO2 Span trovato
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN 496 THEN 4000
+                                WHEN 497 THEN 4001
+                                WHEN 498 THEN 4002
+                                WHEN 499 THEN 4003
+                                WHEN 501 THEN 4005
+                                WHEN 502 THEN 4006
+                                WHEN 504 THEN 4008
+                                WHEN 505 THEN 4009
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (496,497,498,499,501,502,504,505)
+                        ORDER BY param_id;';
 
-                /* Loop through all module's channels */
-                FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
+                /* O3 */
+                WHEN (mo->>'ModuleType')::integer IN (400, 410, 851, 862, 864, 1210, 1211, 1542 ) THEN
+                    /**  o3
+                     * 509, 4013 O3 Zero
+                     * 510, 4014 O3 Span trovato
+                     * 512, 4016 O3 Span deriva
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN 509 THEN 4013
+                                WHEN 510 THEN 4014
+                                WHEN 512 THEN 4016
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (509,510,512)
+                        ORDER BY param_id;';
 
-                    IF co->>'Name' ~ 'Benzene' THEN
-                        /**
-                         * 524, 4028 Ben Zero
-                         * 527, 4031 Ben Span trovato
-                         * 529, 4033 Ben Span deriva
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 524 THEN 4028
-                                    WHEN 527 THEN 4031
-                                    WHEN 529 THEN 4033
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (524,527,529)
-                            ORDER BY param_id;';
+                /* CO */
+                WHEN (mo->>'ModuleType')::integer IN (300, 425, 853, 863, 865, 1220, 1221, 1512 ) THEN
+                    /** co
+                     * 514, 4018 CO Zero
+                     * 515, 4019 CO Span trovato
+                     * 517, 4021 CO Span deriva
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN 514 THEN 4018
+                                WHEN 515 THEN 4019
+                                WHEN 517 THEN 4021
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (514,515,517)
+                        ORDER BY param_id;';
 
-                    ELSIF co->>'Name' ~ 'Toluene' THEN
-                        /**
-                         * 525, 4029 Tol Zero
-                         * 530, 4034 Tol Span trovato
-                         * 532, 4036 Tol Span deriva
-                         */
-                         q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 525 THEN 4029
-                                    WHEN 530 THEN 4034
-                                    WHEN 532 THEN 4036
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (525,530,532)
-                            ORDER BY param_id;';
+                /* BTX */
+                WHEN (mo->>'ModuleType')::integer IN (800, 804, 805, 806, 807, 808, 809 ) THEN
 
-                    ELSIF co->>'Name' IN ('Ethilbenzene', 'Ethylbenzene') THEN
-                        /**
-                         * 548, 4041 Ethylbenzene Span trovato
-                         * 549, 4042 Ethylbenzene Span deriva
-                         */
-                         q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 548 THEN 4041
-                                    WHEN 549 THEN 4042
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (548,549)
-                            ORDER BY param_id;';
+                    /* Loop through all module's channels */
+                    FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
 
-                    ELSIF co->>'Name' IN ('M+P-Xilene', 'M&p-hxylene') THEN
-                        /**
-                         * 552, 4045 M&P-xylene Span trovato
-                         * 553, 4046 M&P-xylene Span deriva
-                         */
-                         q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 552 THEN 4045
-                                    WHEN 553 THEN 4046
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (552,553)
-                            ORDER BY param_id;';
+                        IF co->>'Name' ~ 'Benzene' THEN
+                            /**
+                             * 524, 4028 Ben Zero
+                             * 527, 4031 Ben Span trovato
+                             * 529, 4033 Ben Span deriva
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 524 THEN 4028
+                                        WHEN 527 THEN 4031
+                                        WHEN 529 THEN 4033
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (524,527,529)
+                                ORDER BY param_id;';
 
-                    ELSIF co->>'Name' IN ('O-Xilene', 'O-xylene') THEN
-                        /**
-                         * 550, 4043 O-xylene Span trovato
-                         * 551, 4044 O-xylene Span deriva
-                         */
-                         q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 550 THEN 4043
-                                    WHEN 551 THEN 4044
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (550,551)
-                            ORDER BY param_id;';
-                    ELSE
-                        /* Do nothing*/
-                    END IF;
+                        ELSIF co->>'Name' ~ 'Toluene' THEN
+                            /**
+                             * 525, 4029 Tol Zero
+                             * 530, 4034 Tol Span trovato
+                             * 532, 4036 Tol Span deriva
+                             */
+                             q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 525 THEN 4029
+                                        WHEN 530 THEN 4034
+                                        WHEN 532 THEN 4036
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (525,530,532)
+                                ORDER BY param_id;';
 
-                    FOR rec IN
-                        EXECUTE q
-                    LOOP
+                        ELSIF co->>'Name' IN ('Ethilbenzene', 'Ethylbenzene') THEN
+                            /**
+                             * 548, 4041 Ethylbenzene Span trovato
+                             * 549, 4042 Ethylbenzene Span deriva
+                             */
+                             q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 548 THEN 4041
+                                        WHEN 549 THEN 4042
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (548,549)
+                                ORDER BY param_id;';
 
-                        SELECT cc ||
-                            jsonb_build_object(
-                                'module', (mo->>'ID')::integer,
-                                'module_name', mo->>'Name',
-                                'prid', rec.param_id,
-                                'name', rec.param_name,
-                                'unit', rec.param_unit,
-                                'id', rec.table_id,
-                                'need-group', TRUE,
-                                'daily', FALSE
-                            ) INTO cc;
+                        ELSIF co->>'Name' IN ('M+P-Xilene', 'M&p-hxylene') THEN
+                            /**
+                             * 552, 4045 M&P-xylene Span trovato
+                             * 553, 4046 M&P-xylene Span deriva
+                             */
+                             q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 552 THEN 4045
+                                        WHEN 553 THEN 4046
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (552,553)
+                                ORDER BY param_id;';
+
+                        ELSIF co->>'Name' IN ('O-Xilene', 'O-xylene') THEN
+                            /**
+                             * 550, 4043 O-xylene Span trovato
+                             * 551, 4044 O-xylene Span deriva
+                             */
+                             q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 550 THEN 4043
+                                        WHEN 551 THEN 4044
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (550,551)
+                                ORDER BY param_id;';
+                        ELSE
+                            /* Do nothing*/
+                        END IF;
+
+                        FOR rec IN
+                            EXECUTE q
+                        LOOP
+
+                            SELECT cc ||
+                                jsonb_build_object(
+                                    'module', (mo->>'ID')::integer,
+                                    'module_name', mo->>'Name',
+                                    'prid', rec.param_id,
+                                    'name', rec.param_name,
+                                    'unit', rec.param_unit,
+                                    'id', rec.table_id,
+                                    'need-group', TRUE,
+                                    'daily', FALSE
+                                ) INTO cc;
+                        END LOOP;
+
+                    /* END channels loop */
                     END LOOP;
 
-                /* END channels loop */
-                END LOOP;
+                    /* Reset variable in order to skip last part of instructions */
+                    q := NULL;
 
-                /* Reset variable in order to skip last part of instructions */
-                q := NULL;
+                /* !! ANALOGICI !! */
+                /* ADAM_4017, ADAM_5017, ADAM_TCP_5017 */
+                WHEN (mo->>'ModuleType')::integer IN (3150, 4017, 5017, 5117) THEN
+                    /* Loop through all module's channels */
+                    FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
 
+                        IF co->>'Name' ~ 'SO2' THEN
+                            /** so2
+                             * param_id, stpr_table_id 519, 4023  'SO2 Zero'
+                             * param_id, stpr_table_id 520, 4024  'SO2 Span trovato'
+                             * param_id, stpr_table_id 522, 4026  'SO2 Span deriva'
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 519 THEN 4023
+                                        WHEN 520 THEN 4024
+                                        WHEN 522 THEN 4026
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (519, 520, 522)
+                                ORDER BY param_id;';
 
-            /* !! ANALOGICI !! */
-            /* ADAM_4017, ADAM_5017, ADAM_TCP_5017 */
-            WHEN (mo->>'ModuleType')::integer IN (3150, 4017, 5017, 5117) THEN
-                /* Loop through all module's channels */
-                FOR co IN SELECT * FROM jsonb_array_elements((mo->>'Channels')::jsonb) LOOP
+                        ELSIF co->>'Name' ~ 'NOx' THEN
+                            /** nox + hn3
+                             * 496, 4000 NOx Zero
+                             * 499, 4003 NOx Span trovato
+                             * 501, 4005 NOx Span deriva
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 496 THEN 4000
+                                        WHEN 499 THEN 4003
+                                        WHEN 501 THEN 4005
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (496,499,501)
+                                ORDER BY param_id;';
 
+                        ELSIF co->>'Name' ~ 'NO2' THEN
+                            /** nox + hn3
+                             * 498, 4002 NO2 Zero
+                             * 505, 4009 NO2 Span trovato
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 498 THEN 4002
+                                        WHEN 505 THEN 4009
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (498,505)
+                                ORDER BY param_id;';
 
-                    IF co->>'Name' ~ 'SO2' THEN
-                        /** so2
-                         * param_id, stpr_table_id 519, 4023  'SO2 Zero'
-                         * param_id, stpr_table_id 520, 4024  'SO2 Span trovato'
-                         * param_id, stpr_table_id 522, 4026  'SO2 Span deriva'
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 519 THEN 4023
-                                    WHEN 520 THEN 4024
-                                    WHEN 522 THEN 4026
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (519, 520, 522)
-                            ORDER BY param_id;';
+                        ELSIF co->>'Name' ~ 'NO' THEN
+                            /** nox + hn3
+                             * 497, 4001 NO Zero
+                             * 502, 4006 NO Span trovato
+                             * 504, 4008 NO Span deriva
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 497 THEN 4001
+                                        WHEN 502 THEN 4006
+                                        WHEN 504 THEN 4008
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (497,502,504)
+                                ORDER BY param_id;';
 
-                    ELSIF co->>'Name' ~ 'NOx' THEN
-                        /** nox + hn3
-                         * 496, 4000 NOx Zero
-                         * 499, 4003 NOx Span trovato
-                         * 501, 4005 NOx Span deriva
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 496 THEN 4000
-                                    WHEN 499 THEN 4003
-                                    WHEN 501 THEN 4005
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (496,499,501)
-                            ORDER BY param_id;';
+                        ELSIF co->>'Name' ~ 'O3' THEN
+                            /**  o3
+                             * 509, 4013 O3 Zero
+                             * 510, 4014 O3 Span trovato
+                             * 512, 4016 O3 Span deriva
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 509 THEN 4013
+                                        WHEN 510 THEN 4014
+                                        WHEN 512 THEN 4016
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (509,510,512)
+                                ORDER BY param_id;';
 
-                    ELSIF co->>'Name' ~ 'NO2' THEN
-                        /** nox + hn3
-                         * 498, 4002 NO2 Zero
-                         * 505, 4009 NO2 Span trovato
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 498 THEN 4002
-                                    WHEN 505 THEN 4009
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (498,505)
-                            ORDER BY param_id;';
+                        ELSIF co->>'Name' ~ 'CO' THEN
+                            /** co
+                             * 514, 4018 CO Zero
+                             * 515, 4019 CO Span trovato
+                             * 517, 4021 CO Span deriva
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 514 THEN 4018
+                                        WHEN 515 THEN 4019
+                                        WHEN 517 THEN 4021
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (514,515,517)
+                                ORDER BY param_id;';
 
-                    ELSIF co->>'Name' ~ 'NO' THEN
-                        /** nox + hn3
-                         * 497, 4001 NO Zero
-                         * 502, 4006 NO Span trovato
-                         * 504, 4008 NO Span deriva
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 497 THEN 4001
-                                    WHEN 502 THEN 4006
-                                    WHEN 504 THEN 4008
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (497,502,504)
-                            ORDER BY param_id;';
+                        ELSE
+                            /* Do nothing*/
+                        END IF;
 
-                    ELSIF co->>'Name' ~ 'O3' THEN
-                        /**  o3
-                         * 509, 4013 O3 Zero
-                         * 510, 4014 O3 Span trovato
-                         * 512, 4016 O3 Span deriva
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 509 THEN 4013
-                                    WHEN 510 THEN 4014
-                                    WHEN 512 THEN 4016
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (509,510,512)
-                            ORDER BY param_id;';
+                        IF q IS NOT NULL THEN
+                            FOR rec IN
+                                EXECUTE q
+                            LOOP
 
-                    ELSIF co->>'Name' ~ 'CO' THEN
-                        /** co
-                         * 514, 4018 CO Zero
-                         * 515, 4019 CO Span trovato
-                         * 517, 4021 CO Span deriva
-                         */
-                        q := 'SELECT
-                                param_id,
-                                param_name,
-                                param_unit,
-                                CASE param_id
-                                    WHEN 514 THEN 4018
-                                    WHEN 515 THEN 4019
-                                    WHEN 517 THEN 4021
-                                    ELSE NULL
-                                END AS table_id
-                            FROM
-                                metadata.parameters
-                            WHERE
-                                param_id IN (514,515,517)
-                            ORDER BY param_id;';
+                                SELECT cc ||
+                                    jsonb_build_object(
+                                        'module', (mo->>'ID')::integer,
+                                        'module_name', mo->>'Name',
+                                        'prid', rec.param_id,
+                                        'name', rec.param_name,
+                                        'unit', rec.param_unit,
+                                        'id', rec.table_id,
+                                        'need-group', TRUE,
+                                        'daily', FALSE
+                                    ) INTO cc;
+                            END LOOP;
+                            
+                        END IF;
 
-                    ELSE
-                        /* Do nothing*/
-                    END IF;
-
-                    FOR rec IN
-                        EXECUTE q
-                    LOOP
-
-                        SELECT cc ||
-                            jsonb_build_object(
-                                'module', (mo->>'ID')::integer,
-                                'module_name', mo->>'Name',
-                                'prid', rec.param_id,
-                                'name', rec.param_name,
-                                'unit', rec.param_unit,
-                                'id', rec.table_id,
-                                'need-group', TRUE,
-                                'daily', FALSE
-                            ) INTO cc;
+                    /* END channels loop */
                     END LOOP;
 
-                /* END channels loop */
+                    /* Reset variable in order to skip last part of instructions */
+                    q := NULL;
+
+                ELSE
+                    /* Do nothing */
+            END CASE;
+
+            IF q IS NOT NULL THEN
+                RAISE NOTICE 'CC found!';
+                FOR rec IN
+                    EXECUTE q
+                LOOP
+
+                    SELECT cc ||
+                        jsonb_build_object(
+                            'module', (mo->>'ID')::integer,
+                            'module_name', mo->>'Name',
+                            'prid', rec.param_id,
+                            'name', rec.param_name,
+                            'unit', rec.param_unit,
+                            'id', rec.table_id,
+                            'need-group', TRUE,
+                            'daily', FALSE
+                        ) INTO cc;
                 END LOOP;
-
-                /* Reset variable in order to skip last part of instructions */
-                q := NULL;
-
             ELSE
                 /* Do nothing */
-        END CASE;
+            END IF;
 
-        IF q IS NOT NULL THEN
-            RAISE NOTICE 'CC found!';
-            FOR rec IN
-                EXECUTE q
-            LOOP
+            RETURN cc;
 
-                SELECT cc ||
-                    jsonb_build_object(
-                        'module', (mo->>'ID')::integer,
-                        'module_name', mo->>'Name',
-                        'prid', rec.param_id,
-                        'name', rec.param_name,
-                        'unit', rec.param_unit,
-                        'id', rec.table_id,
-                        'need-group', TRUE,
-                        'daily', FALSE
-                    ) INTO cc;
-            END LOOP;
-        ELSE
-            /* Do nothing */
-        END IF;
+            /* errors check */
+            EXCEPTION
+            WHEN OTHERS THEN /* in case of any error */
+                RAISE NOTICE 'ERROR IN metadata.f_get_cc_from_station_config(jsonb) : %', SQLERRM ;
+                RETURN NULL;
+        END;
 
-        RETURN cc;
-
-        /* errors check */
-        EXCEPTION
-        WHEN OTHERS THEN /* in case of any error */
-            RAISE NOTICE 'ERROR IN metadata.f_get_cc_from_station_config(jsonb) : %', SQLERRM ;
-            RETURN NULL;
-    END;
-
+        
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION metadata.f_get_cc_from_station_config(jsonb) TO group_bobo;
     GRANT EXECUTE ON FUNCTION metadata.f_get_cc_from_station_config(jsonb) TO group_admin;
+    GRANT EXECUTE ON FUNCTION metadata.f_get_cc_from_station_config(jsonb) TO group_bobo;
     GRANT EXECUTE ON FUNCTION metadata.f_get_cc_from_station_config(jsonb) TO group_tools;
 
-    -- comment
-    COMMENT ON FUNCTION metadata.f_get_cc_from_station_config(jsonb) IS 'Function that returns an object with all CC parameters and their ids retrieved from module of station configuration file';
+    COMMENT ON FUNCTION metadata.f_get_cc_from_station_config(jsonb)
+        IS 'Function that returns an object with all CC parameters and their ids retrieved from module of station configuration file';
 
     -- Funzione per recuperare il coefficiente di conversione in base ad una data e di un determinato parametro
     -- DROP FUNCTION IF EXISTS metadata.f_get_conversion_by_date_prid(integer, timestamp without time zone);
@@ -6165,7 +6282,7 @@
                                 'note', (co->>'ParameterNote'),
                                 'unit', u,
                                 'id', (co->>'DatabaseId')::integer,
-                                'need-group', TRUE,
+                                'need-group', (NOT (co->>'Type')::smallint = 2 ),
                                 'daily', d
                             ) INTO po;
 
@@ -6324,6 +6441,36 @@
                                             'need-group', TRUE,
                                             'daily', d
                                         ) INTO po;
+                                        
+                                ELSE 
+
+                                    /* Take care of swam, set correct line type in info note */
+                                    s := NULL;
+                                    CASE
+                                        WHEN (co->>'DatabaseId')::integer BETWEEN 5000 AND 5031 THEN
+                                            s := 'Linea A';
+                                        WHEN (co->>'DatabaseId')::integer BETWEEN 5050 AND 5081 THEN
+                                            s := 'Linea B';
+                                        WHEN (co->>'DatabaseId')::integer BETWEEN 5100 AND 5131 THEN
+                                            s := 'Linea C';
+                                        ELSE
+                                            /* DO nothing */
+                                    END CASE;
+
+                                    -- RAISE NOTICE '        ID parametro: %', i;
+                                    /* Initialize a new object for the new parameter */
+                                    SELECT
+                                        jsonb_build_object(
+                                            'module', (mo->>'ID')::integer,
+                                            'module_name', mo->>'Name',
+                                            'prid', i,
+                                            'name', n,
+                                            'note', s,
+                                            'unit', u,
+                                            'id', (co->>'DatabaseId')::integer,
+                                            'need-group', TRUE,
+                                            'daily', d
+                                        ) INTO po;
                                 END IF;
                             
                             ELSE
@@ -6407,7 +6554,7 @@
                                         'note', co->>'Name',
                                         'unit', '--',
                                         'id', (co->>'DatabaseId')::integer,
-                                        'need-group', TRUE,
+                                        'need-group', FALSE,
                                         'daily', d
                                     ) INTO po;
                             
@@ -6477,13 +6624,12 @@
         
     $BODY$;
 
-
     GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_admin;
     GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_bobo;
     GRANT EXECUTE ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb) TO group_tools;
 
     COMMENT ON FUNCTION metadata.f_get_parameters_from_station_config_v3(jsonb)
-        IS '[BOBO] Function that returns an object with all parameters and their ids retrieved from station configuration file';
+        IS 'Function that returns an object with all parameters and their ids retrieved from station configuration file';
 
     -- Funzione per recuperare l'stid in base alla data passata
     -- la funzione è utile nel caso di mezzi mobili dislocati in siti diversi nel corso del tempo
@@ -6694,7 +6840,7 @@
     GRANT EXECUTE ON FUNCTION      metadata.f_get_view_sites_parameters(bigint) TO group_bobo;
     GRANT EXECUTE ON FUNCTION      metadata.f_get_view_sites_parameters(bigint) TO group_tools;
 
-    COMMENT ON FUNCTION metadata.f_get_view_sites_parameters(bigint) IS '[OPAS] Function for the recovery of the metadata relating to a specific STPRID of an ALLOCATED mobile vehicle.';
+    COMMENT ON FUNCTION metadata.f_get_view_sites_parameters(bigint) IS 'Function for the recovery of the metadata relating to a specific STPRID of an ALLOCATED mobile vehicle.';
 
 
     -- comment
@@ -8732,6 +8878,157 @@
     COMMENT ON FUNCTION clients.f_calc_dynamic_moving_mean(bigint, timestamp without time zone, timestamp without time zone, text, integer)
         IS 'Moving Average data extraction function';
 
+    -- Funzione che calcola Biomass Burning e Fossil Fuel partendo dai valori di BC03 e BC10
+    -- DROP FUNCTION IF EXISTS clients.f_calculate_bcbb_bcff();
+    CREATE OR REPLACE FUNCTION clients.f_calculate_bcbb_bcff()
+        RETURNS trigger
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE NOT LEAKPROOF
+    AS $BODY$
+        DECLARE
+
+            stid integer;
+
+            /* static values */
+            bc03_prid integer = 559;
+            bc10_prid integer = 566;
+            bcbb_prid integer = 1127;
+            bcff_prid integer = 1128;
+
+            d smallint = 4; -- decimals
+
+            /*dynamic value*/
+            bc03_id integer;
+            bc10_id integer;
+            bcbb_id integer;
+            bcff_id integer;
+
+            bc03 numeric;
+            bc10 numeric;
+            bcbb numeric;
+            bcff numeric;
+
+            q text; -- dynamic query
+
+        BEGIN
+
+            -- station id passed by caller
+            stid := TG_ARGV[0];
+
+            RAISE NOTICE 'Trigger clients.f_calculate_bcbb_bcff( )';
+
+            /* retrieve table id for all involved parameters */
+            SELECT stpr_table_id INTO bc03_id FROM metadata.stations_parameters WHERE station_id = stid AND param_id = bc03_prid;
+            SELECT stpr_table_id INTO bc10_id FROM metadata.stations_parameters WHERE station_id = stid AND param_id = bc10_prid;
+            SELECT stpr_table_id INTO bcbb_id FROM metadata.stations_parameters WHERE station_id = stid AND param_id = bcbb_prid;
+            SELECT stpr_table_id INTO bcff_id FROM metadata.stations_parameters WHERE station_id = stid AND param_id = bcff_prid;
+
+            /* Check if B03 AND BC10 exist */
+            IF bc03_id IS NULL OR bc10_id IS NULL THEN
+                RAISE NOTICE 'BC3 OR BC10 are not present in this station';
+                RETURN NEW;
+            END IF;
+
+            -- RAISE NOTICE 'BC3 and BC10 FOUND!';
+
+            /* Check if BC_BB AND BC_FF exist */
+            IF bcbb_id IS NULL OR bcff_id IS NULL THEN
+                RAISE NOTICE 'BC_BB OR BC_FF are not present in this station';
+                RETURN NEW;
+            END IF;
+
+            -- RAISE NOTICE 'BC_BB and BC_FF FOUND!';
+
+            /* Continue only if BC3 or BC10 have been updated */
+            IF NEW.measure_id NOT IN (bc03_id, bc10_id) THEN
+                RAISE NOTICE 'Nothing to do';
+                RETURN NEW;
+            END IF;
+
+            /* retrieve BC03 measure value */
+            EXECUTE 'SELECT measure_value FROM '|| CONCAT_WS('.', TG_TABLE_SCHEMA, TG_TABLE_NAME ) ||' WHERE measure_date_time = '|| quote_literal(NEW.measure_date_time) ||' AND measure_id = '|| bc03_id ||';' INTO bc03;
+
+            /* retrieve BC10 measure value */
+            EXECUTE 'SELECT measure_value FROM '|| CONCAT_WS('.', TG_TABLE_SCHEMA, TG_TABLE_NAME ) ||' WHERE measure_date_time = '|| quote_literal(NEW.measure_date_time) ||' AND measure_id = '|| bc10_id ||';' INTO bc10;
+
+            -- RAISE NOTICE 'BC3 value: %', bc03;
+            -- RAISE NOTICE 'BC10 value: %', bc10;
+
+            IF ROW(bc03, bc10) IS NOT NULL THEN
+
+                /**
+                 * Calculate new measure_value for BC_BB
+                 * BC_BB = ((BC3*14,55)-(BC10*13,5642))/9,9204
+                 */
+                bcbb := ROUND( ( ((bc03 * 14.55)-(bc10 * 13.5642))/9.9204 )::numeric, d);
+
+                /**
+                 * Calculate new measure_value for BC_BB
+                 * BC_FF = ((BC3*14,55)-(BC10*23,4846))/-9,9204
+                 */
+                bcff = ROUND( ( ((bc03 * 14.55)-(bc10 * 23.4846))/(-9.9204) )::numeric, d);
+
+                -- RAISE NOTICE 'BCBB value: %', bcbb;
+                -- RAISE NOTICE 'BCFF value: %', bcff;
+
+                IF bcbb NOTNULL THEN
+                    /* execute the update query */
+                    q = 'INSERT INTO '|| CONCAT_WS('.', TG_TABLE_SCHEMA, TG_TABLE_NAME ) ||' '||E'\n'
+                    ||'    (measure_date_time, measure_id, measure_value)'||E'\n'
+                    ||'VALUES  '||E'\n'
+                    ||'    ('||quote_literal(NEW.measure_date_time)||', '||bcbb_id||', '||bcbb||') '||E'\n'
+                    ||'ON CONFLICT (measure_date_time, measure_id) '||E'\n'
+                    ||'    DO UPDATE SET '||E'\n'
+                    ||'        measure_value = EXCLUDED.measure_value; '||E'\n';
+
+                    -- RAISE NOTICE 'First query: %', q;
+                    EXECUTE q;
+
+                END IF;
+
+                IF bcff NOTNULL THEN
+                    /* execute the update query */
+                    q = 'INSERT INTO '|| CONCAT_WS('.', TG_TABLE_SCHEMA, TG_TABLE_NAME ) ||' '||E'\n'
+                    ||'    (measure_date_time, measure_id, measure_value)'||E'\n'
+                    ||'VALUES  '||E'\n'
+                    ||'    ('||quote_literal(NEW.measure_date_time)||', '||bcff_id||', '||bcff||') '||E'\n'
+                    ||'ON CONFLICT (measure_date_time, measure_id) '||E'\n'
+                    ||'    DO UPDATE SET '||E'\n'
+                    ||'        measure_value = EXCLUDED.measure_value; '||E'\n';
+
+                    -- RAISE NOTICE 'Second query: %', q;
+                    EXECUTE q;
+
+                END IF;
+
+            -- ELSE
+                -- RAISE NOTICE 'Something NULL';
+
+            END IF;
+
+            /* return from function */
+            RETURN NEW;
+
+            EXCEPTION
+            WHEN insufficient_privilege THEN
+                RETURN NEW;
+            WHEN OTHERS THEN
+                RAISE NOTICE 'ERROR IN clients.f_calculate_bcbb_bcff() : %', SQLERRM ;
+                /* return from function */
+                RETURN NEW;
+        END;
+    $BODY$;
+
+
+    GRANT EXECUTE ON FUNCTION clients.f_calculate_bcbb_bcff() TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_calculate_bcbb_bcff() TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_calculate_bcbb_bcff() TO group_tools;
+
+    COMMENT ON FUNCTION clients.f_calculate_bcbb_bcff()
+        IS 'Function for calculating Biomass Burning and Fossil Fuel values starting from BC03 and BC10 values';
+
+
     -- Funzione che restituisce la descrizione testuale del risultato di una taratura
     -- DROP FUNCTION IF EXISTS clients.f_calibration_result_tostring(integer, text);
     CREATE OR REPLACE FUNCTION clients.f_calibration_result_tostring (
@@ -9092,6 +9389,69 @@
     COMMENT ON FUNCTION clients.f_campbell_min_max()
         IS 'Check min & max values and insert them into appropriate param_id';
 
+    -- Funzione che crea per una certa stazione il trigger per gestire i parametri bc
+    -- DROP FUNCTION IF EXISTS clients.f_create_bcbb_bcff_trigger(integer);
+    CREATE OR REPLACE FUNCTION clients.f_create_bcbb_bcff_trigger(
+        stid integer
+    )
+        RETURNS boolean
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE NOT LEAKPROOF
+    AS $BODY$
+    DECLARE
+        -- variables
+        s text; -- schema
+        t text; -- table
+        q text; -- query
+
+    BEGIN
+        /**
+        * The function is called manually by operator in order to taking care of BC instrument.
+        * It creates the trigger that calculates BCBB and BCFF values based on the BC value and inserts them into the station's table.
+        */
+
+        RAISE NOTICE 'Creating trigger for station ID: %', stid;
+
+        /* Select schema, table name and roaming type */
+        SELECT station_schema, station_table INTO s,t
+        FROM metadata.stations
+        WHERE station_id = stid;
+
+        IF NOT FOUND THEN
+            RAISE NOTICE 'Station % not found!', stid;
+            RETURN NULL;
+        END IF;
+
+        -- BCBB BCFF
+        q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_bcbb_bcff_aiau '
+            ||'AFTER INSERT OR UPDATE OF measure_value '
+            ||'ON '||s||'.'||t||' '
+            ||'FOR EACH ROW '
+            ||'WHEN (pg_trigger_depth() = 0) '
+            ||'EXECUTE FUNCTION clients.f_calculate_bcbb_bcff('||quote_literal(stid)||'); ';
+
+        EXECUTE q;
+
+        RETURN TRUE;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE NOTICE 'ERROR IN clients.f_create_bcbb_bcff_trigger(integer) : %', SQLERRM;
+            RETURN FALSE;
+    END;
+    $BODY$;
+
+
+    GRANT EXECUTE ON FUNCTION clients.f_create_bcbb_bcff_trigger(integer) TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_create_bcbb_bcff_trigger(integer) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_create_bcbb_bcff_trigger(integer) TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_create_bcbb_bcff_trigger(integer) TO group_readonly;
+
+    -- comment
+    COMMENT ON FUNCTION clients.f_create_bcbb_bcff_trigger(integer)
+        IS 'The function is called manually by operator in order to taking care of BC instrument.';
+
     -- Funzione di aggiornamento della tabella relativa agli allarmi di stazione
     -- DROP FUNCTION clients.f_check_station_alarms;
     CREATE OR REPLACE FUNCTION clients.f_check_station_alarms(
@@ -9234,276 +9594,279 @@
         date_to timestamp without time zone,
         aggregation metadata.e_aggregations DEFAULT 'hh'::metadata.e_aggregations,
         treatment metadata.e_treatments DEFAULT 'avg'::metadata.e_treatments,
-        validity text DEFAULT '>= 0'::text)
-        RETURNS SETOF clients.t_data_function 
-        LANGUAGE 'plpgsql'
-        COST 100
-        VOLATILE PARALLEL UNSAFE
-        ROWS 1000
+        validity text DEFAULT '>= 0'::text
+    )
+    RETURNS SETOF clients.t_data_function 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
 
     AS $BODY$
-            DECLARE
-                t text;         -- tablename
-                v text;         -- formatted validity
-                p integer;      -- parameter table id
-                i integer;      -- parameter id
-                d integer;      -- parameter decimals
-                y integer;      -- parameter type (10 = limite)
-                f text;         -- when stprid < 0, mm locations interval
-                q text;         -- dynamic query
-            BEGIN
+        DECLARE
+            t text;         -- tablename
+            v text;         -- formatted validity
+            p integer;      -- parameter table id
+            i integer;      -- parameter id
+            d integer;      -- parameter decimals
+            y integer;      -- parameter type (10 = limite)
+            f text;         -- when stprid < 0, mm locations interval
+            q text;         -- dynamic query
+        BEGIN
 
-                /* entry */
-                --RAISE NOTICE 'Function clients.f_data_extraction, stpr_id: %', stprid;
+            /* entry */
+            -- RAISE NOTICE 'Function clients.f_data_extraction, stpr_id: %', stprid;
 
-                /* Testing
-                    SELECT * FROM  clients.f_data_extraction (
-                        571::integer,
-                        '2020-01-01 00:00'::timestamp,
-                        '2020-01-31 23:59'::timestamp,
-                        'hh'::metadata.e_aggregations,
-                        'avg'::metadata.e_treatments,
-                        '<= 4'::text
-                    );
-                */
-                f := '';
-                
-                /* get station properties */
-                /* suffix in order to get data from a view es cc, labs */
-                CASE
-                WHEN stprid > 0 THEN
-                    SELECT
-                        station_fulltable||COALESCE( parameter_object->'general'->>'suffix', '' ) AS  station_fulltable, station_param_table_id, 10 AS parameter_decimals, parameter_type_id INTO t, p, d, y
-                    FROM
-                        metadata.view_stations_parameters
-                    WHERE
-                        station_param_id = stprid;
-                ELSE
-                    SELECT
-                        station_fulltable||COALESCE( pm.pm_info_obj->'general'->>'suffix', '' ) AS  station_fulltable, stpr_table_id, 10 AS parameter_decimals, pm.pm_info_type_fk, 'AND t.measure_date_time <@ '''||stsi_period||'''::tsmultirange' INTO t, p, d, y, f
-                    FROM
-                       metadata.f_get_view_sites_parameters(stprid) tmp
-                       LEFT JOIN metadata.parameters_info pm USING (param_id)
-                    WHERE
-                        stpr_id = stprid;
-                END CASE;
-
-                -- RAISE NOTICE 'Function clients.f_data_extraction, tablename: %, parame id: %', t, p;
-
+            /* Testing
+                SELECT * FROM  clients.f_data_extraction (
+                    571::integer,
+                    '2020-01-01 00:00'::timestamp,
+                    '2020-01-31 23:59'::timestamp,
+                    'hh'::metadata.e_aggregations,
+                    'avg'::metadata.e_treatments,
+                    '<= 4'::text
+                );
+            */
+            f := '';
+            
+            /* get station properties */
+            /* suffix in order to get data from a view es cc, labs */
+            CASE
+            WHEN stprid > 0 THEN
                 SELECT
-                    CASE
-                        WHEN array_length(regexp_split_to_array(validity, ', '), 1) > 1 THEN '( main.signed_bitmask_toarray(t.post_validity_code::integer, 10 ) && ''{'||regexp_replace(validity, '= ', '', 'g')||'}''::integer[] )'
-                        ELSE 't.post_validity_code '|| validity
-                    END INTO v;
+                    station_fulltable||COALESCE( parameter_object->'general'->>'suffix', '' ) AS  station_fulltable, station_param_table_id, 10 AS parameter_decimals, parameter_type_id INTO t, p, d, y
+                FROM
+                    metadata.view_stations_parameters
+                WHERE
+                    station_param_id = stprid;
+            ELSE
+                SELECT
+                    station_fulltable||COALESCE( pm.pm_info_obj->'general'->>'suffix', '' ) AS  station_fulltable, stpr_table_id, 10 AS parameter_decimals, pm.pm_info_type_fk, 'AND t.measure_date_time <@ '''||stsi_period||'''::tsmultirange' INTO t, p, d, y, f
+                FROM
+                   metadata.f_get_view_sites_parameters(stprid) tmp
+                   LEFT JOIN metadata.parameters_info pm USING (param_id)
+                WHERE
+                    stpr_id = stprid;
+            END CASE;
 
-                -- RAISE NOTICE 'CHeck for validity code: %', v;
+            -- RAISE NOTICE 'Function clients.f_data_extraction, tablename: %, parame id: %', t, p;
 
-                /* build main dynamic query */
-                q =
-                'WITH m AS ('||E'\n'
-                ||'    SELECT'||E'\n'
-                ||'        ('||quote_literal(date_from)||'::timestamp + interval ''60 minute'' * s.a)::timestamp AS measure_date_time'||E'\n'
-                ||'    FROM'||E'\n'
-                ||'        generate_series(0,(EXTRACT(EPOCH FROM '||quote_literal(date_to)||'::timestamp'||E'\n'
-                ||'        - '||quote_literal(date_from)||'::timestamp)/3600)::integer) AS s(a)'||E'\n'
-                ||')'||E'\n\n';
-
-                /* take care of aggregation time */
+            SELECT
                 CASE
-                    WHEN aggregation = 'hh'::metadata.e_aggregations THEN
+                    WHEN array_length(regexp_split_to_array(validity, ', '), 1) > 1 THEN '( main.signed_bitmask_toarray(t.post_validity_code::integer, 10 ) && ''{'||regexp_replace(validity, '= ', '', 'g')||'}''::integer[] )'
+                    ELSE 't.post_validity_code '|| validity
+                END INTO v;
 
-                        /* date time */
+            -- RAISE NOTICE 'CHeck for validity code: %', v;
+
+            /* build main dynamic query */
+            q =
+            'WITH m AS ('||E'\n'
+            ||'    SELECT'||E'\n'
+            ||'        ('||quote_literal(date_from)||'::timestamp + interval ''60 minute'' * s.a)::timestamp AS measure_date_time'||E'\n'
+            ||'    FROM'||E'\n'
+            ||'        generate_series(0,(EXTRACT(EPOCH FROM '||quote_literal(date_to)||'::timestamp'||E'\n'
+            ||'        - '||quote_literal(date_from)||'::timestamp)/3600)::integer) AS s(a)'||E'\n'
+            ||')'||E'\n\n';
+
+            /* take care of aggregation time */
+            CASE
+                WHEN aggregation = 'hh'::metadata.e_aggregations THEN
+
+                    /* date time */
+                    q = q
+                    ||'SELECT'||E'\n'
+                    ||'    m.measure_date_time AS measure_date_time,'||E'\n';
+
+                    /* measures */
+                    q = q
+                    ||'    '||p||'::smallint AS measure_id,'||E'\n';
+
+                    /* take care of limits, alway 100% */
+                    IF y = 18 THEN
+                        /*limit*/
                         q = q
-                        ||'SELECT'||E'\n'
-                        ||'    m.measure_date_time AS measure_date_time,'||E'\n';
-
-                        /* measures */
-                        q = q
-                        ||'    '||p||'::smallint AS measure_id,'||E'\n';
-
-                        /* take care of limits, alway 100% */
-                        IF y = 18 THEN
-                            /*limit*/
-                            q = q
-                            ||'    0::numeric AS measure_value,'||E'\n'
-                            ||'    0::numeric AS measure_min,'||E'\n'
-                            ||'    0::numeric AS measure_max,'||E'\n'
-                            ||'    100::smallint AS measure_perc,'||E'\n'
-                            ||'    0::integer AS post_validity_code,'||E'\n'
-                            ||'    0::smallint AS final_validity_code'||E'\n';
-                        ELSE
-                            /*standard parameter*/
-                            q = q
-                            ||'    CASE WHEN '||v||' THEN t.measure_value::numeric END AS measure_value,'||E'\n'
-                            ||'    CASE WHEN '||v||' THEN t.measure_min::numeric END AS measure_min,'||E'\n'
-                            ||'    CASE WHEN '||v||' THEN t.measure_max::numeric END AS measure_max,'||E'\n'
-                            ||'    CASE WHEN t.measure_value NOTNULL AND '||v||' THEN 100::smallint END AS measure_perc,'||E'\n'
-                            ||'    t.post_validity_code::integer   AS post_validity_code,'||E'\n'
-                            ||'    t.final_validity_code::smallint AS final_validity_code'||E'\n';
-                        END IF;
-
-                        /* from clause */
-                        q = q
-                        ||'FROM'||E'\n'
-                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
-                        ||'WHERE'||E'\n'
-                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
-
-                        /* order by */
-                        q = q
-                        ||'ORDER BY'||E'\n'
-                        ||'    measure_date_time'||E'\n';
-
-                    WHEN aggregation = 'dd'::metadata.e_aggregations THEN
-
-                        /* date time */
-                        q = q
-                        ||'SELECT'||E'\n'
-                        ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
-
-                        /* measures */
-                        q = q
-                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
-
-                        /* take care of limits, alway 100% */
-                        IF y = 18 THEN
-                            /*limit*/
-                            q = q
-                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                        ELSE
-                            /*standard parameter*/
-                            q = q
-                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                            ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                            ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
-                        END IF;
-
-                        /* from clause */
-                        q = q
-                        ||'FROM'||E'\n'
-                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
-                        ||'WHERE'||E'\n'
-                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
-
-                        /* order by */
-                        q = q
-                        ||'GROUP BY 1'||E'\n'
-                        ||'ORDER BY 1'||E'\n';
-
-                    WHEN aggregation = 'mm'::metadata.e_aggregations THEN
-
-                        /* date time */
-                        q = q
-                        ||'SELECT'||E'\n'
-                        ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
-
-                        /* measures */
-                        q = q
-                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
-
-                        /* take care of limits, alway 100% */
-                        IF y = 18 THEN
-                            /*limit*/
-                            q = q
-                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                        ELSE
-                            /*standard parameter*/
-                            q = q
-                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                            ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                            ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
-                            ||'    24 * max(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
-                            ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
-
-                        END IF;
-
-                        /* from clause */
-                        q = q
-                        ||'FROM'||E'\n'
-                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
-                        ||'WHERE'||E'\n'
-                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
-
-                        /* order by */
-                        q = q
-                        ||'GROUP BY 1'||E'\n'
-                        ||'ORDER BY 1'||E'\n';
-
-                    WHEN aggregation = 'yy'::metadata.e_aggregations THEN
-
-                        /* date time */
-                        q = q
-                        ||'SELECT'||E'\n'
-                        ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
-
-                        /* measures */
-                        q = q
-                        ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
-
-                        /* take care of limits, alway 100% */
-                        IF y = 18 THEN
-                            q = q
-                            ||'    avg(0)::numeric AS measure_value,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_min,'||E'\n'
-                            ||'    avg(0)::numeric AS measure_max,'||E'\n'
-                            ||'    max(100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max(0)::integer AS post_validity_code,'||E'\n'
-                            ||'    max(0)::smallint AS final_validity_code'||E'\n';
-                        ELSE
-                            /*standard parameter*/
-                            q = q
-                            ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
-                            ||'    round(min (CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
-                            ||'    round(max (CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
-                            ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
-                            ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
-                            ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
-                            ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
-                            ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
-                        END IF;
-
-                        /* from clause */
-                        q = q
-                        ||'FROM'||E'\n'
-                        ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
-                        ||'WHERE'||E'\n'
-                        ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
-
-                        /* order by */
-                        q = q
-                        ||'GROUP BY 1'||E'\n'
-                        ||'ORDER BY 1'||E'\n';
-
+                        ||'    0::numeric AS measure_value,'||E'\n'
+                        ||'    0::numeric AS measure_min,'||E'\n'
+                        ||'    0::numeric AS measure_max,'||E'\n'
+                        ||'    100::smallint AS measure_perc,'||E'\n'
+                        ||'    0::integer AS post_validity_code,'||E'\n'
+                        ||'    0::smallint AS final_validity_code'||E'\n';
                     ELSE
+                        /*standard parameter*/
+                        q = q
+                        ||'    CASE WHEN '||v||' THEN t.measure_value::numeric END AS measure_value,'||E'\n'
+                        ||'    CASE WHEN '||v||' THEN t.measure_min::numeric END AS measure_min,'||E'\n'
+                        ||'    CASE WHEN '||v||' THEN t.measure_max::numeric END AS measure_max,'||E'\n'
+                        -- modified 2025/08/04 16:11
+                        ||'    CASE WHEN t.measure_value NOTNULL AND '||v||' THEN measure_perc::smallint END AS measure_perc,'||E'\n'
+                        ||'    t.post_validity_code::integer   AS post_validity_code,'||E'\n'
+                        ||'    t.final_validity_code::smallint AS final_validity_code'||E'\n';
+                    END IF;
 
-                END CASE;
+                    /* from clause */
+                    q = q
+                    ||'FROM'||E'\n'
+                    ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
 
-                /* notice */
-                -- RAISE NOTICE 'Query: %', E'\n'||q;
+                    /* order by */
+                    q = q
+                    ||'ORDER BY'||E'\n'
+                    ||'    measure_date_time'||E'\n';
 
-                /* return value */
-                RETURN QUERY EXECUTE q;
+                WHEN aggregation = 'dd'::metadata.e_aggregations THEN
 
-            /* errors check */
-            EXCEPTION
-                WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_data_extraction(): %', SQLERRM;
-            END;
+                    /* date time */
+                    q = q
+                    ||'SELECT'||E'\n'
+                    ||'    date_trunc(''day'', m.measure_date_time) AS measure_date_time,'||E'\n';
+
+                    /* measures */
+                    q = q
+                    ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+
+                    /* take care of limits, alway 100% */
+                    IF y = 18 THEN
+                        /*limit*/
+                        q = q
+                        ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                        ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                        ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                    ELSE
+                        /*standard parameter*/
+                        q = q
+                        ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                        ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                        ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                        ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/24::real*100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                    END IF;
+
+                    /* from clause */
+                    q = q
+                    ||'FROM'||E'\n'
+                    ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+
+                    /* order by */
+                    q = q
+                    ||'GROUP BY 1'||E'\n'
+                    ||'ORDER BY 1'||E'\n';
+
+                WHEN aggregation = 'mm'::metadata.e_aggregations THEN
+
+                    /* date time */
+                    q = q
+                    ||'SELECT'||E'\n'
+                    ||'    date_trunc(''month'', m.measure_date_time) AS measure_date_time,'||E'\n';
+
+                    /* measures */
+                    q = q
+                    ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+
+                    /* take care of limits, alway 100% */
+                    IF y = 18 THEN
+                        /*limit*/
+                        q = q
+                        ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                        ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                        ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                    ELSE
+                        /*standard parameter*/
+                        q = q
+                        ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                        ||'    round( min(CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                        ||'    round( max(CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                        ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
+                        ||'    24 * max(extract(days FROM date_trunc(''month'', m.measure_date_time) + interval ''1 month - 1 day''))'||E'\n'
+                        ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+
+                    END IF;
+
+                    /* from clause */
+                    q = q
+                    ||'FROM'||E'\n'
+                    ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+
+                    /* order by */
+                    q = q
+                    ||'GROUP BY 1'||E'\n'
+                    ||'ORDER BY 1'||E'\n';
+
+                WHEN aggregation = 'yy'::metadata.e_aggregations THEN
+
+                    /* date time */
+                    q = q
+                    ||'SELECT'||E'\n'
+                    ||'    date_trunc(''year'', m.measure_date_time) AS measure_date_time,'||E'\n';
+
+                    /* measures */
+                    q = q
+                    ||'    max('||p||'::smallint) AS measure_id,'||E'\n';
+
+                    /* take care of limits, alway 100% */
+                    IF y = 18 THEN
+                        q = q
+                        ||'    avg(0)::numeric AS measure_value,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_min,'||E'\n'
+                        ||'    avg(0)::numeric AS measure_max,'||E'\n'
+                        ||'    max(100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max(0)::integer AS post_validity_code,'||E'\n'
+                        ||'    max(0)::smallint AS final_validity_code'||E'\n';
+                    ELSE
+                        /*standard parameter*/
+                        q = q
+                        ||'    round('||treatment||'(CASE WHEN '||v||' THEN t.measure_value::numeric END), '||d||') AS measure_value,'||E'\n'
+                        ||'    round(min (CASE WHEN '||v||' THEN t.measure_min::numeric END), '||d||') AS measure_min,'||E'\n'
+                        ||'    round(max (CASE WHEN '||v||' THEN t.measure_max::numeric END), '||d||') AS measure_max,'||E'\n'
+                        ||'    (sum(CASE WHEN t.measure_value NOTNULL AND '||v||' THEN t.extract_code ELSE 0::smallint END)/('||E'\n'
+                        ||'    24 * DATE_PART(''day'', date_trunc(''year'', now()) + interval ''1 year - 1 day'' - date_trunc(''year'', now()))'||E'\n'
+                        ||'    )::real*100)::smallint AS measure_perc,'||E'\n'
+                        ||'    max( t.post_validity_code::integer ) AS post_validity_code,'||E'\n'
+                        ||'    max( t.final_validity_code::smallint ) AS final_validity_code'||E'\n';
+                    END IF;
+
+                    /* from clause */
+                    q = q
+                    ||'FROM'||E'\n'
+                    ||'    m LEFT JOIN '||t||' t ON (m.measure_date_time = t.measure_date_time AND t.measure_id = '||p||' '||f||')'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    m.measure_date_time BETWEEN '||quote_literal(date_from)||' AND '||quote_literal(date_to)||''||E'\n';
+
+                    /* order by */
+                    q = q
+                    ||'GROUP BY 1'||E'\n'
+                    ||'ORDER BY 1'||E'\n';
+
+                ELSE
+
+            END CASE;
+
+            /* notice */
+            -- RAISE NOTICE 'Query: %', E'\n'||q;
+
+            /* return value */
+            RETURN QUERY EXECUTE q;
+
+        /* errors check */
+        EXCEPTION
+            WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_data_extraction(): %', SQLERRM;
+        END;
+            
         
     $BODY$;
 
@@ -9513,7 +9876,7 @@
     GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_tools;
     GRANT EXECUTE ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) TO group_readonly;
 
-    COMMENT ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) IS '[OPAS] Generic data extraction function';
+    COMMENT ON FUNCTION clients.f_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, metadata.e_treatments, text) IS 'Generic data extraction function';
 
 
     -- Funzione che calcola le statistiche di validità dei parametri di una determinata stazione
@@ -11360,241 +11723,267 @@
         COST 100
         VOLATILE PARALLEL UNSAFE
     AS $BODY$
+        DECLARE
 
-    DECLARE
-        f boolean;      -- first loop flag
-        s integer;      -- previous station_id
-        q text;         -- dynamic query
-        rec  record;    -- result record
-        irec record;    -- inner result record
-        r  jsonb;       -- station total object
-        ir jsonb;       -- station partial object
-    BEGIN
-        --
-        -- TEST SELECT clients.f_refresh_last_instruments_update();
-        --
+            f boolean;      -- first loop flag
+            s integer;      -- previous station_id
+            q text;         -- dynamic query
 
-        -- RAISE NOTICE 'SELECT clients.f_refresh_last_instruments_update';
+            rec  record;    -- result record
+            irec record;    -- inner result record
+            r  jsonb;       -- station total object
+            ir jsonb;       -- station partial object
 
-        /* Initialize variables */
-        s := 0;
-        r := '[]'::jsonb;
-        f := TRUE;
+        BEGIN
+            --
+            -- TEST SELECT clients.f_refresh_last_instruments_update();
+            --
 
-        /* Reset support table */
-        TRUNCATE TABLE clients.instruments_last_update RESTART IDENTITY;
+            -- RAISE NOTICE 'SELECT clients.f_refresh_last_instruments_update';
 
-        /*
-        * get fulltable and measure_id linked to grouped stpr_group_id
-        * loop through:
-        *   - all stations and for each element insert a new row in a support table
-        *   - all grouped parameters and for each group get the minimum of the maximum update dates
-        */
-        FOR rec IN
+            /* Initialize variables */
+            s := 0;
+            r := '[]'::jsonb;
+            f := TRUE;
 
-            WITH p AS (
-                SELECT
-                    COALESCE(stpr_group_id, 99999) AS stpr_group_id,
-                    station_id,
-                    ARRAY_AGG(stpr_table_id) AS table_ids
-                FROM
-                    metadata.stations_parameters sp
-                    LEFT JOIN metadata.parameters_info pi USING (param_id)
-                WHERE
-                    -- meteo, chimici, polveri, allarmi
-                    pm_info_type_fk IN (1,2,3,13,14)
-                    -- group id null oppure parametri Porta aperta, Temp. Cabina
-                    AND ( stpr_group_id NOTNULL OR param_id IN (138, 163))
-                    AND stpr_active IS TRUE
-                GROUP BY
-                    station_id, stpr_group_id
-                ORDER BY
-                    station_id
-            )
-                SELECT
-                    p.station_id,
-                    s.station_name,
-                    p.stpr_group_id,
-                    s.station_schema||'.'||COALESCE(s.station_prefix, '')||s.station_table AS station_fulltable,
-                    table_ids,
-                    vi.instr_type_fullname || COALESCE(' - '|| vi.instrument_name, '') || COALESCE(' ['|| vi.instrument_serial_num||']', '') AS instrument_fullname,
-                    vi.category_short_name
-                FROM
-                    p
-                    LEFT JOIN metadata.stations s USING (station_id)
-                    LEFT JOIN metadata.stations_status ss USING (station_id)
-                    LEFT JOIN metadata.view_stations_instruments vsi ON ( p.stpr_group_id = vsi.stpr_group_id AND tsrange(vsi.station_instr_startup_date, vsi.station_instr_dismiss_date, '[)') @> (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome'))
-                    LEFT JOIN equipments.view_instruments vi USING (instr_id)
-                WHERE
-                    -- only recovers parameters with associated instrument
-                    vsi.instr_id NOTNULL
-                    -- only active stations
-                    AND s.station_active IS TRUE
-                    AND ss.ss_suspended IS FALSE
-                    AND (vi.category_id BETWEEN 1 AND 18 OR vi.category_id IN (20, 21, 22, 24))
-            UNION ALL
-                SELECT
-                    p.station_id,
-                    s.station_name,
-                    p.stpr_group_id,
-                    s.station_schema||'.'||COALESCE(s.station_prefix, '')||s.station_table AS station_fulltable,
-                    table_ids,
-                    'Kit Stazione' AS instrument_fullname,
-                    'Staz.'        AS category_short_name
-                FROM
-                    p
-                    LEFT JOIN metadata.stations s USING (station_id)
-                    LEFT JOIN metadata.stations_status ss USING (station_id)
-                WHERE
-                    p.stpr_group_id = 99999
-                    -- only active stations
-                    AND s.station_active IS TRUE
-                    AND ss.ss_suspended IS FALSE
-                ORDER BY
-                    station_id, stpr_group_id
+            /* Reset support table */
+            TRUNCATE TABLE clients.instruments_last_update RESTART IDENTITY;
 
-        LOOP
+            /*
+            * get fulltable and measure_id linked to grouped stpr_group_id
+            * loop through:
+            *   - all stations and for each element insert a new row in a support table
+            *   - all grouped parameters and for each group get the minimum of the maximum update dates
+            */
+            FOR rec IN
+                
+                WITH t AS (
+                    SELECT
+                        CASE 
+                            WHEN sp.param_id IN (138, 163) THEN 99999
+                            ELSE COALESCE(stpr_group_id, 99999) 
+                        END AS stpr_group_id,
+                        station_id,
+                        stpr_table_id
+                    FROM
+                        metadata.stations_parameters sp
+                        LEFT JOIN metadata.parameters_info pi USING (param_id)
+                    WHERE
+                        -- meteo, chimici, polveri, allarmi
+                        ( 
+                            ( 
+                                pm_info_type_fk IN (1,2,3,14) 
+                                -- group id null oppure parametri Porta aperta, Temp. Cabina
+                                AND ( stpr_group_id NOTNULL OR param_id IN (138, 163) )
+                            )
+                            OR
+                            ( 
+                                pm_info_type_fk = 13 
+                                -- 
+                                -- [SWAM] VolumeIngresso  391
+                                -- [HYDRA] VolumeIngresso 692
+                                -- [SM200] Record ID      1190  
+                                -- [MCZ] Flow             483   
+                                -- ICMP Ping              1191
+                                -- 
+                                AND param_id IN ( 391,483,692,1190,1191 )
+                            )
+                        )
+                        AND stpr_active IS TRUE 
+                ), 
+                p AS (
+                    SELECT
+                        stpr_group_id,
+                        station_id,
+                        ARRAY_AGG(stpr_table_id) AS table_ids
+                    FROM
+                        t
+                    GROUP BY
+                        station_id, stpr_group_id
+                    ORDER BY
+                        station_id
+                )
+                    SELECT
+                        p.station_id,
+                        s.station_name,
+                        p.stpr_group_id,
+                        s.station_schema||'.'||COALESCE(s.station_prefix, '')||s.station_table AS station_fulltable,
+                        table_ids,
+                        vi.instr_type_fullname || COALESCE(' - '|| vi.instrument_name, '') || COALESCE(' ['|| vi.instrument_serial_num||']', '') AS instrument_fullname,
+                        vi.category_short_name
+                    FROM
+                        p
+                        LEFT JOIN metadata.stations s USING (station_id)
+                        LEFT JOIN metadata.stations_status ss USING (station_id)
+                        LEFT JOIN metadata.view_stations_instruments vsi ON ( p.stpr_group_id = vsi.stpr_group_id AND tsrange(vsi.station_instr_startup_date, vsi.station_instr_dismiss_date, '[)') @> (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome'))
+                        LEFT JOIN equipments.view_instruments vi USING (instr_id)
+                    WHERE
+                        -- only recovers parameters with associated instrument
+                        vsi.instr_id NOTNULL
+                        -- only active stations
+                        AND s.station_active IS TRUE
+                        AND ss.ss_suspended IS FALSE
+                        AND (vi.category_id BETWEEN 1 AND 18 OR vi.category_id IN (20, 21, 22, 24, 31))
+                UNION ALL
+                    SELECT
+                        p.station_id,
+                        s.station_name,
+                        p.stpr_group_id,
+                        s.station_schema||'.'||COALESCE(s.station_prefix, '')||s.station_table AS station_fulltable,
+                        table_ids,
+                        'Kit Stazione' AS instrument_fullname,
+                        'Staz.'        AS category_short_name
+                    FROM
+                        p
+                        LEFT JOIN metadata.stations s USING (station_id)
+                        LEFT JOIN metadata.stations_status ss USING (station_id)
+                    WHERE
+                        p.stpr_group_id = 99999
+                        -- only active stations
+                        AND s.station_active IS TRUE
+                        AND ss.ss_suspended IS FALSE
+                    ORDER BY
+                        station_id, stpr_group_id
 
-            -- RAISE NOTICE '-- CONTROLLO: stazione diversa da quella precedente';
-            IF rec.station_id != s AND f IS FALSE THEN
-                -- RAISE NOTICE '';
-                -- RAISE NOTICE '! Stazione diversa: eseguo insert e resetto oggetto';
-                /* Insert in table */
-                -- RAISE NOTICE '! Jsonb finale: %', jsonb_pretty(r);
+            LOOP
 
-                INSERT INTO clients.instruments_last_update
-                    (station_id, instr_last_update)
-                VALUES
-                    (s, r);
+                -- RAISE NOTICE '-- CONTROLLO: stazione diversa da quella precedente';
+                IF rec.station_id != s AND f IS FALSE THEN
+                    -- RAISE NOTICE '';
+                    -- RAISE NOTICE '! Stazione diversa: eseguo insert e resetto oggetto';
+                    /* Insert in table */
+                    -- RAISE NOTICE '! Jsonb finale: %', jsonb_pretty(r);
 
-                /* reset jsonb container */
-                r := '[]'::jsonb;
+                    INSERT INTO clients.instruments_last_update
+                        (station_id, instr_last_update)
+                    VALUES
+                        (s, r);
 
-            END IF;
+                    /* reset jsonb container */
+                    r := '[]'::jsonb;
 
-            -- RAISE NOTICE '> Station: %, parameters: %, instrument: % ', rec.station_name, rec.table_ids, rec.instrument_fullname;
+                END IF;
 
-            f := FALSE;
-            /* update station variable */
-            s := rec.station_id;
-            /* reset internal object */
-            ir := '{}'::jsonb;
+                -- RAISE NOTICE '> Station: %, parameters: %, instrument: % ', rec.station_name, rec.table_ids, rec.instrument_fullname;
 
-            /* build dynamic query with data returned by previous query */
-            q =
-                'WITH d AS ('||E'\n'
-                ||'    SELECT'||E'\n'
-                ||'        measure_id,'||E'\n'
-                ||'        MAX(measure_date_time) AS max_time'||E'\n'
-                ||'    FROM'||E'\n'
-                ||'        '||rec.station_fulltable||' '||E'\n'
-                ||'    WHERE'||E'\n'
-                ||'        measure_id = ANY('||quote_literal(rec.table_ids)||'::integer[])'||E'\n'
-                ||'         AND measure_date_time > CURRENT_DATE - interval ''1 week'''||E'\n'
-                ||'    GROUP BY'||E'\n'
-                ||'        measure_id'||E'\n'
-                ||'),'||E'\n'
-                ||'t AS ('||E'\n'
-                ||'    SELECT'||E'\n'
-                ||'        measure_id,'||E'\n'
-                ||'        max_time,'||E'\n'
-                ||'        row_number() OVER (ORDER BY max_time ASC) AS rownum_asc,'||E'\n'
-                ||'        row_number() OVER (ORDER BY max_time DESC) AS rownum_desc'||E'\n'
-                ||'    FROM'||E'\n'
-                ||'        d'||E'\n'
-                ||')'||E'\n'
-                ||'SELECT'||E'\n'
-                ||'    measure_id,'||E'\n'
-                ||'    max_time,'||E'\n'
-                ||'    AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time) AS interval_gap,'||E'\n'
-                ||'    CASE '||E'\n'
-                ||'        WHEN AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time) > ''23 hours''::interval THEN TO_CHAR(AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time), ''DD "giorni" HH24 ore'')'||E'\n'
-                ||'        ELSE TO_CHAR(AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time), ''HH24 ore'')'||E'\n'
-                ||'    END AS text_gap'||E'\n'
-                ||'FROM'||E'\n'
-                ||'    t'||E'\n'
-                ||'WHERE'||E'\n'
-                ||'    rownum_desc = 1;'||E'\n';
+                f := FALSE;
+                /* update station variable */
+                s := rec.station_id;
+                /* reset internal object */
+                ir := '{}'::jsonb;
 
-            -- RAISE NOTICE 'Query : %', q;
-            EXECUTE q INTO irec;
+                /* build dynamic query with data returned by previous query */
+                q =
+                    'WITH d AS ('||E'\n'
+                    ||'    SELECT'||E'\n'
+                    ||'        measure_id,'||E'\n'
+                    ||'        MAX(measure_date_time) AS max_time'||E'\n'
+                    ||'    FROM'||E'\n'
+                    ||'        '||rec.station_fulltable||' '||E'\n'
+                    ||'    WHERE'||E'\n'
+                    ||'        measure_id = ANY('||quote_literal(rec.table_ids)||'::integer[])'||E'\n'
+                    ||'         AND measure_date_time > CURRENT_DATE - interval ''1 week'''||E'\n'
+                    ||'    GROUP BY'||E'\n'
+                    ||'        measure_id'||E'\n'
+                    ||'),'||E'\n'
+                    ||'t AS ('||E'\n'
+                    ||'    SELECT'||E'\n'
+                    ||'        measure_id,'||E'\n'
+                    ||'        max_time,'||E'\n'
+                    ||'        row_number() OVER (ORDER BY max_time ASC) AS rownum_asc,'||E'\n'
+                    ||'        row_number() OVER (ORDER BY max_time DESC) AS rownum_desc'||E'\n'
+                    ||'    FROM'||E'\n'
+                    ||'        d'||E'\n'
+                    ||')'||E'\n'
+                    ||'SELECT'||E'\n'
+                    ||'    measure_id,'||E'\n'
+                    ||'    max_time,'||E'\n'
+                    ||'    AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time) AS interval_gap,'||E'\n'
+                    ||'    CASE '||E'\n'
+                    ||'        WHEN AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time) > ''23 hours''::interval THEN TO_CHAR(AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time), ''DD "giorni" HH24 ore'')'||E'\n'
+                    ||'        ELSE TO_CHAR(AGE(DATE_TRUNC( ''hour'', CURRENT_TIMESTAMP ), max_time), ''HH24 ore'')'||E'\n'
+                    ||'    END AS text_gap'||E'\n'
+                    ||'FROM'||E'\n'
+                    ||'    t'||E'\n'
+                    ||'WHERE'||E'\n'
+                    ||'    rownum_desc = 1;'||E'\n';
 
-            /* build jsonb container */
-            SELECT jsonb_build_object(
-                'instr'      , TRIM(rec.instrument_fullname),
-                'cat'        , rec.category_short_name,
-                'time'       , COALESCE(TO_CHAR(irec.max_time, 'DD.MM.YYYY h HH24'), 'oltre 1 sett.'),
-                'gap'        , COALESCE(irec.text_gap, 'oltre 1 sett.'),
-                'class'      , CASE
-                                    WHEN rec.category_short_name ~* 'BTX' THEN
-                                        CASE
-                                            WHEN irec.interval_gap IS NULL OR irec.interval_gap > '3 hours'::interval THEN 'bg-danger'
-                                            WHEN irec.interval_gap BETWEEN '2 hours'::interval AND '3 hours'::interval THEN 'bg-warning'
-                                            WHEN irec.interval_gap < '0 hours'::interval THEN 'bg-purple'
-                                            ELSE 'bg-success'
-                                        END
-                                    ELSE
-                                        CASE
-                                            WHEN irec.interval_gap IS NULL OR irec.interval_gap > '2 hours'::interval THEN 'bg-danger'
-                                            WHEN irec.interval_gap BETWEEN '1 hours'::interval AND '2 hours'::interval THEN 'bg-warning'
-                                            WHEN irec.interval_gap < '0 hours'::interval THEN 'bg-purple'
-                                            ELSE 'bg-success'
-                                        END
-                                END,
-                'weight'     ,  CASE
-                                    WHEN rec.category_short_name ~* 'BTX' THEN
-                                        CASE
-                                            WHEN irec.interval_gap IS NULL OR irec.interval_gap > '3 hours'::interval THEN 200
-                                            WHEN irec.interval_gap BETWEEN '2 hours'::interval AND '3 hours'::interval THEN 10
-                                            WHEN irec.interval_gap < '0 hours'::interval THEN 1000
-                                            ELSE 0
-                                        END
-                                    ELSE
-                                        CASE
-                                            WHEN irec.interval_gap IS NULL OR irec.interval_gap > '2 hours'::interval THEN 200
-                                            WHEN irec.interval_gap BETWEEN '1 hours'::interval AND '2 hours'::interval THEN 10
-                                            WHEN irec.interval_gap < '0 hours'::interval THEN 1000
-                                            ELSE 0
-                                        END
-                                END
-            ) INTO ir;
+                -- RAISE NOTICE 'Query : %', q;
+                EXECUTE q INTO irec;
 
-            -- RAISE NOTICE '-- Jsonb parziale: %', jsonb_pretty(ir);
-            -- RAISE NOTICE '-- Accodo json parziale nel json totale della stazione';
-            SELECT r || ir INTO r;
+                /* build jsonb container */
+                SELECT jsonb_build_object(
+                    'instr'      , TRIM(rec.instrument_fullname),
+                    'cat'        , rec.category_short_name,
+                    'time'       , COALESCE(TO_CHAR(irec.max_time, 'DD.MM.YYYY h HH24'), 'oltre 1 sett.'),
+                    'gap'        , COALESCE(irec.text_gap, 'oltre 1 sett.'),
+                    'class'      , CASE
+                                        WHEN rec.category_short_name ~* 'BTX' THEN
+                                            CASE    
+                                                WHEN irec.interval_gap IS NULL OR irec.interval_gap > '3 hours'::interval THEN 'bg-danger'
+                                                WHEN irec.interval_gap BETWEEN '2 hours'::interval AND '3 hours'::interval THEN 'bg-warning'
+                                                WHEN irec.interval_gap < '0 hours'::interval THEN 'bg-purple'
+                                                ELSE 'bg-success'
+                                            END
+                                        ELSE
+                                            CASE    
+                                                WHEN irec.interval_gap IS NULL OR irec.interval_gap > '2 hours'::interval THEN 'bg-danger'
+                                                WHEN irec.interval_gap BETWEEN '1 hours'::interval AND '2 hours'::interval THEN 'bg-warning'
+                                                WHEN irec.interval_gap < '0 hours'::interval THEN 'bg-purple'
+                                                ELSE 'bg-success'
+                                            END
+                                    END,
+                    'weight'     ,  CASE
+                                        WHEN rec.category_short_name ~* 'BTX' THEN
+                                            CASE
+                                                WHEN irec.interval_gap IS NULL OR irec.interval_gap > '3 hours'::interval THEN 200
+                                                WHEN irec.interval_gap BETWEEN '2 hours'::interval AND '3 hours'::interval THEN 10
+                                                WHEN irec.interval_gap < '0 hours'::interval THEN 1000
+                                                ELSE 0
+                                            END
+                                        ELSE
+                                            CASE
+                                                WHEN irec.interval_gap IS NULL OR irec.interval_gap > '2 hours'::interval THEN 200
+                                                WHEN irec.interval_gap BETWEEN '1 hours'::interval AND '2 hours'::interval THEN 10
+                                                WHEN irec.interval_gap < '0 hours'::interval THEN 1000
+                                                ELSE 0
+                                            END
+                                    END
+                ) INTO ir;
 
-        END LOOP;
+                -- RAISE NOTICE '-- Jsonb parziale: %', jsonb_pretty(ir);
+                -- RAISE NOTICE '-- Accodo json parziale nel json totale della stazione';
+                SELECT r || ir INTO r;
 
-        -- RAISE NOTICE '';
-        -- RAISE NOTICE 'Ultima stazione: eseguo insert';
+            END LOOP;
 
-        /* Insert in table */
-        -- RAISE NOTICE '! Jsonb finale: %', jsonb_pretty(r);
-        INSERT INTO clients.instruments_last_update
-            (station_id, instr_last_update)
-        VALUES
-            (s, r);
+            -- RAISE NOTICE '';
+            -- RAISE NOTICE 'Ultima stazione: eseguo insert';
 
-        /* return value */
-        RETURN TRUE;
+            /* Insert in table */
+            -- RAISE NOTICE '! Jsonb finale: %', jsonb_pretty(r);
+            INSERT INTO clients.instruments_last_update
+                (station_id, instr_last_update)
+            VALUES
+                (s, r);
+                        
+            RETURN TRUE;
 
-        /* errors check */
-        EXCEPTION
-            WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_refresh_last_instruments_update(): %', SQLERRM;
-            RETURN FALSE;
-    END;
+            /* errors check */
+            EXCEPTION
+                WHEN OTHERS THEN RAISE NOTICE 'ERROR clients.f_refresh_last_instruments_update(): %', SQLERRM;
+                RETURN FALSE;
+            END;
 
+        
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_readonly;
-    GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_bobo;
     GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_bobo;
     GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_tools;
+    GRANT EXECUTE ON FUNCTION clients.f_refresh_last_instruments_update() TO group_readonly;
 
-    -- comment
-    COMMENT ON FUNCTION clients.f_refresh_last_instruments_update()
-        IS 'Refresh table with latest instruments updates';
+    COMMENT ON FUNCTION clients.f_refresh_last_instruments_update() IS 'Refresh table with latest instruments updates';
 
     -- Funzione di aggiornamento della tabella degli relativa ad eventuali ritadi delle stazioni
     -- DROP FUNCTION IF EXISTS clients.f_refresh_station_last_update();
@@ -12712,7 +13101,7 @@
     GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_tools;
     GRANT EXECUTE ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) TO group_readonly;
 
-    COMMENT ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) IS '[OPAS] Generic data extraction function for moving mean';
+    COMMENT ON FUNCTION clients.f_sldavg_data_extraction(bigint, timestamp without time zone, timestamp without time zone, metadata.e_aggregations, text, integer) IS 'Generic data extraction function for moving mean';
 
 
     -- Versione 2 della funzione che "spalma" i valori giornalieri di PM10, PM2.5 e PM1 dello strumento SWAM sulle 24 ore
@@ -15347,6 +15736,15 @@
     COMMENT ON SCHEMA reports IS 'Reports schema for OPAS project';
 
     -- --------------------------------------------------------------------------------------------
+    -- TYPES
+    -- --------------------------------------------------------------------------------------------
+
+    -- Creazione di una nuova tipologia di dato: status
+    -- DROP TYPE IF EXISTS reports.ced_status;
+    CREATE TYPE reports.ced_status AS ENUM ('open', 'reassign', 'taken charge', 'closed');
+    ALTER TYPE reports.ced_status OWNER TO user_admin;
+    
+    -- --------------------------------------------------------------------------------------------
     -- TABLES
     -- --------------------------------------------------------------------------------------------
 
@@ -15866,6 +16264,7 @@
     CREATE TABLE reports.ticket_categories (
         tc_id   smallint NOT NULL,
         tc_desc text NOT NULL,
+        tc_class text,
 
         CONSTRAINT reports_ticket_categories_pkey PRIMARY KEY (tc_id)
     );
@@ -15877,9 +16276,11 @@
     GRANT SELECT ON TABLE reports.ticket_categories TO group_readonly;
 
     -- comments
-    COMMENT ON TABLE  reports.ticket_categories         IS 'Ticket category table';
-    COMMENT ON COLUMN reports.ticket_categories.tc_id   IS 'Ticket category id (PK)';
-    COMMENT ON COLUMN reports.ticket_categories.tc_desc IS 'Ticket category description';
+    COMMENT ON TABLE  reports.ticket_categories             IS 'Ticket category table';
+    COMMENT ON COLUMN reports.ticket_categories.tc_id       IS 'Ticket category id (PK)';
+    COMMENT ON COLUMN reports.ticket_categories.tc_desc     IS 'Ticket category description';
+    COMMENT ON COLUMN reports.ticket_categories.tc_class    IS 'Ticket category icon with class';
+
 
     -- Tabella che contiene le varie frequenze di ticket
     -- DROP TABLE IF EXISTS reports.ticket_frequencies;
@@ -15932,6 +16333,7 @@
     CREATE TABLE reports.ticket_urgencies (
         tu_id   smallint NOT NULL,
         tu_desc text NOT NULL,
+        tu_colour text,
 
         CONSTRAINT reports_ticket_urgencies_pkey PRIMARY KEY (tu_id)
     );
@@ -15943,9 +16345,10 @@
     GRANT SELECT ON TABLE reports.ticket_urgencies TO group_readonly;
 
     -- comments
-    COMMENT ON TABLE  reports.ticket_urgencies         IS 'Ticket urgencies table';
-    COMMENT ON COLUMN reports.ticket_urgencies.tu_id   IS 'Ticket urgency id';
-    COMMENT ON COLUMN reports.ticket_urgencies.tu_desc IS 'Ticket urgency description';
+    COMMENT ON TABLE  reports.ticket_urgencies              IS 'Ticket urgencies table';
+    COMMENT ON COLUMN reports.ticket_urgencies.tu_id        IS 'Ticket urgency id';
+    COMMENT ON COLUMN reports.ticket_urgencies.tu_desc      IS 'Ticket urgency description';
+    COMMENT ON COLUMN reports.ticket_urgencies.tu_colour    IS 'Ticket urgency colour';
 
     -- Tabella che contiene le informazioni dei tickets
     -- DROP TABLE IF EXISTS reports.tickets CASCADE;
@@ -16127,6 +16530,203 @@
     COMMENT ON COLUMN reports.tickets_status.ts_status   IS 'Ticket status';
     COMMENT ON COLUMN reports.tickets_status.ts_status   IS 'Link to report maintenance id FK';
 
+    -- Tabella che contiene le varie tipologie di ticket
+    -- DROP TABLE IF EXISTS reports.ced_ticket_types;
+    CREATE TABLE reports.ced_ticket_types (
+        ctt_id      smallint NOT NULL,
+        ctt_name    text NOT NULL,
+        ctt_desc    text NOT NULL,
+        ctt_icon    text DEFAULT 'fa-regular fa-laptop-code',
+        ctt_colour  text DEFAULT 'gray-dark',
+
+        CONSTRAINT reports_ced_ticket_types_pkey PRIMARY KEY (ctt_id)
+    );
+
+    -- grants
+    GRANT ALL ON TABLE    reports.ced_ticket_types TO group_admin;
+    GRANT ALL ON TABLE    reports.ced_ticket_types TO group_bobo;
+    GRANT ALL ON TABLE    reports.ced_ticket_types TO group_tools;
+    GRANT SELECT ON TABLE reports.ced_ticket_types TO group_readonly;
+
+    -- comments
+    COMMENT ON TABLE  reports.ced_ticket_types              IS 'CED ticket types table';
+    COMMENT ON COLUMN reports.ced_ticket_types.ctt_id       IS 'CED ticket type id';
+    COMMENT ON COLUMN reports.ced_ticket_types.ctt_desc     IS 'CED ticket type name';
+    COMMENT ON COLUMN reports.ced_ticket_types.ctt_desc     IS 'CED ticket type description';
+    COMMENT ON COLUMN reports.ced_ticket_types.ctt_icon     IS 'CED ticket type icon';
+    COMMENT ON COLUMN reports.ced_ticket_types.ctt_colour   IS 'CED ticket type text';
+
+
+    -- Tabella che contiene le varie tipologie di urgenza dei tickets
+    -- DROP TABLE IF EXISTS reports.ced_ticket_urgencies;
+    CREATE TABLE reports.ced_ticket_urgencies (
+        ctu_id      smallint NOT NULL,
+        ctu_name    text NOT NULL,
+        ctu_desc    text NOT NULL,
+        ctu_colour  text DEFAULT 'type',
+
+        CONSTRAINT reports_ced_ticket_urgencies_pkey PRIMARY KEY (ctu_id)
+    );
+
+    -- grants
+    GRANT ALL ON TABLE    reports.ced_ticket_urgencies TO group_admin;
+    GRANT ALL ON TABLE    reports.ced_ticket_urgencies TO group_bobo;
+    GRANT ALL ON TABLE    reports.ced_ticket_urgencies TO group_tools;
+    GRANT SELECT ON TABLE reports.ced_ticket_urgencies TO group_readonly;
+
+    -- comments
+    COMMENT ON TABLE  reports.ced_ticket_urgencies              IS 'CED ticket urgencies table';
+    COMMENT ON COLUMN reports.ced_ticket_urgencies.ctu_id       IS 'CED ticket urgency id';
+    COMMENT ON COLUMN reports.ced_ticket_urgencies.ctu_name     IS 'CED ticket urgency name';
+    COMMENT ON COLUMN reports.ced_ticket_urgencies.ctu_desc     IS 'CED ticket urgency description';
+    COMMENT ON COLUMN reports.ced_ticket_urgencies.ctu_colour   IS 'CED ticket urgency colour';
+
+    -- Tabella che contiene le informazioni dei tickets
+    -- DROP TABLE IF EXISTS reports.ced_tickets CASCADE;
+    CREATE TABLE reports.ced_tickets (
+        ct_id                   serial,
+        ct_fulldate             timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+
+        -- metadata --
+        ct_title                text NOT NULL,
+        ct_description          text NOT NULL,
+
+        us_id                   integer NOT NULL,
+
+        ct_useful               boolean DEFAULT TRUE,
+        ct_email_ts             timestamp without time zone,
+        ct_update_ts            timestamp without time zone,
+
+        CONSTRAINT reports_ced_tickets_pkey PRIMARY KEY (ct_id)
+        -- CONSTRAINT reports_ced_tickets_fkey2 FOREIGN KEY (us_id)
+        --     REFERENCES bobo.users (us_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT
+    );
+
+    -- grants
+    GRANT ALL ON TABLE    reports.ced_tickets TO group_admin;
+    GRANT ALL ON TABLE    reports.ced_tickets TO group_bobo;
+    GRANT ALL ON TABLE    reports.ced_tickets TO group_tools;
+    GRANT SELECT ON TABLE reports.ced_tickets TO group_readonly;
+
+    GRANT ALL ON SEQUENCE reports.ced_tickets_ct_id_seq TO group_admin;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_ct_id_seq TO group_bobo;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_ct_id_seq TO group_tools;
+
+    -- comments
+    COMMENT ON TABLE  reports.ced_tickets                       IS 'Main table for CED tickets';
+    COMMENT ON COLUMN reports.ced_tickets.ct_id                 IS 'CED ticket id';
+    COMMENT ON COLUMN reports.ced_tickets.ct_fulldate           IS 'CED ticket opening date';
+    COMMENT ON COLUMN reports.ced_tickets.ct_title              IS 'CED ticket title';
+    COMMENT ON COLUMN reports.ced_tickets.ct_description        IS 'CED ticket description';
+
+    COMMENT ON COLUMN reports.ced_tickets.us_id                 IS 'CED ticket creator';
+    COMMENT ON COLUMN reports.ced_tickets.ct_useful             IS 'CED ticket utility';
+    COMMENT ON COLUMN reports.ced_tickets.ct_email_ts           IS 'CED ticket date when email is sent';
+    COMMENT ON COLUMN reports.ced_tickets.ct_update_ts          IS 'CED ticket update timestamp';
+
+    -- Tabella che contiene i vari status dei ticket presenti nel sistema
+    -- DROP TABLE IF EXISTS reports.ced_tickets_status CASCADE;
+    CREATE TABLE reports.ced_tickets_status (
+        cts_id                  serial,
+        ct_id                   integer NOT NULL,
+
+        -- metadata --
+        us_id                   integer NOT NULL,
+        cts_fulldate            timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        -- data --
+        cts_status              reports.ced_status NOT NULL,
+        gr_id                   integer NOT NULL,
+        ctt_id                  smallint NOT NULL,
+        ctu_id                  smallint,
+        cts_description         text,
+
+        CONSTRAINT reports_ced_tickets_status_pkey PRIMARY KEY (cts_id)
+        -- CONSTRAINT reports_ced_tickets_status_fkey FOREIGN KEY (ct_id)
+        --     REFERENCES reports.ced_tickets (ct_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT reports_ced_tickets_status_fkey2 FOREIGN KEY (us_id)
+        --     REFERENCES bobo.users (us_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT reports_ced_tickets_status_fkey3 FOREIGN KEY (gr_id)
+        --     REFERENCES bobo.groups (gr_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT reports_ced_tickets_status_fkey4 FOREIGN KEY (ctt_id)
+        --     REFERENCES reports.ced_ticket_types (ctt_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT reports_ced_tickets_status_fkey5 FOREIGN KEY (ctu_id)
+        --     REFERENCES reports.ced_ticket_urgencies (ctu_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE RESTRICT
+    );
+
+    -- grants
+    GRANT ALL ON TABLE    reports.ced_tickets_status TO group_admin;
+    GRANT ALL ON TABLE    reports.ced_tickets_status TO group_bobo;
+    GRANT ALL ON TABLE    reports.ced_tickets_status TO group_tools;
+    GRANT SELECT ON TABLE reports.ced_tickets_status TO group_readonly;
+
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_cts_id_seq TO group_admin;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_cts_id_seq TO group_bobo;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_cts_id_seq TO group_tools;
+
+    -- comments
+    COMMENT ON TABLE  reports.ced_tickets_status                    IS 'Main table for ticket status';
+    COMMENT ON COLUMN reports.ced_tickets_status.cts_id             IS 'CED ticket status serial id';
+    COMMENT ON COLUMN reports.ced_tickets_status.ct_id              IS 'CED Ticket id FK';
+    COMMENT ON COLUMN reports.ced_tickets_status.us_id              IS 'User id FK';
+    COMMENT ON COLUMN reports.ced_tickets_status.cts_fulldate       IS 'CED ticket status fulldate';
+    COMMENT ON COLUMN reports.ced_tickets_status.cts_status         IS 'CED Ticket status';
+    COMMENT ON COLUMN reports.ced_tickets_status.gr_id              IS 'Group to which the ticket was assigned (FK)';
+    COMMENT ON COLUMN reports.ced_tickets_status.ctt_id             IS 'CED ticket status type id FK';
+    COMMENT ON COLUMN reports.ced_tickets_status.ctu_id             IS 'CED ticket status urgency id FK';
+    COMMENT ON COLUMN reports.ced_tickets_status.cts_description    IS 'CED ticket status description';
+
+
+    -- Tabella che contiene le informazioni relative agli allegati delle tarature
+    -- DROP TABLE IF EXISTS reports.ced_tickets_status_attachments;
+    CREATE TABLE reports.ced_tickets_status_attachments
+    (
+        att_id              serial,
+        cts_id              integer NOT NULL,
+        file_original       text NOT NULL,
+        file_archive        text NOT NULL,
+        file_image          boolean DEFAULT false,
+        att_fulldate        timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT reports_ced_tickets_status_attachments_pkey PRIMARY KEY (att_id),
+        CONSTRAINT reports_ced_tickets_status_attachments_ukey UNIQUE (cts_id, file_archive)
+        -- CONSTRAINT reports_ced_tickets_status_attachments_fk1 FOREIGN KEY (cts_id)
+        --     REFERENCES reports.ced_tickets_status (cts_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE
+        --     ON DELETE NO ACTION
+    )
+    WITH (OIDS=FALSE);
+
+    -- grants
+    GRANT ALL ON TABLE    reports.ced_tickets_status_attachments TO group_admin;
+    GRANT ALL ON TABLE    reports.ced_tickets_status_attachments TO group_bobo;
+    GRANT ALL ON TABLE    reports.ced_tickets_status_attachments TO group_tools;
+    GRANT SELECT ON TABLE reports.ced_tickets_status_attachments TO group_readonly;
+
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_attachments_att_id_seq TO group_admin;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_attachments_att_id_seq TO group_bobo;
+    GRANT ALL ON SEQUENCE reports.ced_tickets_status_attachments_att_id_seq TO group_tools;
+
+    -- comments
+    COMMENT ON TABLE  reports.ced_tickets_status_attachments               IS 'Table storing calibrations attachments';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.att_id        IS 'Attacchment ID (PK)';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.cts_id        IS 'CED ticket status ID (FK)';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.file_original IS 'Original file name';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.file_archive  IS 'Archive file name';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.file_image    IS 'Flag if file is an image';
+    COMMENT ON COLUMN reports.ced_tickets_status_attachments.att_fulldate  IS 'Attachment insert fulldate';
+
     -- --------------------------------------------------------------------------------------------
     -- VIEWS
     -- --------------------------------------------------------------------------------------------
@@ -16302,48 +16902,355 @@
     -- Vista che raccoglie le informazioni relative ai tickets
     -- DROP VIEW IF EXISTS reports.view_tickets;
     CREATE OR REPLACE VIEW reports.view_tickets AS
-    SELECT
-        tk_id,
-        tk_parent_id_fk,
-        tk_opening_date,
-        tk_expiry_date,
-        tk_opening_user_fk,
-        tk_recipient_comp_fk,
+    SELECT t.tk_id,
+        t.tk_parent_id_fk,
+        t.tk_opening_date,
+        t.tk_expiry_date,
+        t.tk_opening_user_fk,
+        t.tk_recipient_comp_fk,
         c.comp_name,
-        station_id,
+        t.station_id,
         s.station_name,
-        instr_id,
-        cy_id,
-        mi_id,
-        tt_id,
+        t.instr_id,
+        t.cy_id,
+        t.mi_id,
+        t.tt_id,
         tt.tt_desc,
-        tc_id,
+        t.tc_id,
         tc.tc_desc,
-        tu_id,
+        tc.tc_class,
+        t.tu_id,
         tu.tu_desc,
-        tf_id,
+        tu.tu_colour,
+        t.tf_id,
         tf.tf_desc,
-        tk_title,
-        tk_opening_note,
-        tk_mail_date
-    FROM
+        t.tk_title,
+        t.tk_opening_note,
+        t.tk_mail_date
+    FROM 
         reports.tickets t
-        LEFT JOIN bobo.companies c              ON (c.comp_id = t.tk_recipient_comp_fk)
-        LEFT JOIN metadata.stations s           USING (station_id)
-        LEFT JOIN reports.ticket_types tt       USING (tt_id)
-        LEFT JOIN reports.ticket_categories tc  USING (tc_id)
-        LEFT JOIN reports.ticket_urgencies tu   USING (tu_id)
+        LEFT JOIN bobo.companies c ON c.comp_id = t.tk_recipient_comp_fk
+        LEFT JOIN metadata.stations s USING (station_id)
+        LEFT JOIN reports.ticket_types tt USING (tt_id)
+        LEFT JOIN reports.ticket_categories tc USING (tc_id)
+        LEFT JOIN reports.ticket_urgencies tu USING (tu_id)
         LEFT JOIN reports.ticket_frequencies tf USING (tf_id)
-    ORDER BY tk_id;
+    ORDER BY t.tk_id;
 
-    -- grants
-    GRANT ALL ON TABLE    reports.view_tickets TO group_admin;
-    GRANT ALL ON TABLE    reports.view_tickets TO group_bobo;
-    GRANT ALL ON TABLE    reports.view_tickets TO group_tools;
+    GRANT ALL ON TABLE reports.view_tickets TO group_admin;
+    GRANT ALL ON TABLE reports.view_tickets TO group_bobo;
+    GRANT ALL ON TABLE reports.view_tickets TO group_tools;
     GRANT SELECT ON TABLE reports.view_tickets TO group_readonly;
 
     -- comment
     COMMENT ON VIEW reports.view_tickets IS 'The view contains all the principal info about tickets';
+
+    -- Vista che raccoglie tutti i possibili stati di un ticket Centro
+    -- DROP VIEW IF EXISTS reports.view_ced_ticket_status;
+    CREATE OR REPLACE VIEW reports.view_ced_ticket_status AS
+    SELECT
+        e.enumlabel         AS status_label,
+        CASE e.enumlabel
+            WHEN 'open' THEN 'Aperto'
+            WHEN 'reassign' THEN 'Riassegnato'
+            WHEN 'taken charge' THEN 'Preso in carico'
+            WHEN 'closed' THEN 'Chiuso'
+            ELSE '--'
+        END                 AS status_desc,
+        CASE e.enumlabel
+            WHEN 'open' THEN 'Apri'
+            WHEN 'reassign' THEN 'Riassegna'
+            WHEN 'taken charge' THEN 'Prendi in carico'
+            WHEN 'closed' THEN 'Chiudi'
+            ELSE '--'
+        END                 AS status_action,
+        e.enumsortorder     AS status_order
+    FROM
+        pg_enum e
+        LEFT JOIN pg_type t ON e.enumtypid = t.oid
+    WHERE t.typname = 'ced_status'
+    ORDER BY e.enumsortorder;
+
+        -- grants
+    GRANT ALL ON TABLE    reports.view_ced_ticket_status TO group_admin;
+    GRANT ALL ON TABLE    reports.view_ced_ticket_status TO group_bobo;
+    GRANT ALL ON TABLE    reports.view_ced_ticket_status TO group_tools;
+    GRANT SELECT ON TABLE reports.view_ced_ticket_status TO group_readonly;
+
+    COMMENT ON VIEW  reports.view_ced_ticket_status        IS 'Main view for all possible status of CED tickets';
+
+    -- --------------------------------------------------------------------------------------------
+    -- TRIGGER FUNCTIONS
+    -- --------------------------------------------------------------------------------------------
+    
+    -- Funzione per inviare notifiche all'aggiornamento di stato di un ticket centro
+    -- DROP FUNCTION reports.f_ced_tickets_notifications();
+    CREATE OR REPLACE FUNCTION reports.f_ced_tickets_notifications()
+        RETURNS trigger
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE NOT LEAKPROOF
+    AS $BODY$
+        DECLARE
+            -- static
+            ctp_grid integer := 125;
+            ced_grid integer := 126;
+            bot      text := '-123456789'; -- Resp. Ticket
+
+            /* email addresses */
+            c   text; -- creator email
+            ctp text; -- ctp emails
+            ced text; -- ced maintainer emails
+
+            /* ticket metadata */
+            n text; -- user name
+            p text; -- ticket priority
+            t text; -- ticket type
+            d text; -- description
+
+            /* email variables */
+            r text; -- total recipients
+            s text; -- subject
+            b text; -- body
+
+        BEGIN
+        /**
+         * Trigger that creates html content to be sent via email or telegram
+         * to interested recipients. The trigger fires when a new status of the ticket is inserted
+         * and the recipients change depending on the new status itself:
+         *
+         * > 'open': send email and telegram message to the ticket recipient
+         * > 'reassign': send email to the ticket creator and new recipients
+         * > 'taken charge': send email to the ticket creator and the CTP
+         * > 'closed': send email to ticket creator and CTP
+         */
+
+        RAISE NOTICE 'SELECT reports.f_ced_tickets_notifications';
+
+        -- RAISE NOTICE '> Get creator email';
+        SELECT us_email INTO c
+        FROM bobo.users
+        WHERE
+            us_id IN ( SELECT us_id FROM reports.ced_tickets WHERE ct_id = NEW.ct_id );
+
+        -- RAISE NOTICE '> Get CTP emails';
+        SELECT
+            STRING_AGG(us_email, ';' ) INTO ctp
+        FROM
+            bobo.users
+            LEFT JOIN bobo.user_groups USING (us_id)
+        WHERE
+            gr_id = ctp_grid;
+
+        -- RAISE NOTICE '> Get CED maintainers emails';
+        SELECT
+            STRING_AGG(us_email, ';' ) INTO ced
+        FROM
+            bobo.users
+            LEFT JOIN bobo.user_groups USING (us_id)
+        WHERE
+            gr_id = ced_grid;
+
+        /* Get metadata for email's body */
+        SELECT
+            CONCAT_WS(' ',
+                us_name,
+                us_2nd_name,
+                us_surname,
+                ( CASE WHEN comp_id NOTNULL AND comp_id > 1 THEN '('||comp_name||')' ELSE NULL END )
+            ) INTO n
+        FROM
+            bobo.users
+            LEFT JOIN bobo.users_metadata USING (us_id)
+            LEFT JOIN bobo.companies USING (comp_id)
+        WHERE
+            us_id = NEW.us_id;
+
+        SELECT ctu_name INTO p FROM reports.ced_ticket_urgencies WHERE ctu_id = NEW.ctu_id;
+        SELECT ctt_name INTO t FROM reports.ced_ticket_types     WHERE ctt_id = NEW.ctt_id;
+
+        /* Get ticket's title and description */
+        SELECT
+            'Ticket #'||NEW.ct_id||': '||ct_title, ct_description INTO s,d
+        FROM
+            reports.ced_tickets
+        WHERE
+            ct_id = NEW.ct_id;
+
+        CASE
+            WHEN NEW.cts_status = 'open' THEN
+
+                b = '<p>Gentile Utente,<br>'||E'\n'
+                    ||'Una nuova richiesta di assistenza &eacute; pervenuta al sistema di ticketing del centro. Di seguito vengono riportate le informazioni principali:</p>'||E'\n'
+                    ||'<p>Ticket: <strong><a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">vedi dettagli &raquo;</a></strong><br>'||E'\n'
+                    ||'Priorit&agrave;: <strong>'||p||'</strong><br>'||E'\n'
+                    ||'Tipologia: <strong>'||t||'</strong><br>'||E'\n'
+                    ||'Operatore: <strong>'||n||'</strong><br>'||E'\n'
+                    ||'Contatto: <strong>'||c||'</strong></p>'||E'\n'
+                    ||'<p><strong>Descrizione:</strong>'||E'\n'
+                    ||'<em>'||d||'</em></p>'||E'\n'
+                    ||'<p>Cordiali saluti</p>';
+
+                /* Depending on the recipient of the ticket, use different email addresses */
+                IF NEW.gr_id = ctp_grid THEN
+
+                    /* send email message to Resp. Tickets*/
+                    INSERT INTO gateways.html_mails
+                        (app, recipients, subject, body, logo)
+                    VALUES
+                        ('OPAS Ticketing',ctp,s,b,'opas');
+
+                    /* send telegram message to Resp. Tickets*/
+
+                    b = 'Gentile Utente,'||E'\n'
+                    ||'Una nuova richiesta di assistenza è pervenuta al sistema di ticketing del centro. Di seguito vengono riportate le informazioni principali:'||E'\n'
+                    ||''||E'\n'
+                    ||'Priorità: <strong>'||p||'</strong>'||E'\n'
+                    ||'Tipologia: <strong>'||t||'</strong>'||E'\n'
+                    ||'Operatore: <strong>'||n||'</strong>'||E'\n'
+                    ||'Contatto: <strong>'||c||'</strong>'||E'\n'
+                    ||''||E'\n'
+                    ||'<strong>Descrizione:</strong>'||E'\n'
+                    ||'<blockquote expandable><em>'||regexp_replace(d, E'<[^>]+>', '', 'gi')||'</em></blockquote>'||E'\n'
+                    ||''||E'\n'
+                    ||'<a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">Apri il ticket per i dettagli »</a>';
+
+
+                    INSERT INTO gateways.telegrams
+                        (app, chat, telegram_type, parse_mode, message)
+                    VALUES
+                        ('opas.ticketing', bot, 'Message', 'HTML', b );
+
+                ELSE
+                    r = ced;
+
+                    /* send email message to IT maintenance personnel */
+                    INSERT INTO gateways.html_mails
+                        (app, recipients, subject, body, logo)
+                    VALUES
+                        ('OPAS Ticketing',r,s,b,'opas');
+                END IF;
+
+            WHEN NEW.cts_status = 'reassign' THEN
+
+                IF NEW.gr_id = ctp_grid THEN
+                    r = ctp;
+                ELSE
+                    r = ced;
+                END IF;
+
+                /* Email to ticket creator */
+                b = ' <p>Gentile Utente,<br>'||E'\n'
+                ||'La sua richiesta &eacute; stata riassegnata a un nuovo destinatario. Di seguito vengono riportate le informazioni principali:</p>'||E'\n'
+                ||'<p>Ticket: <strong><a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">vedi dettagli &raquo;</a></strong><br>'||E'\n'
+                ||'Priorit&agrave;: <strong>'||p||'</strong><br>'||E'\n'
+                ||'Tipologia: <strong>'||t||'</strong><br>'||E'\n'
+                ||'Operatore: <strong>'||n||'</strong></p>'||E'\n'
+                ||'<p><strong>Descrizione:</strong>'||E'\n'
+                ||'<em>'||COALESCE(NEW.cts_description, '--')||'</em></p>'||E'\n'
+                ||'<p>Cordiali saluti</p>';
+
+                INSERT INTO gateways.html_mails
+                    (app, recipients, subject, body, logo)
+                VALUES
+                    ('OPAS Ticketing',c,s,b,'opas');
+
+                /* Email to new recipient */
+                b = ' <p>Gentile Utente,<br>'||E'\n'
+                ||'La richiesta &eacute; stata riassegnata al suo gruppo. Di seguito vengono riportate le informazioni principali:</p>'||E'\n'
+                ||'<p>Ticket: <strong><a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">vedi dettagli &raquo;</a></strong><br>'||E'\n'
+                ||'Priorit&agrave;: <strong>'||p||'</strong><br>'||E'\n'
+                ||'Tipologia: <strong>'||t||'</strong><br>'||E'\n'
+                ||'Operatore: <strong>'||n||'</strong></p>'||E'\n'
+                ||'<p><strong>Descrizione:</strong>'||E'\n'
+                ||'<em>'||COALESCE(NEW.cts_description, '--')||'</em></p>'||E'\n'
+                ||'<p>Cordiali saluti</p>';
+
+                INSERT INTO gateways.html_mails
+                    (app, recipients, subject, body, logo)
+                VALUES
+                    ('OPAS Ticketing',r,s,b,'opas');
+
+            WHEN NEW.cts_status = 'taken charge' THEN
+
+                b = '<p>Gentile Utente,<br>'||E'\n'
+                ||'La richiesta in oggetto &eacute; stata presa in carico</p>'||E'\n'
+                ||'<p>Ticket: <strong><a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">vedi dettagli &raquo;</a></strong><br>'||E'\n'
+                ||'Priorit&agrave;: <strong>'||p||'</strong><br>'||E'\n'
+                ||'Tipologia: <strong>'||t||'</strong><br>'||E'\n'
+                ||'Operatore: <strong>'||n||'</strong></p>'||E'\n'
+                ||'<p><strong>Descrizione:</strong>'||E'\n'
+                ||'<em>'||COALESCE(NEW.cts_description, '--')||'</em></p>'||E'\n'
+                ||'<p>Cordiali saluti</p>';
+
+                /* Email to ticket creator */
+                INSERT INTO gateways.html_mails
+                    (app, recipients, subject, body, logo)
+                VALUES
+                    ('OPAS Ticketing',c,s,b,'opas');
+
+                IF NEW.gr_id = ced_grid THEN
+
+                    /* Email to CTP users, sent only if the status change is made by the IT maintenance personnel. */
+                    INSERT INTO gateways.html_mails
+                        (app, recipients, subject, body, logo)
+                    VALUES
+                        ('OPAS Ticketing',ctp,s,b,'opas');
+
+                END IF;
+
+            WHEN NEW.cts_status = 'closed' THEN
+
+                b = '<p>Gentile Utente,<br>'||E'\n'
+                ||'La richiesta in oggetto &eacute; stata chiusa. Di seguito vengono riportate le informazioni principali:</p>'||E'\n'
+                ||'<p>Ticket: <strong><a href="https://opas.isprambiente.it/plan_centro/'||NEW.ct_id||'" target ="_blank">vedi dettagli &raquo;</a></strong><br>'||E'\n'
+                ||'Operatore: <strong>'||n||'</strong></p>'||E'\n'
+                ||'<p><strong>Descrizione:</strong>'||E'\n'
+                ||'<em>'||COALESCE(NEW.cts_description, '--')||'</em></p>'||E'\n'
+                ||'<p>Cordiali saluti</p>';
+
+                /* Email to ticket creator */
+                INSERT INTO gateways.html_mails
+                    (app, recipients, subject, body, logo)
+                VALUES
+                    ('OPAS Ticketing',c,s,b,'opas');
+
+                IF NEW.gr_id = ced_grid THEN
+
+                    /* Email to CTP users, sent only if the status change is made by the IT maintenance personnel. */
+                    INSERT INTO gateways.html_mails
+                        (app, recipients, subject, body, logo)
+                    VALUES
+                        ('OPAS Ticketing',ctp,s,b,'opas');
+
+                END IF;
+
+            ELSE
+                /*Do nothing*/
+
+        END CASE;
+
+        RETURN NEW;
+
+        /* errors check */
+        EXCEPTION WHEN OTHERS THEN /* in case of any error */
+            RAISE NOTICE 'ERROR IN reports.f_ced_tickets_notifications(date) : %', SQLERRM ;
+            RETURN NEW; /* return value */
+    END;
+
+
+    $BODY$;
+
+
+    GRANT EXECUTE ON FUNCTION reports.f_ced_tickets_notifications() TO group_admin;
+    GRANT EXECUTE ON FUNCTION reports.f_ced_tickets_notifications() TO group_bobo;
+    GRANT EXECUTE ON FUNCTION reports.f_ced_tickets_notifications() TO group_tools;
+
+    COMMENT ON FUNCTION reports.f_ced_tickets_notifications() IS 'Trigger that takes care of sending emails or telegram messages when any change occurs on ced tickets status';
+
+    CREATE TRIGGER reports_ced_tickets_send_notifications_ai
+        AFTER INSERT
+        ON reports.ced_tickets_status FOR EACH ROW EXECUTE PROCEDURE reports.f_ced_tickets_notifications();
 
     -- --------------------------------------------------------------------------------------------
     -- FUNCTIONS
@@ -17294,12 +18201,33 @@
     GRANT SELECT ON TABLE template.realtime TO group_readonly;
 
     -- comments
-    COMMENT ON TABLE  template.realtime                   IS 'Tabella dati real time (cadenza 1 minuto)';
+    COMMENT ON TABLE  template.realtime                   IS 'Table holding real time data (cadenza 1 minuto)';
     COMMENT ON COLUMN template.realtime.measure_date_time IS 'Measure date and time';
     COMMENT ON COLUMN template.realtime.measure_id        IS 'Measure id';
     COMMENT ON COLUMN template.realtime.measure_value     IS 'Measure value';
     COMMENT ON COLUMN template.realtime.measure_code      IS 'Measure general code';
     COMMENT ON COLUMN template.realtime.station_code      IS 'Station general code';
+
+    -- DROP TABLE IF EXISTS template.readings;
+    CREATE TABLE IF NOT EXISTS template.readings
+    (
+        measure_date_time   timestamp without time zone NOT NULL,
+        measure_id          integer NOT NULL,
+        measure_value       numeric NOT NULL,
+        measure_code        integer DEFAULT 0,
+        CONSTRAINT template_readings_pkey PRIMARY KEY (measure_date_time, measure_id)
+    );
+
+    GRANT ALL ON TABLE template.readings TO group_admin;
+    GRANT ALL ON TABLE template.readings TO group_bobo;
+    GRANT ALL ON TABLE template.readings TO group_tools;
+    GRANT SELECT ON TABLE template.readings TO group_readonly;
+
+    COMMENT ON TABLE  template.readings                     IS 'Table holding pollutants readings with "1 minute" cadence';
+    COMMENT ON COLUMN template.readings.measure_date_time   IS 'Measure date and time';
+    COMMENT ON COLUMN template.readings.measure_id          IS 'Measure id';
+    COMMENT ON COLUMN template.readings.measure_value       IS 'Measure value';
+    COMMENT ON COLUMN template.readings.measure_code        IS 'Measure general code';
 
     -- --------------------------------------------------------------------------------------------
     -- FUNCTIONS
@@ -17756,20 +18684,20 @@
         IS 'Function that creates dynamically station table like a predefined template';
 
     -- Funzione che crea le tabelle e i trigger per la nuova stazione
-    -- DROP FUNCTION template.f_create_opas_tables(integer);
+    -- DROP FUNCTION IF EXISTS template.f_create_opas_tables(integer);
     CREATE OR REPLACE FUNCTION template.f_create_opas_tables(
         stid integer
     )
-      RETURNS boolean
-      LANGUAGE 'plpgsql'
-      SECURITY DEFINER
-      VOLATILE
-      COST 100
+        RETURNS boolean
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE SECURITY DEFINER PARALLEL UNSAFE
     AS $BODY$
     DECLARE
         -- variables
         s text; -- schema
         t text; -- table
+        f integer; -- filter for roaming type
         q text; -- query
 
         r boolean; -- result
@@ -17782,9 +18710,10 @@
          * The function is launched from the portal and is executed with the owner role (user_admin).
          */
 
-        /* Select schema and table name */
-        SELECT station_schema, station_table INTO s,t
+        /* Select schema, table name and roaming type */
+        SELECT station_schema, station_table, st_info_roaming_type_fk INTO s,t,f
         FROM metadata.stations
+        LEFT JOIN metadata.stations_info si USING (station_id)
         WHERE station_id = stid;
 
         /* If station not found then return false */
@@ -17795,12 +18724,6 @@
 
         RAISE NOTICE '> Create tables...';
 
-        /* Create table for instant data */
-        SELECT template.f_create_inst_table_like_template(stid, false) INTO r;
-        /* Check errors */
-        IF NOT r THEN
-            RAISE EXCEPTION 'Error during template.f_create_inst_table_like_template function!';
-        END IF;
         /* Create main table */
         SELECT template.f_create_table_like_template(stid, 'opas'::text, false) INTO r;
         /* Check errors */
@@ -17809,7 +18732,9 @@
         END IF;
 
         RAISE NOTICE '> Create triggers...';
-        /* Create default triggers */
+
+        /* Create DEFAULT triggers */
+
         q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_1_mc_to_pvc_bi '
             ||'BEFORE INSERT '
             ||'ON '||s||'.'||t||' '
@@ -17842,166 +18767,159 @@
 
         EXECUTE q;
 
+        /* If station roaming type equal to "fissa", "mezzo mobile" */
+        IF f IN (1, 2) THEN
+            RAISE NOTICE 'Creating instant and readings tables for: %', stid;
 
+            /* Create table for instant data */
+            SELECT template.f_create_table_like_template(stid, 'realtime'::text, false) INTO r;
+            /* Check errors */
+            IF NOT r THEN
+                RAISE EXCEPTION 'Error during template.f_create_table_like_template function!';
+            END IF;
 
-        /*Create CUSTOM triggers */
-
-        -- DATA EXPORT
-        IF s IN ('client_abr', 'client_ero', 'client_mar', 'client_tn', 'client_tos', 'client_umb', 'client_ven' ) THEN
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_data_export_aiau '
-                ||'AFTER INSERT OR UPDATE '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'EXECUTE FUNCTION '||s||'.f_data_export('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
+            /* Create table for readings data */
+            SELECT template.f_create_table_like_template(stid, 'readings'::text, false) INTO r;
+            /* Check errors */
+            IF NOT r THEN
+                RAISE EXCEPTION 'Error during template.f_create_table_like_template function!';
+            END IF;
         END IF;
 
-        -- SWAM TO 24H
-        IF s IN ('client_abr', 'client_ero', 'client_fvg', 'client_tos', 'client_umb') THEN
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_99_chk_measure_swam_bi '
-                ||'BEFORE INSERT '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'WHEN (pg_trigger_depth() = 0) '
-                ||'EXECUTE FUNCTION clients.f_swam_to_24h_v2('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
-        END IF;
-
-        -- INFOARIA E2a
-        IF s IN ('client_fvg', 'client_vda') THEN
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_data_export_e2a_ai '
-                ||'AFTER INSERT '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'EXECUTE FUNCTION infoaria.f_data_export_e2a('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
-        END IF;
-
-        -- SIRAL
-        IF s IN ('client_lig' ) THEN
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_export_siral_ai '
-                ||'AFTER INSERT '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'EXECUTE FUNCTION client_lig.f_export_siral('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_export_checked_siral_au '
-                ||'AFTER UPDATE OF measure_value, post_validity_code, final_validity_code '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'EXECUTE FUNCTION client_lig.f_export_checked_siral('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
-        END IF;
-
-        -- ARPAE: BCBB BCFF E FIDAS (?)
-        IF s IN ('client_ero' ) THEN
-
-            q = 'CREATE OR REPLACE TRIGGER '||s||'_'||t||'_bcbb_bcff_aiau '
-                ||'AFTER INSERT OR UPDATE OF measure_value '
-                ||'ON '||s||'.'||t||' '
-                ||'FOR EACH ROW '
-                ||'WHEN (pg_trigger_depth() = 0) '
-                ||'EXECUTE FUNCTION client_ero.f_calculate_bcbb_bcff('||quote_literal(stid)||'); ';
-
-            EXECUTE q;
-
-    END IF;
-
-
-    RETURN TRUE;
-    /* errors check */
-    EXCEPTION
-    WHEN OTHERS THEN /* in case of any error */
-        RAISE NOTICE 'ERROR IN template.f_create_opas_tables() : %', SQLERRM ;
-        RETURN FALSE;
+        RETURN TRUE;
+        /* errors check */
+        EXCEPTION
+        WHEN OTHERS THEN /* in case of any error */
+            RAISE NOTICE 'ERROR IN template.f_create_opas_tables() : %', SQLERRM ;
+            -- rollback
+            RETURN FALSE;
     END;
     $BODY$;
 
-    -- grants
-    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_bobo;
-    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_admin;
-    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_tools;
+    ALTER FUNCTION template.f_create_opas_tables(integer)
+        OWNER TO user_admin;
 
-    -- comment
+    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_admin;
+    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_bobo;
+    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO group_tools;
+    GRANT EXECUTE ON FUNCTION template.f_create_opas_tables(integer) TO user_admin;
+
     COMMENT ON FUNCTION template.f_create_opas_tables(integer)
         IS 'Function that dynamically creates station tables and linked triggers';
 
     -- Funzione che crea la tabella dei dati partendo da un determinato template
     -- DROP FUNCTION template.f_create_table_like_template(integer, text, boolean);
     CREATE OR REPLACE FUNCTION template.f_create_table_like_template(
-        st_id         integer,
-        template_name text,
-        drop          boolean
+        stid    integer,
+        temp    text,
+        drop    boolean
     )
-    RETURNS boolean AS
-
-    $BODY$
-
+        RETURNS boolean
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE PARALLEL UNSAFE
+    AS $BODY$
     DECLARE
         -- variables
-        table_name  text;
-        sql_query   text;
-    BEGIN
-        -- TEST
-        -- SELECT template.f_create_table_like_template(1000::integer, 'discarica'::text, true);
+        t   text; -- fulltable
+        q   text; -- query
 
-        SELECT station_fulltable INTO table_name
+    BEGIN
+
+        -- TEST
+        -- SELECT template.f_create_table_like_template(1000::integer, 'opas'::text, false);
+
+        SELECT station_fulltable INTO t
         FROM metadata.view_stations_info
-        WHERE station_id = st_id;
+        WHERE station_id = stid;
 
         IF NOT FOUND THEN
-            RAISE NOTICE 'Station % not found!', st_id;
+            RAISE NOTICE 'Station % not found!', stid;
             RETURN NULL;
         END IF;
 
-        RAISE NOTICE 'Table name : %', table_name;
+        RAISE NOTICE 'Table name : %', t;
 
-        IF drop IS TRUE THEN
-            RAISE NOTICE 'Drop station % if exists!', table_name;
-            sql_query = 'DROP TABLE IF EXISTS '|| table_name ||';';
-            EXECUTE sql_query;
+
+        IF temp = 'opas' THEN
+            IF drop IS TRUE THEN
+                RAISE NOTICE 'Drop station % if exists!', t;
+                q = 'DROP TABLE IF EXISTS '|| t ||';';
+
+                EXECUTE q;
+            END IF;
+
+            q = 'CREATE TABLE '|| t ||' (LIKE template.'||quote_ident(temp)||' INCLUDING ALL);';
+            RAISE NOTICE 'Query : %', q;
+
+            EXECUTE q;
+
+            q = 'GRANT ALL ON TABLE    '|| t ||' TO group_admin;   '
+              ||'GRANT ALL ON TABLE    '|| t ||' TO group_bobo;    '
+              ||'GRANT ALL ON TABLE    '|| t ||' TO group_tools;   '
+              ||'GRANT SELECT ON TABLE '|| t ||' TO group_readonly;'
+              ||'GRANT INSERT ON TABLE '|| t ||' TO user_swam;';
+
+            RAISE NOTICE 'Add grants';
+            EXECUTE q;
+
+        ELSIF temp = 'realtime' THEN
+
+            IF drop IS TRUE THEN
+            
+                RAISE NOTICE 'Drop station %_inst if exists!', t;
+                q = 'DROP TABLE IF EXISTS '|| t ||'_inst;';
+
+                EXECUTE q;
+            END IF;
+
+            q = 'CREATE TABLE '|| t ||'_inst (LIKE template.'||quote_ident(temp)||' INCLUDING ALL);';
+            RAISE NOTICE 'Query : %', q;
+
+            EXECUTE q;
+
+            q = 'GRANT SELECT ON TABLE '|| t || '_inst TO group_admin;   '
+              ||'GRANT SELECT ON TABLE '|| t || '_inst TO group_bobo;    '
+              ||'GRANT ALL    ON TABLE '|| t || '_inst TO group_tools;   '
+              ||'GRANT SELECT ON TABLE '|| t || '_inst TO group_readonly;';
+
+            RAISE NOTICE 'Add grants';
+            EXECUTE q;
+
+        ELSIF temp = 'readings' THEN
+
+            IF drop IS TRUE THEN
+                RAISE NOTICE 'Drop station %_rdns if exists!', t;
+                q = 'DROP TABLE IF EXISTS '|| t ||'_rdns;';
+
+                EXECUTE q;
+            END IF;
+
+            q = 'CREATE TABLE '|| t || '_rdns (LIKE template.'||quote_ident(temp)||' INCLUDING ALL);';
+            RAISE NOTICE 'Query : %', q;
+
+            EXECUTE q;
+
+            q = 'GRANT SELECT ON TABLE '|| t ||'_rdns TO group_admin;   '
+              ||'GRANT SELECT ON TABLE '|| t ||'_rdns TO group_bobo;    '
+              ||'GRANT ALL    ON TABLE '|| t ||'_rdns TO group_tools;   '
+              ||'GRANT SELECT ON TABLE '|| t ||'_rdns TO group_readonly;';
+
+            RAISE NOTICE 'Add grants';
+            EXECUTE q;
+
         END IF;
 
-        sql_query = 'CREATE TABLE '|| table_name ||' (LIKE template.'||quote_ident(template_name)||' INCLUDING ALL);';
-        RAISE NOTICE 'Query : %', sql_query;
-
-        EXECUTE sql_query;
-
-        sql_query = 'GRANT ALL ON TABLE     '|| table_name ||' TO group_admin;   '
-                ||'GRANT ALL ON TABLE     '|| table_name ||' TO group_bobo;    '
-                ||'GRANT ALL ON TABLE     '|| table_name ||' TO group_tools;   '
-                ||'GRANT SELECT ON TABLE  '|| table_name ||' TO group_readonly;'
-                ||'GRANT INSERT ON TABLE  '|| table_name ||' TO user_swam;';
-
-        RAISE NOTICE 'Add grants';
-        EXECUTE sql_query;
-
         RETURN TRUE;
+
         /* errors check */
         EXCEPTION
         WHEN OTHERS THEN /* in case of any error */
             RAISE NOTICE 'ERROR IN template.f_create_table_like_template() : %', SQLERRM ;
             RETURN FALSE;
     END;
+    $BODY$;
 
-    $BODY$
-    LANGUAGE 'plpgsql'
-    VOLATILE
-    COST 100;
 
     -- grants
     GRANT EXECUTE ON FUNCTION template.f_create_table_like_template(integer, text, boolean) TO group_bobo;
@@ -18591,66 +19509,69 @@
     COMMENT ON VIEW webservice.v1_parameters IS 'The view contains all the principal info, used by the web service, about parameters';
 
     -- data series
-    -- DROP VIEW IF EXISTS webservice.v1_series;
+    -- DROP VIEW webservice.v1_series;
     CREATE OR REPLACE VIEW webservice.v1_series AS
-    SELECT
-        sp.stpr_id                                    AS series_id,
-        CONCAT_WS(' - ', pp.param_name, sp.stpr_note) AS series_name,
-        sp.stpr_table_id                              AS database_id,
-        st.station_id                                 AS station_id,
-        st.station_ext_id                             AS station_external_id,
-        st.station_name                               AS station_name,
-        st.station_active                             AS station_active,
-        pp.param_id                                   AS parameter_id,
-        sp.stpr_ext_id                                AS parameter_external_id,
-        pp.param_name                                 AS parameter_name,
-        pp.param_active                               AS parameter_active,
-        pp.param_unit                                 AS parameter_unit,
-        metadata.f_get_conversion_by_date_prid(pp.param_id, CURRENT_TIMESTAMP::timestamp without time zone)           AS parameter_conv_curr,
-        (
-            SELECT to_json(ARRAY_AGG(row_to_json(j)))
-            FROM (
-                SELECT
-                    ROW_NUMBER() OVER(ORDER BY pc.pc_from_fulldate) AS index,
-                    pc.pc_conv                                      AS value,
-                    pc.pc_from_fulldate                             AS date_from,
-                    pc.pc_to_fulldate                               AS date_to
-                FROM
-                    metadata.parameters_conversions pc
-                WHERE
-                    pp.param_id = pc.param_id
-                ORDER BY
-                    pc.pc_from_fulldate
+    SELECT 
+        sp.stpr_id          AS series_id,
+        concat_ws(' - '::text, pp.param_name, sp.stpr_note) AS series_name,
+        sp.stpr_table_id    AS database_id,
+        st.station_id,
+        st.station_ext_id   AS station_external_id,
+        st.station_name,
+        st.station_active,
+        pp.param_id         AS parameter_id,
+        pp.param_name       AS parameter_name,
+        pp.param_active     AS parameter_active,
+        pp.param_unit       AS parameter_unit,
+        metadata.f_get_conversion_by_date_prid(pp.param_id, CURRENT_TIMESTAMP::timestamp without time zone) AS parameter_conv_curr,
+        (   SELECT 
+                to_json(array_agg(row_to_json(j.*))) AS to_json
+            FROM ( 
+                SELECT  
+                    row_number() OVER (ORDER BY pc.pc_from_fulldate) AS index,
+                    pc.pc_conv          AS value,
+                    pc.pc_from_fulldate AS date_from,
+                    pc.pc_to_fulldate   AS date_to
+                FROM metadata.parameters_conversions pc
+                WHERE pp.param_id = pc.param_id
+                ORDER BY pc.pc_from_fulldate
             ) j
-        )                                             AS parameter_conv_history,
-        pp.param_unit_conv                            AS parameter_conv_unit,
-        pp.param_decimals                             AS parameter_decimals,
-        -- pm.pm_info_type_fk                            AS parameter_type_id,
-        pt.pm_type_desc                               AS parameter_type_desc,
-        pp.param_note                                 AS parameter_note,
-        sp.stpr_active                                AS station_param_active,
-        sp.stpr_note                                  AS station_param_note,
-        r.region_istat_code                           AS region_istat_code,
-        r.region_name                                 AS region_name
-    FROM
+        )                       AS parameter_conv_history,
+        pp.param_unit_conv      AS parameter_conv_unit,
+        pp.param_decimals       AS parameter_decimals,
+        pt.pm_type_desc         AS parameter_type_desc,
+        pp.param_note           AS parameter_note,
+        mc.measure_cadence_desc AS parameter_cadence_type_desc,
+        mc.measure_cadence_min  AS parameter_cadence_type_min,
+        sp.stpr_ext_id          AS series_external_id,
+        spi.stpr_export_id1     AS series_export_id1,
+        spi.stpr_export_id2     AS series_export_id2,
+        spi.stpr_info_ws_id     AS series_ws_id,
+        sp.stpr_active          AS series_active,
+        sp.stpr_note            AS series_note,
+        r.region_istat_code,
+        r.region_name,
+        sp.stpr_active          AS station_param_active,
+        sp.stpr_note            AS station_param_note
+    FROM 
         metadata.stations st
         LEFT JOIN metadata.stations_municipality stm USING (station_id)
+        LEFT JOIN metadata.stations_info sm USING (station_id)
         LEFT JOIN main.province_municipalities prm USING (mu_id)
         LEFT JOIN main.region_provinces rp USING (province_id)
         LEFT JOIN main.regions r USING (region_id)
         LEFT JOIN metadata.stations_parameters sp USING (station_id)
+        LEFT JOIN metadata.stations_params_info spi USING (stpr_id)
         LEFT JOIN metadata.parameters pp USING (param_id)
         LEFT JOIN metadata.parameters_info pm USING (param_id)
         LEFT JOIN metadata.parameters_type pt ON pm.pm_info_type_fk = pt.pm_type_id
-    ORDER BY
-        st.station_id, sp.stpr_table_id;
+        LEFT JOIN metadata.measures_cadence mc ON mc.measure_cadence_id = COALESCE(spi.stpr_info_cadence_fk, sm.st_info_cadence_fk)
+    ORDER BY st.station_id, sp.stpr_table_id;
 
-    -- grants
+    COMMENT ON VIEW webservice.v1_series IS 'The view contains all the principal info, used by the web service, about data series';
+
     GRANT ALL ON TABLE webservice.v1_series TO group_admin;
     GRANT ALL ON TABLE webservice.v1_series TO group_tools;
-
-    -- comment
-    COMMENT ON VIEW webservice.v1_series IS 'The view contains all the principal info, used by the web service, about data series';
 
     -- sites
     -- DROP VIEW IF EXISTS webservice.v1_sites;
@@ -19516,7 +20437,7 @@
     GRANT ALL ON SEQUENCE client_lig.ws_opas2siral_counter_seq TO group_tools;
 
     -- comments
-    COMMENT ON TABLE client_lig.ws_opas2siral               IS '[BOBO] Web service Siral, export result';
+    COMMENT ON TABLE client_lig.ws_opas2siral               IS 'Web service Siral, export result';
     COMMENT ON COLUMN client_lig.ws_opas2siral.counter      IS 'Progressive counter, used to recreate data update sequence';
     COMMENT ON COLUMN client_lig.ws_opas2siral.execution_ts IS 'Execution time';
     COMMENT ON COLUMN client_lig.ws_opas2siral.command      IS 'Command executed';
@@ -19545,7 +20466,7 @@
     GRANT ALL ON SEQUENCE client_lig.ws_opas2aernostrum_counter_seq TO group_tools;
 
     -- comments
-    COMMENT ON TABLE client_lig.ws_opas2aernostrum               IS '[BOBO] Web service AER Nostrum, export result';
+    COMMENT ON TABLE client_lig.ws_opas2aernostrum               IS 'Web service AER Nostrum, export result';
     COMMENT ON COLUMN client_lig.ws_opas2aernostrum.counter      IS 'Progressive counter, used to recreate data update sequence';
     COMMENT ON COLUMN client_lig.ws_opas2aernostrum.execution_ts IS 'Execution time';
     COMMENT ON COLUMN client_lig.ws_opas2aernostrum.result       IS 'Script result True / False';

@@ -250,6 +250,26 @@ sub get_user_station_grants {
     $self->pg->db->query($sql, $user_id, $station_id)->hash;
 }
 
+sub get_user_station_media_grants{
+    my ( $self, $userid ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbcommon sub get_user_station_media_grants");
+
+    my $sql = qq{
+        SELECT 
+            ARRAY_AGG(station_id ORDER BY station_id) AS station_ids, 
+            ARRAY_AGG(DISTINCT replace(st_info_basepath, 'media/', '')) FILTER (WHERE st_info_basepath NOTNULL) AS networks
+        FROM bobo.view_user_stations
+        LEFT JOIN metadata.stations_info si  USING (station_id)
+        WHERE user_id = ?
+        AND si.st_info_roaming_type_fk NOT IN (0,4); -- no accessorie e siti stanziati
+    };
+
+    # return
+    return $self->pg->db->query($sql, $userid)->hash;
+}
+
 sub check_permission_station {
     my ( $self, $stid, $userid ) = @_;
 

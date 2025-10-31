@@ -216,7 +216,7 @@ sub get_activities_log {
             vus.station_id,
             vus.station_name,
             p.param_id,
-            p.param_name,
+            p.param_name || COALESCE(' - ' || sp.stpr_note, '') AS param_name,
             fvl.fvc_code_id,
             t.fvc_code_desc,
             fvl.fvl_date_start,

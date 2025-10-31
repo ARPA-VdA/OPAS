@@ -29,4 +29,4 @@ Via shell:
 $ git clone https://github.com/ARPA-VdA/OPAS.git
 ```
 
-Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzione del file *INSTALL.md*.
+Una volta effettuato il download, copiare la cartella */src* nel path desiderato e seguire le istruzioni del file *INSTALL.md* nella cartella */doc* per il primo setup, altrimenti fare riferimento al file *UPGRADE.md* per aggiornare il sistema.

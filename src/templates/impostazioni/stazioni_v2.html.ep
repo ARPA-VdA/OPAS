@@ -140,7 +140,14 @@
                                 <label for="station-headerfile" class="col-md-2 col-form-label">Header file
                                     <a class="mytooltip" href="javascript:void(0)">
                                         <i class="fa-regular fa-circle-info text-info"></i>
-                                        <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Nome del file CSV prodotto dal data logger: <strong>generato AUTOMATICAMENTE e modificabile solo DOPO la creazione della stazione</strong>. Deve coincidere con quello in periferia.</span></span></span>
+                                        <span class="tooltip-content5">
+                                            <span class="tooltip-text3">
+                                                <span class="tooltip-inner2">
+                                                    <img src="bobo-img/info/header-file.png" class="info-img">
+                                                    Nome del file CSV prodotto dal data logger: <strong>generato AUTOMATICAMENTE e modificabile solo DOPO la creazione della stazione</strong>. Deve coincidere con quello impostato in periferia nel software OPAS-TOOLS alla voce "HEADER FILE DATI". Deve essere tutto minuscolo.
+                                                </span>
+                                            </span>
+                                        </span>
                                     </a>
                                 </label>
                                 <div class="col-md-4">
@@ -285,7 +292,9 @@
                                         ID esterno stazione
                                         <a class="mytooltip" href="javascript:void(0)">
                                             <i class="fa-regular fa-circle-info text-info"></i>
-                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id stazione esposto dall'API e usato per la mappatura con i sistemi interni di ciascuna ARPA</span></span></span>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Id stazione esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[station_external_id]</strong> e usato per la mappatura con i sistemi interni di ciascuna ARPA
+                                            </span></span></span>
                                         </a>
                                     </label>
                                     <div class="col-md-2">
@@ -371,7 +380,15 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="station-export-active" class="col-md-2 col-form-label">Export attivo</label>
+                                    <label for="station-export-active" class="col-md-2 col-form-label">
+                                        Export attivo
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Se attivo, la stazione viene pubblicata negli export CSV
+                                            </span></span></span>
+                                        </a>
+                                    </label>
                                     <div class="col-md-3">
                                         <input type="checkbox" id="station-export-active" name="station-export-active" class="js-switch" data-color="#79a030" /><br>
                                     </div>
@@ -379,7 +396,9 @@
                                         Export ID
                                         <a class="mytooltip" href="javascript:void(0)">
                                             <i class="fa-regular fa-circle-info text-info"></i>
-                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">Id stazione usato per l'export di file CSV o estensioni personalizzate</span></span></span>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Id stazione usato per l'export di file CSV o estensioni personalizzate ed esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i> [export_id]</strong>
+                                            </span></span></span>
                                         </a>
                                     </label>
                                     <div class="col-md-5">
@@ -387,11 +406,27 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="station-ws-active" class="col-md-2 col-form-label">Webservice attivo</label>
+                                    <label for="station-ws-active" class="col-md-2 col-form-label">
+                                        Webservice attivo
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Se attivo, la stazione viene pubblicata sul web service Aer Nostrum
+                                            </span></span></span>
+                                        </a>
+                                    </label>
                                     <div class="col-md-3">
                                         <input type="checkbox" id="station-ws-active" name="station-ws-active" class="js-switch" data-color="#79a030" /><br>
                                     </div>
-                                    <label for="station-ws-name" class="col-md-2 col-form-label">Nome per webservice</label>
+                                    <label for="station-ws-name" class="col-md-2 col-form-label">
+                                        Nome per webservice
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Nome stazione nel web service Aer Nostrum, ed esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[ws_name]</strong>
+                                            </span></span></span>
+                                        </a>
+                                    </label>
                                     <div class="col-md-5">
                                         <input class="form-control clear-input" type="text" value="" id="station-ws-name" name="station-ws-name" placeholder="Nome per webservice...">
                                     </div>

@@ -38,7 +38,7 @@ sub get_parameters {
 }
 
 sub get_all_data_by_dates {
-    my ( $self, $user_id, $from, $to, $netid, $provid, $prid, $flag ) = @_;
+    my ( $self, $user_id, $from, $to, $netid, $provid, $prid, $result, $failed ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::DbtaratureAut sub get_all_data_by_dates");
@@ -47,92 +47,137 @@ sub get_all_data_by_dates {
     $provid = ($provid != -1 ? "^$provid\$": ".*");
     $prid   = ($prid != -1 ? "^$prid\$": ".*");
 
-    # query
-    my $sql = qq{
-        WITH gp AS (
-            SELECT
-                stpr_group_id, TRUE AS exception_flag
-            FROM
-                metadata.stations_parameters sp
-                LEFT JOIN metadata.parameters p USING (param_id)
-            WHERE
-                stpr_group_id NOTNULL
-            GROUP BY
-                stpr_group_id
-            HAVING
-                ARRAY_AGG(param_name) && '{"NH3", "TNx", "Toluene", "Ethylbenzene"}'::text[]
-        ),
-        t AS (
-            SELECT
-                cr.calibration_id,
-                cr.calibration_date_time,
-                cr.station_id,
-                st.station_name,
-                si.st_info_network_type_fk,
-                pm.province_id,
-                cr.measure_id,
-                p.param_id,
-                p.param_name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS param_name,
-                p.param_unit,
-                p.param_conv,
-                p.param_unit_conv,
-                p.param_decimals,
-                cr.calibration_type,
-                cr.calibration_step,
-                cr.reference_value,
-                cr.defect_value,
-                    CASE
-                        WHEN cr.calibration_step = 'ZERO'::text THEN cr.defect_value::text ||' '||p.param_unit
-                        ELSE cr.defect_value::text || ' %'::text
-                    END AS calibration_defect,
-                cr.result_code,
-                CASE
-                    WHEN gp.exception_flag IS TRUE AND p.param_name = ANY (ARRAY['NO'::text, 'Benzene'::text]) THEN clients.f_calibration_result_tostring(cr.result_code::integer, cr.calibration_step)
-                    WHEN gp.exception_flag IS NOT TRUE AND p.param_name NOT IN ('NO', 'NO2') THEN  clients.f_calibration_result_tostring(cr.result_code::integer, cr.calibration_step)
-                    ELSE ''::text
-                END AS result_code_string,
-                cr.result_value
-            FROM
-                clients.calibrations_result cr
-                LEFT JOIN metadata.stations_parameters sp ON (cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id )
-                LEFT JOIN gp ON (gp.stpr_group_id = sp.stpr_group_id )
-                LEFT JOIN metadata.stations st ON ( cr.station_id = st.station_id )
-                LEFT JOIN metadata.stations_info si ON ( cr.station_id = si.station_id )
-                LEFT JOIN metadata.stations_municipality sm ON ( cr.station_id = sm.station_id )
-                LEFT JOIN main.province_municipalities pm USING (mu_id)
-                LEFT JOIN metadata.parameters p USING (param_id)
+    my $tx;
+    my $sql;
 
-            WHERE
-                cr.station_id IN (SELECT station_id FROM bobo.view_user_stations WHERE user_id = ?)
-                AND calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
-                
-        )
-        SELECT *
-        FROM t
-        WHERE 
-            st_info_network_type_fk::text ~ ?
-            AND province_id::text ~ ?
-            AND param_id::text ~ ?
+    my $results;
+
+    eval {
+        $tx = $self->pg->db->begin;
+
+        # HACK IN ORDER TO IMPROVE PERFORMANCE
+        $sql = qq{ 
+            SET ENABLE_NESTLOOP TO FALSE;
+            SET JIT TO FALSE;
+        };
+
+        $self->pg->db->query($sql); 
+
+        # query
+        $sql = qq{
+            WITH gp AS (
+                SELECT
+                    stpr_group_id, TRUE AS exception_flag
+                FROM
+                    metadata.stations_parameters sp
+                    LEFT JOIN metadata.parameters p USING (param_id)
+                WHERE
+                    stpr_group_id NOTNULL
+                GROUP BY
+                    stpr_group_id
+                HAVING
+                    ARRAY_AGG(param_name) && '{"NH3", "TNx", "Toluene", "Ethylbenzene"}'::text[]
+            ),
+            t AS (
+                SELECT
+                    cr.calibration_id,
+                    cr.calibration_date_time,
+                    cr.station_id,
+                    st.station_name,
+                    si.st_info_network_type_fk,
+                    pm.province_id,
+                    cr.measure_id,
+                    p.param_id,
+                    p.param_name || COALESCE(' - '::text || sp.stpr_note, ''::text) AS param_name,
+                    p.param_unit,
+                    p.param_conv,
+                    p.param_unit_conv,
+                    p.param_decimals,
+                    cr.calibration_type,
+                    cr.calibration_step,
+                    cr.reference_value,
+                    cr.defect_value,
+                        CASE
+                            WHEN cr.calibration_step = 'ZERO'::text THEN cr.defect_value::text ||' '||p.param_unit
+                            ELSE cr.defect_value::text || ' %'::text
+                        END AS calibration_defect,
+                    cr.result_code,
+                    CASE
+                        WHEN gp.exception_flag IS TRUE AND p.param_name = ANY (ARRAY['NO'::text, 'Benzene'::text]) THEN clients.f_calibration_result_tostring(cr.result_code::integer, cr.calibration_step)
+                        WHEN gp.exception_flag IS NOT TRUE AND p.param_name NOT IN ('NO', 'NO2') THEN  clients.f_calibration_result_tostring(cr.result_code::integer, cr.calibration_step)
+                        ELSE ''::text
+                    END AS result_code_string,
+                    cr.result_value
+                FROM
+                    clients.calibrations_result cr
+                    LEFT JOIN metadata.stations_parameters sp ON (cr.station_id = sp.station_id AND cr.measure_id = sp.stpr_table_id )
+                    LEFT JOIN gp ON (gp.stpr_group_id = sp.stpr_group_id )
+                    LEFT JOIN metadata.stations st ON ( cr.station_id = st.station_id )
+                    LEFT JOIN metadata.stations_info si ON ( cr.station_id = si.station_id )
+                    LEFT JOIN metadata.stations_municipality sm ON ( cr.station_id = sm.station_id )
+                    LEFT JOIN main.province_municipalities pm USING (mu_id)
+                    LEFT JOIN metadata.parameters p USING (param_id)
+
+                WHERE
+                    cr.station_id IN (SELECT station_id FROM bobo.view_user_stations WHERE user_id = ?)
+                    AND calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
+                    
+            )
+            SELECT *
+            FROM t
+            WHERE 
+                st_info_network_type_fk::text ~ ?
+                AND province_id::text ~ ?
+                AND param_id::text ~ ?
+        };
+
+        if ($result eq 'true') {
+            $sql .= qq{
+                AND result_code_string != ''
+            }
+        }
+
+        if ($failed eq 'true') {
+            $sql .= qq{
+                AND result_code_string != 'Ok'
+            }
+        }
+
+        $sql .= qq{ 
+            ORDER BY calibration_date_time DESC; 
+        };
+
+        # return
+        $results = $self->pg->db->query($sql, 
+            $user_id,
+            $from, $to, 
+            $netid, $provid, $prid,  
+        )->hashes();
+
+        # HACK IN ORDER TO IMPROVE PERFORMANCE
+        $sql = qq{
+            SET JIT TO TRUE;
+            SET ENABLE_NESTLOOP TO TRUE;
+        };
+
+        $self->pg->db->query($sql);
     };
 
-    if ($flag eq 'true') {
-        $sql .= qq{
-            AND result_code_string != ''
-        }
+    # error check
+    if ($@) {
+       $self->app->log->warn("Error: ".$@);
+
+       # rollback
+       return undef;
     }
-
-    $sql .= qq{ ORDER BY calibration_date_time DESC; };
-
-    # return
-    return $self->pg->db->query($sql, 
-        $user_id,
-        $from, $to, 
-        $netid, $provid, $prid,  
-    )->hashes();
+    else {
+       $tx->commit;
+       return $results;
+    }
 }
 
 sub get_data_by_station_dates {
-    my ( $self, $stid, $from, $to, $prid, $flag ) = @_;
+    my ( $self, $stid, $from, $to, $prid, $result, $failed ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::DbtaratureAut sub get_data_by_station_dates");
@@ -190,7 +235,7 @@ sub get_data_by_station_dates {
                 LEFT JOIN gp ON (gp.stpr_group_id = sp.stpr_group_id )
                 LEFT JOIN metadata.stations st ON ( st.station_id = sp.station_id )
                 LEFT JOIN metadata.parameters p USING (param_id)
-            WHERE
+            WHERE 
                 cr.station_id = ?
                 AND cr.calibration_date_time BETWEEN ?::timestamp AND ?::timestamp
         )
@@ -199,9 +244,15 @@ sub get_data_by_station_dates {
         WHERE param_id::text ~ ?
     };
 
-    if ($flag eq 'true') {
+    if ($result eq 'true') {
         $sql .= qq{
             AND result_code_string != ''
+        }
+    }
+
+    if ($failed eq 'true') {
+        $sql .= qq{
+            AND result_code_string != 'Ok'
         }
     }
 

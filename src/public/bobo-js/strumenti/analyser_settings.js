@@ -75,12 +75,15 @@ $(document).ready(function() {
                     windScale: 1 // default
                 },
                 tabulator: {
+                    minmaxEnabled: false,
                     codesEnabled: true,
+                    percEnabled: false,
                     filtersEnabled: false,
                     calcEnabled: false
                 },
                 highstocks: {
-                    notesEnabled: false,
+                    minmaxEnabled: false,
+                    // notesEnabled: false,
                     // layout grafico online
                     subtitleEnabled: true,
                     navigatorEnabled: false,
@@ -729,6 +732,8 @@ $(document).ready(function() {
             if($("#macro-param-treatment").val() == 'sldavg'){
                 activeMacro.params[param_idx].window = $("#macro-param-moving-window").val();
             }
+            activeMacro.params[param_idx].minval = $('#macro-param-min').is(':checked');
+            activeMacro.params[param_idx].maxval = $('#macro-param-max').is(':checked');
             activeMacro.params[param_idx].chartstyle = $("#macro-param-chartype").val();
             activeMacro.params[param_idx].color = $("#macro-param-chartcolor").val().slice(1);
             activeMacro.params[param_idx].line_width = parseInt($("#macro-param-charline").val());
@@ -950,6 +955,8 @@ $(document).ready(function() {
             $("#macro-param-decimal").val(paramObj.decimals);
             $("#macro-param-treatment").val(paramObj.treatment).trigger('change');
             $('#macro-param-moving-window').val(paramObj.window == null ? 8 : paramObj.window);
+            $('#macro-param-min').prop("checked", ( paramObj.minval == null ? false : paramObj.minval) );
+            $('#macro-param-max').prop("checked", ( paramObj.maxval == null ? false : paramObj.maxval) );
             $("#macro-param-chartype").val(paramObj.chartstyle);
             $("#macro-param-axis").val(paramObj.axis ? paramObj.axis : 1);
 
@@ -2800,12 +2807,15 @@ function loadOptions(){
                     windScale: 1 // default
                 },
                 tabulator: {
+                    minmaxEnabled: false,
                     codesEnabled: true,
+                    percEnabled: false,
                     filtersEnabled: false,
                     calcEnabled: false
                 },
                 highstocks: {
-                    notesEnabled: false,
+                    minmaxEnabled: false,
+                    // notesEnabled: false,
                     // layout grafico online
                     subtitleEnabled: true,
                     navigatorEnabled: false,
@@ -2851,12 +2861,15 @@ function loadOptions(){
                     windScale: options.general.windScale == null ? 1 : options.general.windScale// default
                 },
                 tabulator: {
+                    minmaxEnabled: options.tabulator == null || options.tabulator.minmaxEnabled == null ? false : options.tabulator.minmaxEnabled,
                     codesEnabled: options.tabulator == null || options.tabulator.codesEnabled == null ? true : options.tabulator.codesEnabled,
+                    percEnabled: options.tabulator == null || options.tabulator.percEnabled == null ? false : options.tabulator.percEnabled,
                     filtersEnabled: options.tabulator == null || options.tabulator.filtersEnabled == null ? false : options.tabulator.filtersEnabled,
                     calcEnabled: options.tabulator == null || options.tabulator.calcEnabled == null ? false : options.tabulator.calcEnabled
                 },
                 highstocks: {
-                    notesEnabled: options.highstocks.notesEnabled == null ? false : options.highstocks.notesEnabled,
+                    minmaxEnabled: options.highstocks.minmaxEnabled == null ? false : options.highstocks.minmaxEnabled,
+                    // notesEnabled: options.highstocks.notesEnabled == null ? false : options.highstocks.notesEnabled,
                     // layout grafico online
                     subtitleEnabled: options.highstocks.subtitleEnabled == null ? true : options.highstocks.subtitleEnabled,
                     navigatorEnabled: options.highstocks.navigatorEnabled == null ? false : options.highstocks.navigatorEnabled,
@@ -2888,10 +2901,16 @@ function loadOptions(){
             scale: 1,
             filename: 'Analyser_'+ moment().format('YYYY-MM-DD_HH:mm'),
             useHtml: true,
-            // csv: {
-            //     itemDelimiter: ',',
-            //     decimalPoint: '.'
-            // },
+            csv: {
+                // This function is called for each column header.
+                columnHeaderFormatter: function (item, key) {
+                    if ( item instanceof Highcharts.Axis ) {
+                        return 'Data';
+                    }
+                    else
+                        return false;
+                },
+            },
             sourceWidth: analyserOptions.highstocks.expWidth,
             sourceHeight: analyserOptions.highstocks.expHeight,
             chartOptions: {
@@ -3712,26 +3731,27 @@ function setOptions(){
 
     // generali
     // lista stazioni
-    $("#visible-stid").attr("checked", analyserOptions.general.stidEnabled);
-    $("#visible-altitude").attr("checked", analyserOptions.general.altitudeEnabled);
-    $("#visible-allocations").attr('checked', analyserOptions.general.allocationsEnabled);
-    $("#visible-limit-value").attr("checked", analyserOptions.general.limitsValueEnabled);
+    $("#visible-stid").prop("checked", analyserOptions.general.stidEnabled);
+    $("#visible-altitude").prop("checked", analyserOptions.general.altitudeEnabled);
+    $("#visible-allocations").prop('checked', analyserOptions.general.allocationsEnabled);
+    $("#visible-limit-value").prop("checked", analyserOptions.general.limitsValueEnabled);
     // lista macro
-    $("#visible-params").attr("checked", analyserOptions.general.paramsEnabled);
+    $("#visible-params").prop("checked", analyserOptions.general.paramsEnabled);
     // formato data
     $("#date-format").val(analyserOptions.general.dateFormat);
     // estrazione dati
-    $("#data-converted").attr("checked", analyserOptions.general.convEnabled);
-    $("#visible-treatment").attr("checked", analyserOptions.general.treatmentEnabled);
+    $("#data-converted").prop("checked", analyserOptions.general.convEnabled);
+    $("#visible-treatment").prop("checked", analyserOptions.general.treatmentEnabled);
     $("#wind-scale").val(analyserOptions.general.windScale);
 
     // grafici
-    $("#chart-notes").attr("checked", analyserOptions.highstocks.notesEnabled);
-    $("#chart-subtitle").attr("checked", analyserOptions.highstocks.subtitleEnabled);
-    $("#chart-nav").attr("checked", analyserOptions.highstocks.navigatorEnabled);
+    // $("#chart-notes").attr("checked", analyserOptions.highstocks.notesEnabled);
+    $("#chart-minmax").prop("checked", analyserOptions.highstocks.minmaxEnabled);
+    $("#chart-subtitle").prop("checked", analyserOptions.highstocks.subtitleEnabled);
+    $("#chart-nav").prop("checked", analyserOptions.highstocks.navigatorEnabled);
     $("#chart-label-x-angle").val(analyserOptions.highstocks.labelXangle);
-    $("#chart-minor-grid").attr("checked", analyserOptions.highstocks.minorGridEnabled);
-    $("#chart-hover-event").attr("checked", analyserOptions.highstocks.hoverEventEnabled);
+    $("#chart-minor-grid").prop("checked", analyserOptions.highstocks.minorGridEnabled);
+    $("#chart-hover-event").prop("checked", analyserOptions.highstocks.hoverEventEnabled);
     $("#chart-tooltip-type").val(analyserOptions.highstocks.tooltipType);
     $("#chart-title-font").val(analyserOptions.highstocks.titleFontSize);
     $("#chart-label-font").val(analyserOptions.highstocks.labelFontSize);
@@ -3746,9 +3766,11 @@ function setOptions(){
     $("#exp-chart-num-label").val(analyserOptions.highstocks.expNumLabel);
 
     // tabelle
-    $("#table-codes").attr("checked", analyserOptions.tabulator.codesEnabled);
-    $("#table-filters").attr("checked", analyserOptions.tabulator.filtersEnabled);
-    $("#table-calc").attr("checked", analyserOptions.tabulator.calcEnabled);
+    $("#table-minmax").prop("checked", analyserOptions.tabulator.minmaxEnabled);
+    $("#table-codes").prop("checked", analyserOptions.tabulator.codesEnabled);
+    $("#table-perc").prop("checked", analyserOptions.tabulator.percEnabled);
+    $("#table-filters").prop("checked", analyserOptions.tabulator.filtersEnabled);
+    $("#table-calc").prop("checked", analyserOptions.tabulator.calcEnabled);
 
       // $("#chart-group-data").attr("checked", analyserOptions.highstocks.dataGrouping.enabled);
 }
@@ -3778,12 +3800,15 @@ function applyOptions(){
             windScale: parseInt($("#wind-scale").val())
         },
         tabulator: {
+            minmaxEnabled: $("#table-minmax").is(":checked"),
             codesEnabled: $("#table-codes").is(":checked"),
+            percEnabled: $("#table-perc").is(":checked"),
             filtersEnabled: $("#table-filters").is(":checked"),
             calcEnabled: $("#table-calc").is(":checked")
         },
         highstocks: {
-            notesEnabled: $("#chart-notes").is(":checked"),
+            // notesEnabled: $("#chart-notes").is(":checked"),
+            minmaxEnabled: $('#chart-minmax').is(":checked"),
             subtitleEnabled: $("#chart-subtitle").is(":checked"),
             navigatorEnabled: $("#chart-nav").is(":checked"),
             labelXangle: parseInt($("#chart-label-x-angle").val()),
@@ -4052,6 +4077,9 @@ function clearParamsMacro(){
     $('#macro-param-details').hide();
     $('#macro-param-details .clear-macro').val('');
 
+    $('#macro-param-min').prop("checked", false);
+    $('#macro-param-max').prop("checked", false);
+
     $('#macro-param-moving-window').val(8);
     range.val(0.2).change();
     range.rangeslider('update', true);
@@ -4214,12 +4242,15 @@ function updateTypeChart(seriesType){
     // loop through all series
     // for each element update plot type
     $.each(series, function (key, el) {
-
+        console.log(el.options.id);
         var param;
         if(componentState.perYear == true)
             param = activeMacro.params[0];
-        else
-            param = activeMacro.params[key]
+        else if(el.options.macroIdx != null){
+            param = activeMacro.params[el.options.macroIdx];
+        }
+        else 
+            return true;
 
         param.chartstyle = seriesType;
         // create a different option object based on the new plot type
@@ -4244,7 +4275,7 @@ function updateTypeChart(seriesType){
         }
 
         // update series without redrawing it
-        if( el.xData && el.xData.length > 0){
+        if( el.points && el.points.length > 0){
             el.update(options);
         }
     });

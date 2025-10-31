@@ -11,6 +11,28 @@
     <div class="card-body table-hp">
         <h4 class="card-title">
             <i class="icon-refresh"></i> Update strumenti per stazioni
+            <a class="mytooltip" href="javascript:void(0)">
+                <i class="fa-regular fa-circle-info text-info"></i>
+                <span class="tooltip-content5 tooltip-legend"><span class="tooltip-text3"><span class="tooltip-inner2">
+                    <div class="p-15">
+                        <h5 class="font-bold">Legenda colori strumenti</h5>
+                        <strong>Colori per il BTX:</strong>
+                        <ul class="ul-legend-centered">
+                            <li><i class="fa-sharp fa-solid fa-square text-purple"></i> ritardo negativo (acquisizioni nel futuro);</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-danger"></i> assenza di dati o ritardo maggiore di 3 ore;</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-warning"></i> ritardo compreso tra 2 e 3 ore;</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-success"></i> tutti gli altri casi.</li>
+                        </ul>
+                        <strong>Colori per altro strumento:</strong>
+                        <ul class="ul-legend-centered">
+                            <li><i class="fa-sharp fa-solid fa-square text-purple"></i> ritardo negativo (acquisizioni nel futuro);</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-danger"></i> assenza di dati o ritardo maggiore di 2 ore;</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-warning"></i> ritardo compreso tra 1 e 2 ore;</li>
+                            <li><i class="fa-sharp fa-solid fa-square text-success"></i> tutti gli altri casi.</li>
+                        </ul>
+                    </div>
+                </span></span></span>
+            </a>
             <a href="#" class="btn btn-small btn-warning btn-rounded pull-right" data-toggle="modal" data-target="#parameters-late">Ritardi param.</a>
         </h4>
         <h6 class="card-subtitle">Aggiornamento dei <strong>singoli strumenti per stazione</strong>, ultimo dato atteso <code id="instr-delays-utc-time"></code>.</h6>

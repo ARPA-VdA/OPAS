@@ -239,87 +239,6 @@ function getValidationHistory(cell){
 }
 
 /**
- * Function which selects the cells over which the mouse passes with the left button pressed
- *
- * @param {object} cell1 first cell
- * @param {object} cell2 last cell
- * @param {object} tbl table
- */
-function old_selectCells(cell1, cell2, tbl){
-    // reset selected cell
-    for(var i = 0; i< selectedCells.length; i++){
-        selectedCells[i].getElement().classList.remove('cell-selected');
-        setClasses(selectedCells[i]);
-    }
-    selectedCells = [];
-
-    // retrieve active rows and page index
-    var rows = tbl.getRows('active');
-    var page = tbl.getPage()-1;
-    var pageLength = tbl.getPageSize();
-
-    // get X,Y coordinates of first and last cells
-    cell1_X = cell1.getColumn().getDefinition().formatterParams.position;
-    cell1_Y = cell1.getRow().getPosition()+(page*pageLength)-1;
-    // cell1_Y = cell1.getRow().getPosition(); //1
-
-    cell2_X = cell2.getColumn().getDefinition().formatterParams.position;
-    cell2_Y = cell2.getRow().getPosition()+(page*pageLength)-1;
-    // cell2_Y = cell2.getRow().getPosition(); //8
-
-    // build different "while" condition depending on whether cell1_y is greater than or less than cell2_Y
-    var start_Y = cell1_Y;
-    var operatorY;
-    if(cell1_Y > cell2_Y)
-        operatorY = start_Y +' >= '+ cell2_Y ;
-    else
-        operatorY = start_Y +' <= '+ cell2_Y ;
-
-    while( eval(operatorY) ){
-        // get row's cells
-        var cells = rows[start_Y].getCells();
-
-        var start_X = cell1_X;
-        // build different "while" condition depending on whether cell1_X is greater than or less than cell2_X
-        var operatorX;
-        if(cell1_X > cell2_X)
-            operatorX = start_X +' >= '+ cell2_X ;
-        else
-            operatorX = start_X +' <= '+ cell2_X ;
-
-        while( eval(operatorX) ){
-            // select [start_X , start_Y] cell and add "selected" class
-            cells[start_X+1].getElement().classList.add('cell-selected');
-            setClasses(cells[start_X+1]);
-            // push selected cell into global array
-            selectedCells.push(cells[start_X+1]);
-
-            // increase or decrease X pointer depending on whether cell1_X is greater than or less than cell2_X
-            // update "while" condition with new pointer value
-            if(cell1_X > cell2_X){
-                start_X--;
-                operatorX = start_X +' >= '+ cell2_X ;
-            }
-            else{
-                start_X++;
-                operatorX = start_X +' <= '+ cell2_X ;
-            }
-        }
-
-        // increase or decrease Y pointer depending on whether cell1_Y is greater than or less than cell2_Y
-        // update "while" condition with new pointer value
-        if(cell1_Y > cell2_Y){
-            start_Y--;
-            operatorY = start_Y +' >= '+ cell2_Y ;
-        }
-        else{
-            start_Y++;
-            operatorY = start_Y +' <= '+ cell2_Y ;
-        }
-    }
-}
-
-/**
  * Function that initialize tabulator plugin with metadata retrieved from database
  *
  * @param {object} result from database
@@ -384,7 +303,7 @@ function createTable(result){
     // if array of alarms is not empty then build an customized array
     // where indexes are unix dates and values are the labels of the alarms
     if(result.alarms){
-        result.alarms.forEach(function(value, index){
+        result.alarms.forEach(function(value){
             alarms[moment(value.sa_fulldate).unix()] = value.sa_labels;
         });
     }
@@ -400,6 +319,9 @@ function createTable(result){
         headerTooltip:false,
         // headerSort:false,
         // resizable:false,
+        formatterParams: {
+            rowsAlarms: alarms
+        },
         formatter:function(cell, formatterParams, onRendered){
             //cell - the cell component
             //formatterParams - parameters set for the column
@@ -418,11 +340,11 @@ function createTable(result){
             var element = cell.getElement();
             // element.classList.add('range-header-col');
             // if there alarms for current date then add tooltip attributes
-            if(alarms[index]){
+            if(formatterParams.rowsAlarms[index]){
                 element.classList.add('cell-alarm');
                 element.setAttribute('data-toggle-table', 'tooltip');
                 element.setAttribute('data-html', 'true');
-                element.setAttribute('data-original-title', alarms[index].join('<br>'));
+                element.setAttribute('data-original-title', formatterParams.rowsAlarms[index].join('<br>'));
 
                 icon = '<i class="ti-signal valid-alarm"></i> ';
             }
@@ -505,7 +427,7 @@ function createTable(result){
             },
             formatterClipboard: function(cell, formatterParams, onRendered){
                 // replace decimal separator for excel compatibility
-                return cell.getValue().replace('.', ',');;
+                return cell.getValue().toString().replace('.', ',');
             },
             // format values entered via clipboard or manually
             mutatorEditParams: {
@@ -524,6 +446,7 @@ function createTable(result){
             },
             // click event
             cellClick:function(e, cell){
+                window.getSelection()?.removeAllRanges(); // Clear native selection
                 // if clipboard is enabled then disable all other events
                 if(clipboardEnabled){
                     e.preventDefault();
@@ -569,319 +492,322 @@ function createTable(result){
     var numberDays = moment(dateTo, 'DD/MM/YYYY HH:mm').diff(moment(dateFrom, 'DD/MM/YYYY HH:mm'), 'days');
 
     // if maintable already initialized
-    // then reset tabulator and add new columns and new data
+    // then reset tabulator and add new columns and new data -> OLD
+    // destroy and reset tabulator -> NEW
     if(maintable != null){
+      
         maintable.clearData();
-        maintable.setColumns( columns );
-        maintable.setData(result.data).then(function(){
-            // at the end of the process hide preloader
-            $('.preloader').hide();
-        });
+        maintable.destroy(true);
+        maintable = null;
+
+        // HACK IN ORDER TO REMOVE ALL COPY - PASTE ELEMENTS !!
+        const container = $('#maintable-container').parent();
+        $('#maintable-container').off();
+        $('#maintable-container').remove();
+        container.append('<div id="maintable-container" class="grid" style="height: 100%;"></div>');
     }
-    // otherwise initialize tabulator
-    else{
-        maintable = new Tabulator("#maintable-container", {
-            locale: 'it',
-            height: '100%',
-            layout: "fitData", //fitColumn
-            autoResize: false,
 
-            keybindings:{
-                "copyToClipboard" : false
-            },
+    maintable = new Tabulator("#maintable-container", {
+        locale: 'it',
+        height: '100%',
+        layout: "fitData", //fitColumn
+        autoResize: false,
 
-            // debug
-            debugInvalidOptions: true,
-            
-            // pagination
-            pagination: !clipboardEnabled, //true,
-            paginationMode: "local",
-            paginationSize: (result.data.length/(numberDays+1)),
-            paginationSizeSelector:true,
-            history:true,
-            
-            // select
-            selectableRange: true, // Enable/Disable range selection
-            selectableRangeColumns: false, // Enable/ Disable range column header selection
-            selectableRangeRows: true, // Enable/Disable range row header selection
-            selectableRangeClearCells: false, // Enable clearing of all values in a range
-            selectableRangeAutoFocus:false, // disable auto focus on cell during range selection
-         
-            //change edit trigger mode to make cell navigation smoother
-            editTriggerEvent: "dblclick", //trigger edit on double click
-            // clipboard
-            clipboard:true,
-            clipboardCopyRowRange: "active",
-            clipboardCopyStyled:false,
-            clipboardPasteAction: function(rowsData){
-                // if clipboard not enabled then disable paste event
-                if(! clipboardEnabled)
-                    return;
+        keybindings:{
+            "copyToClipboard" : false
+        },
 
-                var res = false;
-                modifiedCells = [];
-                // reset all selected cells - validazione_setting.js
-                $("#deselect-cells").trigger("click");
-
-                // for each row in clipboard
-                // retrieve the corresponding row to be replaced in the maintable
-                rowsData.forEach(function(el, idx){
-                    // console.log('RIGA: ' +idx);
-                    // console.dir(el);
-
-                    if(el.fulldate && el.fulldate != "" && el.fulldate != "Data"){
-
-                        // check if value date is before closure date (portal options)
-                        // - if true then select do nothing
-                        // - else continue
-                        if(closureDate && moment(el.fulldate, 'DD/MM/YYYY HH:mm').isBefore(moment(closureDate, 'DD/MM/YYYY'))){
-                            return;
-                        }
-
-                        // retrieve row by fulldate
-                        var row = maintable.getRow(moment(el.fulldate, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm:ss'));
-
-                        // if row exists then replace values
-                        if(row){
-                            // get row cells and for each of them replace old value with the new one from clipboard
-                            var cells = row.getCells();
-
-                            if(cells.length == Object.keys(el).length ){
-                                cells.forEach(function(cell){
-
-                                    res = true;
-                                    // replace only cells containing pollutants value
-                                    if(cell.getField() != 'fulldate'){
-
-                                        // format value by removing \r and by replacing comma with dot separator
-                                        var val = el[cell.getField()].replace('\r', '');
-                                        val = val.replace(',', '.');
-
-                                        // update value and trigger mutatorEdit method
-                                        cell.setValue( val, true );
-                                        // if old value not equal to the new one
-                                        // then build an obj to be sent to the server in order to save changes
-                                        // moreover, select cell to manage its classes
-                                        if(cell.getValue() != cell.getOldValue()){
-                                            var definition = cell.getColumn().getDefinition().editorParams;
-                                            var cellObj = {
-                                                table: definition.table,
-                                                tableid : definition.tableid,
-                                                stprid: definition.id,
-                                                // if oldValue equal to '--' it's an insert action, else it's an update
-                                                // pick the correct user permission based on action type
-                                                grant: ( cell.getOldValue() == '--' ? definition.insertGrant : definition.updateGrant ),
-                                                date : cell.getRow().getCells()[0].getValue(),
-                                                code : 1, //ricostruito
-                                                value: cell.getValue(),
-                                                oldvalue: cell.getOldValue(),
-                                                dirty: 1,
-                                                // conv : definition.conv,
-                                                decimals: definition.decimals
-                                            };
-
-                                            modifiedCells.push(cellObj);
-                                            selectedCells.push(cell);
-
-                                            cell.getElement().classList.add('cell-modified');
-                                            setClasses(cell);
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-                });
-
-                // if no row is found
-                // then error message
-                if(!res){
-                    swal({
-                        title: "Nessuna riga è stata copiata!",
-                        text: "E' possibile che le righe selezionate <strong>non siano presenti</strong> o che <strong>il numero di colonne copiate sia diverso</strong> da quelle presenti",
-                        type: "error",
-                        html: true,
-                        closeOnConfirm: true
-                    });
-                }
-                else{
-                    $.toast({
-                        heading: 'Informazione',
-                        text: 'I dati sono stati incollati correttamente',
-                        position: 'top-right',
-                        loaderBg:'#e8bb05',
-                        icon: 'success',
-                        hideAfter: 10000,
-                        showHideTransition: 'slide', // fade, slide or plain
-                        stack: 2
-                    });
-                }
-
-                return;
-            },
-            
-            rowHeader: column_fulldate,
-
-            columnDefaults:{
-                headerSort:false,
-                resizable:"header",
-            },
-            columns: columns,
-            index: "fulldate",
-
-
-            placeholder:"Nessun dato",
-            data: result.data
-        });
-
-        // the rangeChanged event is triggered when the bounds of an existing range are changed.
-        maintable.on("rangeChanged", function(){
-            selectedCells = [];
-
-            //range - range component for the selected range
-            maintable.getRanges().forEach(function(range){
-                range.getCells().forEach(function(row){
-                    row.forEach(function(cell){
-                        if(cell.getField() != 'fulldate')
-                            selectedCells.push(cell);
-                    });
-                });
-            });
-
-            if(! clipboardEnabled){
-                // show button
-                $("#deselect-cells").show();
-            }
-        });
-
-        maintable.on('cellEdited', function(cell){
-
-            // take cares of "cancel" actions on data
-            // restore precedent value and do nothing
-            if(cell.getValue() == '--'){
-                cell.restoreOldValue();
-                cell.clearEdited();
-                cell.getElement().classList.remove('tabulator-editing');
-                return;
-            }
-
-            // if cell has been edited then build an object to be sent to server
-            if(cell.getValue() != cell.getOldValue() && cell.isEdited()){
-                console.log("cellEdited");
-
-                $("#undo-edit").show();
-                var definition = cell.getColumn().getDefinition().editorParams;
-                var cellElement = {
-                    table: definition.table,
-                    tableid : definition.tableid,
-                    stprid: definition.id,
-                    grant: ( cell.getOldValue() == '--' ? definition.insertGrant : definition.updateGrant ),
-                    date : cell.getRow().getCells()[0].getValue(),
-                    code : 1, //ricostruito
-                    value: cell.getValue(),
-                    oldvalue: cell.getOldValue(),
-                    dirty: 1,
-                    // conv : definition.conv,
-                    decimals: definition.decimals
-                };
-                // show preloader, waiting for the end of the process
-                $('.preloader').show();
-                // save into db changes applied by the event
-                updateCells([cellElement]);
-            }
-
-            // disable editing for the current cell
-            cell.clearEdited();
-            cell.getElement().classList.remove('tabulator-editing');
-        });
-
-        // event triggered when active rows are copied in the clipboard
-        maintable.on("clipboardCopied", function(clipboard){
-            console.log('clipboardCopied');
-            //clipboard - the string that has been copied into the clipboard
-            $.toast({
-                heading: 'Informazione',
-                text: 'I dati della tabella sono stati copiati correttamente',
-                position: 'top-right',
-                loaderBg:'#e8bb05',
-                icon: 'success',
-                hideAfter: 10000,
-                showHideTransition: 'slide', // fade, slide or plain
-                stack: 2
-            });
-        });
-
-        // event error during paste on clipboard
-        maintable.on("clipboardPasteError", function(clipboard){
-            //clipboard - the string that has been copied into the clipboard
-
+        // debug
+        debugInvalidOptions: true,
+        
+        // pagination
+        pagination: !clipboardEnabled, //true,
+        paginationMode: "local",
+        paginationSize: (result.data.length/(numberDays+1)),
+        paginationSizeSelector:true,
+        history:true,
+        
+        // select
+        selectableRange: true, // Enable/Disable range selection
+        selectableRangeColumns: false, // Enable/ Disable range column header selection
+        selectableRangeRows: true, // Enable/Disable range row header selection
+        selectableRangeClearCells: false, // Enable clearing of all values in a range
+        selectableRangeAutoFocus:false, // disable auto focus on cell during range selection
+     
+        //change edit trigger mode to make cell navigation smoother
+        editTriggerEvent: "dblclick", //trigger edit on double click
+        // clipboard
+        clipboard:true,
+        clipboardCopyRowRange: "active",
+        clipboardCopyStyled:false,
+        clipboardPasteAction: function(rowsData){
             // if clipboard not enabled then disable paste event
             if(! clipboardEnabled)
                 return;
 
-            // show error message
-            $.toast({
-                heading: 'Errore',
-                text: 'Si è verificato un errore durante l\'inserimento dei dati',
-                position: 'top-right',
-                loaderBg:'#131313',
-                icon: 'error',
-                hideAfter: 10000,
-                showHideTransition: 'slide', // fade, slide or plain
-                stack: 2
+            var res = false;
+            modifiedCells = [];
+            // reset all selected cells - validazione_setting.js
+            $("#deselect-cells").trigger("click");
+
+            // for each row in clipboard
+            // retrieve the corresponding row to be replaced in the maintable
+            rowsData.forEach(function(el, idx){
+                // console.log('RIGA: ' +idx);
+                // console.dir(el);
+
+                if(el.fulldate && el.fulldate != "" && el.fulldate != "Data"){
+
+                    // check if value date is before closure date (portal options)
+                    // - if true then select do nothing
+                    // - else continue
+                    if(closureDate && moment(el.fulldate, 'DD/MM/YYYY HH:mm').isBefore(moment(closureDate, 'DD/MM/YYYY'))){
+                        return;
+                    }
+
+                    // retrieve row by fulldate
+                    var row = maintable.getRow(moment(el.fulldate, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm:ss'));
+
+                    // if row exists then replace values
+                    if(row){
+                        // get row cells and for each of them replace old value with the new one from clipboard
+                        var cells = row.getCells();
+
+                        if(cells.length == Object.keys(el).length ){
+                            cells.forEach(function(cell){
+
+                                res = true;
+                                // replace only cells containing pollutants value
+                                if(cell.getField() != 'fulldate'){
+
+                                    // format value by removing \r and by replacing comma with dot separator
+                                    var val = el[cell.getField()].replace('\r', '');
+                                    val = val.replace(',', '.');
+
+                                    // update value and trigger mutatorEdit method
+                                    cell.setValue( val, true );
+                                    // if old value not equal to the new one
+                                    // then build an obj to be sent to the server in order to save changes
+                                    // moreover, select cell to manage its classes
+                                    if(cell.getValue() != cell.getOldValue()){
+                                        var definition = cell.getColumn().getDefinition().editorParams;
+                                        var cellObj = {
+                                            table: definition.table,
+                                            tableid : definition.tableid,
+                                            stprid: definition.id,
+                                            // if oldValue equal to '--' it's an insert action, else it's an update
+                                            // pick the correct user permission based on action type
+                                            grant: ( cell.getOldValue() == '--' ? definition.insertGrant : definition.updateGrant ),
+                                            date : cell.getRow().getCells()[0].getValue(),
+                                            code : 1, //ricostruito
+                                            value: cell.getValue(),
+                                            oldvalue: cell.getOldValue(),
+                                            dirty: 1,
+                                            // conv : definition.conv,
+                                            decimals: definition.decimals
+                                        };
+
+                                        modifiedCells.push(cellObj);
+                                        selectedCells.push(cell);
+
+                                        cell.getElement().classList.add('cell-modified');
+                                        setClasses(cell);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+            // if no row is found
+            // then error message
+            if(!res){
+                swal({
+                    title: "Nessuna riga è stata copiata!",
+                    text: "E' possibile che le righe selezionate <strong>non siano presenti</strong> o che <strong>il numero di colonne copiate sia diverso</strong> da quelle presenti",
+                    type: "error",
+                    html: true,
+                    closeOnConfirm: true
+                });
+            }
+            else{
+                $.toast({
+                    heading: 'Informazione',
+                    text: 'I dati sono stati incollati correttamente',
+                    position: 'top-right',
+                    loaderBg:'#e8bb05',
+                    icon: 'success',
+                    hideAfter: 10000,
+                    showHideTransition: 'slide', // fade, slide or plain
+                    stack: 2
+                });
+            }
+
+            return;
+        },
+        
+        rowHeader: column_fulldate,
+
+        columnDefaults:{
+            headerSort:false,
+            resizable:"header",
+        },
+        columns: columns,
+        index: "fulldate",
+
+
+        placeholder:"Nessun dato",
+        data: result.data
+    });
+
+    maintable.on("cellMouseUp", function(){
+        console.log('cellMouseUp');
+        selectedCells = [];
+
+        //range - range component for the selected range
+        maintable.getRanges().forEach(function(range){
+            range.getCells().forEach(function(row){
+                row.forEach(function(cell){
+                    if(cell.getField() != 'fulldate')
+                        selectedCells.push(cell);
+                });
             });
         });
 
-        // undo action event
-        maintable.on('historyUndo', function(action, component, data){
-            //action - the action that has been undone
-            //component - the Component object afected by the action (colud be a row or cell component)
-            //data - the data being changed
+        if(! clipboardEnabled){
+            // show button
+            $("#deselect-cells").show();
+        }
+    });
 
-            // if last action is a cell modification then sets the old values and saves them in the database
-            if(action == 'cellEdit'){
-                //component is a cell
-                // data structure
-                    // {
-                    //     oldValue:"", //the original value of the cell
-                    //     newValue:"", //the new value of the cell
-                    // }
-                var definition = component.getColumn().getDefinition();
-                var cellElement = {
-                    table: definition.table,
-                    tableid : definition.tableid,
-                    stprid: definition.id,
-                    grant: 1,
-                    date : component.getRow().getCells()[0].getValue(),
-                    code : null,
-                    value: component.getValue(),
-                    dirty: 1,
-                    // conv : definition.conv,
-                    decimals: definition.decimals
-                };
-                // show preloader, waiting for the end of the process
-                $('.preloader').show();
-                // save into db changes applied by the event
-                updateCells([cellElement]);
-            }
+    maintable.on('cellEdited', function(cell){
+
+        // take cares of "cancel" actions on data
+        // restore precedent value and do nothing
+        if(cell.getValue() == '--'){
+            cell.restoreOldValue();
+            cell.clearEdited();
+            cell.getElement().classList.remove('tabulator-editing');
+            return;
+        }
+
+        // if cell has been edited then build an object to be sent to server
+        if(cell.getValue() != cell.getOldValue() && cell.isEdited()){
+            console.log("cellEdited");
+
+            $("#undo-edit").show();
+            var definition = cell.getColumn().getDefinition().editorParams;
+            var cellElement = {
+                table: definition.table,
+                tableid : definition.tableid,
+                stprid: definition.id,
+                grant: ( cell.getOldValue() == '--' ? definition.insertGrant : definition.updateGrant ),
+                date : cell.getRow().getCells()[0].getValue(),
+                code : 1, //ricostruito
+                value: cell.getValue(),
+                oldvalue: cell.getOldValue(),
+                dirty: 1,
+                // conv : definition.conv,
+                decimals: definition.decimals
+            };
+            // show preloader, waiting for the end of the process
+            $('.preloader').show();
+            // save into db changes applied by the event
+            updateCells([cellElement]);
+        }
+
+        // disable editing for the current cell
+        cell.clearEdited();
+        cell.getElement().classList.remove('tabulator-editing');
+    });
+
+    // event triggered when active rows are copied in the clipboard
+    maintable.on("clipboardCopied", function(clipboard){
+        console.log('clipboardCopied');
+        //clipboard - the string that has been copied into the clipboard
+        $.toast({
+            heading: 'Informazione',
+            text: 'I dati della tabella sono stati copiati correttamente',
+            position: 'top-right',
+            loaderBg:'#e8bb05',
+            icon: 'success',
+            hideAfter: 10000,
+            showHideTransition: 'slide', // fade, slide or plain
+            stack: 2
         });
+    });
 
-        // on change page, deselect all cells
-        maintable.on('pageLoaded', function(){
+    // event error during paste on clipboard
+    maintable.on("clipboardPasteError", function(clipboard){
+        //clipboard - the string that has been copied into the clipboard
 
-            // if clipboard enabled then disable pageLoaded event
-            if(clipboardEnabled)
-                return;
+        // if clipboard not enabled then disable paste event
+        if(! clipboardEnabled)
+            return;
 
-            $("#deselect-cells").trigger('click');
+        // show error message
+        $.toast({
+            heading: 'Errore',
+            text: 'Si è verificato un errore durante l\'inserimento dei dati',
+            position: 'top-right',
+            loaderBg:'#131313',
+            icon: 'error',
+            hideAfter: 10000,
+            showHideTransition: 'slide', // fade, slide or plain
+            stack: 2
         });
+    });
 
-        // at the end of table rendering hide preloader
-        maintable.on('tableBuilt', function(){
-            // at the end of the process hide preloader
-            $('.preloader').hide();
-        });
-    }
+    // undo action event
+    maintable.on('historyUndo', function(action, component, data){
+        //action - the action that has been undone
+        //component - the Component object afected by the action (colud be a row or cell component)
+        //data - the data being changed
+
+        // if last action is a cell modification then sets the old values and saves them in the database
+        if(action == 'cellEdit'){
+            //component is a cell
+            // data structure
+                // {
+                //     oldValue:"", //the original value of the cell
+                //     newValue:"", //the new value of the cell
+                // }
+            var definition = component.getColumn().getDefinition();
+            var cellElement = {
+                table: definition.table,
+                tableid : definition.tableid,
+                stprid: definition.id,
+                grant: 1,
+                date : component.getRow().getCells()[0].getValue(),
+                code : null,
+                value: component.getValue(),
+                dirty: 1,
+                // conv : definition.conv,
+                decimals: definition.decimals
+            };
+            // show preloader, waiting for the end of the process
+            $('.preloader').show();
+            // save into db changes applied by the event
+            updateCells([cellElement]);
+        }
+    });
+
+    // on change page, deselect all cells
+    maintable.on('pageLoaded', function(){
+
+        // if clipboard enabled then disable pageLoaded event
+        if(clipboardEnabled)
+            return;
+
+        $("#deselect-cells").trigger('click');
+    });
+
+    // at the end of table rendering hide preloader
+    maintable.on('tableBuilt', function(){
+        // at the end of the process hide preloader
+        $('.preloader').hide();
+    });
 }
 
 /**
@@ -1255,6 +1181,7 @@ function createDetailedTable(datetime, result){
                     return val.toFixed(params.decimals);
             },
             cellClick:function(e, cell){
+                window.getSelection()?.removeAllRanges();
                 // if clipboard is enabled then disable all other events
                 if(clipboardEnabled)
                     return;
@@ -1300,6 +1227,13 @@ function createDetailedTable(datetime, result){
         );
     }
 
+    columns.push(
+        {
+            title: 'Perc',
+            field: 'perc',
+        }
+    );
+
 
     table[componentState.id] = new Tabulator('#multiview_grid_'+componentState.id, {
         // data: result.data,
@@ -1329,17 +1263,15 @@ function createDetailedTable(datetime, result){
         index: "fulldate",
     });
 
-    // the rangeChanged event is triggered when the bounds of an existing range are changed.
-    table[componentState.id].on("rangeChanged", function(){
-        console.log('rangeChanged');
-
+    table[componentState.id].on("cellMouseUp", function () {
+        console.log('cellMouseUp');
         selectedCells = [];
 
         //range - range component for the selected range
         table[componentState.id].getRanges().forEach(function(range){
             range.getCells().forEach(function(row){
                 row.forEach(function(cell){
-                    if(cell.getField() != 'fulldate' && cell.getField() != 'min' && cell.getField() != 'max')
+                    if(cell.getField() != 'fulldate' && cell.getField() != 'min' && cell.getField() != 'max' && cell.getField() != 'perc')
                         selectedCells.push(cell);
                 });
             });
@@ -1392,7 +1324,7 @@ function createDetailedTable(datetime, result){
         let row = table[componentState.id].getRow(datetime);
         // Add range via tabulator methods
         let topLeft = row.getCell('fulldate');
-        let bottomRight = row.getCell('max');
+        let bottomRight = row.getCell('perc');
         
         row.getTable().addRange(topLeft, bottomRight);
 

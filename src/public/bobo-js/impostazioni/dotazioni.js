@@ -300,8 +300,11 @@ $(document).ready(function() {
 
                 // compile fields of the form with metadata arriving from database
                 $('#place-loc-id').val(location.stmi_id);
-                $('#place-loc-equipment').val(location.mi_id).trigger('change');
+                $('#place-loc-equipment').val(location.mi_id).trigger('change.select2');
+                $('#place-networks').val( JSON.stringify( $('#place-loc-equipment option:selected').data('nets') )) ;
                 $('#place-loc-prov').trigger('change', location.station_id);
+                // show "new location" form
+                $('.hide-loc').show('slow');
 
                 /**
                  * stmi_id
@@ -322,7 +325,7 @@ $(document).ready(function() {
                 if(location.stmi_dismiss_date != 'infinity')
                     $('#place-loc-end-date').bootstrapMaterialDatePicker('setDate', moment(location.stmi_dismiss_date).format('DD/MM/YYYY HH:mm'));
 
-                $('#place-loc-end-date').bootstrapMaterialDatePicker('setMinDate', moment() );
+               $('#place-loc-end-date').bootstrapMaterialDatePicker('setMinDate', moment(location.stmi_startup_date ));
                 $('#place-loc-notes').val(location.stmi_note);
 
                 $('#place-loc-equipment').prop('disabled', true);
@@ -567,7 +570,7 @@ $(document).ready(function() {
         else{
             $('#equipment-date-dismiss').val('');
         }
-        
+
     });
 
     /**
@@ -1752,22 +1755,25 @@ $(document).ready(function() {
                     html += '        <h4 class="box-title m-t-30">Location attuale della dotazione <strong>'+fullname+'</strong></h4>\n';
                     html += '        <hr class="m-t-0 m-b-20">\n';
                     html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-md-2 col-form-label">Provincia</label>\n';
-                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_prov+'</div>\n';
-                    html += '            <label for="" class="control-label col-md-2 col-form-label">Stazione</label>\n';
-                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '            <div class="col-md-6">\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-sm-6 col-lg-3 col-form-label">Provincia</label>\n';
+                    html += '                    <div class="col-sm-6 m-b-10 col-lg-3 view-param">'+actualLoc.location_prov+'</div>\n';
+                    html += '                    <label for="" class="control-label col-sm-6 col-lg-3 col-form-label">Stazione</label>\n';
+                    html += '                    <div class="col-sm-6 m-b-10 col-lg-3 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '                    <label for="" class="control-label col-sm-6 col-lg-3 col-form-label">Data/ora inizio</label>\n';
+                    html += '                    <div class="col-sm-6 m-b-10 col-lg-3 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
+                    html += '                    <label for="" class="control-label col-sm-6 col-lg-3 col-form-label">Data/ora fine</label>\n';
+                    html += '                    <div class="col-sm-6 m-b-10 col-lg-3 view-param">'+actualLoc.location_end+'</div>\n';
+                    html += '                    <label for="" class="control-label col-sm-6 col-lg-3 col-form-label">Note location</label>\n';
+                    html += '                    <div class="col-sm-6 col-lg-9 view-param">'+actualLoc.location_note+'</div>\n';
+                    html += '                </div>\n';
+                    html += '            </div>\n';
+                    html += '            <div class="col-md-6">\n';
+                    html += '                <div id="map-view-'+miscid+'" class="mini-map" tabindex="0"></div>\n';
+                    html += '            </div>\n';
                     html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-md-2 col-form-label">Data/ora inizio</label>\n';
-                    html += '            <div class="col-md-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
-                    html += '            <label for="" class="control-label col-md-2 col-form-label">Data/ora fine</label>\n';
-                    html += '            <div class="col-md-4 view-param">'+actualLoc.location_end+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-md-2 col-form-label">Note location</label>\n';
-                    html += '            <div class="col-md-10 view-param">'+actualLoc.location_note+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div id="map-view-'+miscid+'" class="mini-map" tabindex="0"></div>\n';
+
 
                 }
                 else{

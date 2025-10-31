@@ -884,9 +884,9 @@ function createChart(){
                 events: {
                     click: function (e) {
                         if(e.ctrlKey){
-                            console.log('X: '+e.point.x);
-                            console.log('Y: '+e.point.y);
-                            console.log('ID:'+this.options.id);
+                            // console.log('X: '+e.point.x);
+                            // console.log('Y: '+e.point.y);
+                            // console.log('ID:'+this.options.id);
 
                             var stprid = parseInt(this.options.id.replace('field_', ''));
 
@@ -896,10 +896,12 @@ function createChart(){
                         }
                     },
                     show: function (e) {
-                        activeMacro.params[e.target.index].visible = true;
+                        if(this.options.macroIdx != null)
+                            activeMacro.params[this.options.macroIdx].visible = true;
                     },
                     hide: function (e) {
-                        activeMacro.params[e.target.index].visible = false;
+                        if(this.options.macroIdx != null)
+                            activeMacro.params[this.options.macroIdx].visible = false;
                     }
                 }
             },
@@ -1076,10 +1078,26 @@ function addSeriesToChart(){
                     legend += ' - '+treatmentTxt;
                 }
 
+                // create min and max series objects
+                let max = {
+                    id: 'max_'+value.station_param_id,
+                    name: legend +' - Max',
+                    // color: '#cf5d36',
+                    data: value.station_max_values,
+                };
+
+                let min = {
+                    id: 'min_'+value.station_param_id,
+                    name: legend +' - Min',
+                    // color: '#4cad58',
+                    data: value.station_min_values,
+                };
+
                 // based on the different type of chart build an object with plot options
                 if(param.chartstyle == 'point' || param.chartstyle == 'line_marker'){
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: legend, //value.series_name,
                         type: 'line',
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -1095,10 +1113,25 @@ function addSeriesToChart(){
                         visible: param.visible == null ? true : param.visible,
                         yAxis: param.axis ? (param.axis-1) : 0
                     };
+
+                    max.type     = 'line';
+                    max.lineWidth= 0;
+                    max.marker   = {
+                                    enabled: true,
+                                    radius: 2
+                                };
+
+                    min.type     = 'line';
+                    min.lineWidth= 0;
+                    min.marker   = {
+                                    enabled: true,
+                                    radius: 2
+                                };
                 }
                 else{
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: legend, //value.series_name,
                         type: param.chartstyle,
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -1113,6 +1146,9 @@ function addSeriesToChart(){
                         visible: param.visible == null ? true : param.visible,
                         yAxis: param.axis ? (param.axis-1) : 0
                     };
+
+                    min.dashStyle = 'ShortDash';
+                    max.dashStyle = 'ShortDash';
                 }
 
                 // set the title of the Y axis that the series is linked to
@@ -1125,10 +1161,42 @@ function addSeriesToChart(){
                 // add series to chart without redrawing it in order to prevent exponential slowdowns in rendering
                 chart[componentState.id].addSeries(options, false);
 
+                // add min - max series
+                if(analyserOptions.highstocks.minmaxEnabled == true){
+                    if(param.minval)
+                        chart[componentState.id].addSeries(min, false);
+                    if(param.maxval)
+                        chart[componentState.id].addSeries(max, false);
+                }
+
                 // check if it is the last loop
                 // if true then redraw chart and if it is boosted then show button for opening boost info
                 if(key == params.length-1){
+                    
                     chart[componentState.id].redraw();
+                    // loop through all legend items
+                    chart[componentState.id].legend.allItems.forEach(function(item){
+
+                        // overwrite click event
+                        Highcharts.addEvent(
+                            item.legendItem.group.element,
+                            'click',
+                            function(e) {
+
+                                // Check if the control key was down when the mouse event was fired.
+                                // if true then hide all series except the one clicked
+                                if(e.ctrlKey == true){
+                                    chart[componentState.id].series.forEach(function(series){
+                                        // series.hide();
+                                        series.setVisible(false, false);
+                                    });
+                                    // redraw chart all at once
+                                    chart[componentState.id].redraw();
+                                    item.show();
+                                }
+                            }.bind(this)
+                        );
+                    });
 
                     if(chart[componentState.id].boosted){
                         $("#boost-info").show();
@@ -1276,7 +1344,7 @@ function addMultipleCharts(){
             query = result.query;
 
             // get start point of the series expressed in seconds
-            var pointStart = moment(dateFromFormatted).valueOf();
+            // var pointStart = moment(dateFromFormatted).valueOf();
 
             // copy only the values and not the variable reference
             var params = activeMacro.params.slice();
@@ -1292,6 +1360,47 @@ function addMultipleCharts(){
 
                 // get information about linked parameter
                 var param = params[key];
+                let series = [];
+
+                let main = {
+                    data: value.station_param_values,
+                    name: param.legend,
+                    type: param.chartstyle,
+                    color: param.color == 'FFFFFF'? Highcharts.getOptions().colors[key] : '#'+param.color,
+                    lineWidth: param.line_width,
+                    fillOpacity: 0.3,
+                    tooltip: {
+                        valueDecimals: param.decimals
+                    },
+                    marker: {
+                        enabled: false,
+                    }
+                };
+                series.push(main);
+
+                // create min and max series objects
+                let max = {
+                    name: param.legend +' - Max',
+                    color: '#cf5d36',
+                    data: value.station_max_values,
+                    dashStyle: 'ShortDash'
+                };
+
+                let min = {
+                    name: param.legend +' - Min',
+                    color: '#4cad58',
+                    data: value.station_min_values,
+                    dashStyle: 'ShortDash'
+                };
+
+                // add min - max series
+                if(analyserOptions.highstocks.minmaxEnabled == true){
+                    if(param.minval)
+                        series.push(min);
+                    if(param.maxval)
+                        series.push(max);
+                }
+
                 // create the chart taking care of general tool's options
                 multipleCharts[componentState.id][key] = Highcharts.chart(chartDiv, {
                     chart:{
@@ -1431,20 +1540,7 @@ function addMultipleCharts(){
                         text: '© '+footer, //Arriving from DB "portal_css_footer_text", default "OPAS"
                         href: company_web
                     },
-                    series: [{
-                        data: value.station_param_values,
-                        name: param.legend,
-                        type: param.chartstyle,
-                        color: param.color == 'FFFFFF'? Highcharts.getOptions().colors[key] : '#'+param.color,
-                        lineWidth: param.line_width,
-                        fillOpacity: 0.3,
-                        tooltip: {
-                            valueDecimals: param.decimals
-                        },
-                        marker: {
-                            enabled: false,
-                        }
-                    }]
+                    series: series
                 });
 
                 /**
@@ -2198,10 +2294,12 @@ function createChartCategories(timeFlag){
                 //!!ATTENTION data grouping to speed up rendering
                 events: {
                     show: function (e) {
-                        activeMacro.params[e.target.index].visible = true;
+                        if(this.options.macroIdx != null)
+                            activeMacro.params[this.options.macroIdx].visible = true;
                     },
                     hide: function (e) {
-                        activeMacro.params[e.target.index].visible = false;
+                        if(this.options.macroIdx != null)
+                            activeMacro.params[this.options.macroIdx].visible = false;
                     }
                 }
             },
@@ -2383,6 +2481,7 @@ function addSeriesToChartCategories(){
                 if(param.chartstyle == 'point' || param.chartstyle == 'line_marker'){
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: param.legend, //value.series_name,
                         type: 'line',
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -2402,6 +2501,7 @@ function addSeriesToChartCategories(){
                 else{
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: param.legend, //value.series_name,
                         type: param.chartstyle,
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -2428,6 +2528,29 @@ function addSeriesToChartCategories(){
 
                 if(key == params.length-1){
                     chart[componentState.id].redraw();
+                    // loop through all legend items
+                    chart[componentState.id].legend.allItems.forEach(function(item){
+
+                        // overwrite click event
+                        Highcharts.addEvent(
+                            item.legendItem.group.element,
+                            'click',
+                            function(e) {
+
+                                // Check if the control key was down when the mouse event was fired.
+                                // if true then hide all series except the one clicked
+                                if(e.ctrlKey == true){
+                                    chart[componentState.id].series.forEach(function(series){
+                                        // series.hide();
+                                        series.setVisible(false, false);
+                                    });
+                                    // redraw chart all at once
+                                    chart[componentState.id].redraw();
+                                    item.show();
+                                }
+                            }.bind(this)
+                        );
+                    });
                 }
             });
 
@@ -2555,6 +2678,7 @@ function addSeriesToChartCategoriesFormattedXLabels(){
                 if(param.chartstyle == 'point' || param.chartstyle == 'line_marker'){
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: param.legend, //value.series_name,
                         type: 'line',
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -2574,6 +2698,7 @@ function addSeriesToChartCategoriesFormattedXLabels(){
                 else{
                     options = {
                         id: 'field_'+value.station_param_id,
+                        macroIdx: key,
                         name: param.legend, //value.series_name,
                         type: param.chartstyle,
                         color: param.color == 'FFFFFF'? undefined : '#'+param.color,
@@ -2602,6 +2727,29 @@ function addSeriesToChartCategoriesFormattedXLabels(){
                 // if the current loop is the last one then redraw chart
                 if(key == params.length-1){
                     chart[componentState.id].redraw();
+                    // loop through all legend items
+                    chart[componentState.id].legend.allItems.forEach(function(item){
+
+                        // overwrite click event
+                        Highcharts.addEvent(
+                            item.legendItem.group.element,
+                            'click',
+                            function(e) {
+
+                                // Check if the control key was down when the mouse event was fired.
+                                // if true then hide all series except the one clicked
+                                if(e.ctrlKey == true){
+                                    chart[componentState.id].series.forEach(function(series){
+                                        // series.hide();
+                                        series.setVisible(false, false);
+                                    });
+                                    // redraw chart all at once
+                                    chart[componentState.id].redraw();
+                                    item.show();
+                                }
+                            }.bind(this)
+                        );
+                    });
                 }
             });
 
@@ -2781,13 +2929,48 @@ function addSeriesToTable(){
         var htmlOpt= '<option value="field_'+data_key+'">'+column_name.replace(/<.*>/g, "")+'</option>';
         $("#filter-field-"+componentState.id).append(htmlOpt);
 
-        // if flag enabled show validity and data coverage codes
+        // if flag enabled show min-max serie and/or validity and/or data coverage codes
         // only if the number of parameters is lower than 16
-        if(analyserOptions.tabulator.codesEnabled && activeMacro.params.length <= 15 && timeFlag == true){
+        if(activeMacro.params.length <= 15 && timeFlag == true){
+
+            if(analyserOptions.tabulator.minmaxEnabled){
+
+                if(data_value.minval == true){
+                    column_obj = {
+                        title: 'Min',
+                        field: 'min_'+data_key,
+                        headerSort: false,
+                        accessorDownload: function(value){
+                            if( ! value || value == '--')
+                                return '';
+                            else
+                                return value.replace('.', ',');
+                        }
+                    };
+
+                    columns.push(column_obj);
+                }
+
+                if(data_value.maxval == true){
+                    column_obj = {
+                        title: 'Max',
+                        field: 'max_'+data_key,
+                        headerSort: false,
+                        accessorDownload: function(value){
+                            if( ! value || value == '--')
+                                return '';
+                            else
+                                return value.replace('.', ',');
+                        }
+                    };
+
+                    columns.push(column_obj);
+                }
+            }
 
              //if aggregation equal to the minimum aggregation then show validity code
             // else nothing to do
-            if(aggregation == $("#time-period option:first").val()){
+            if(analyserOptions.tabulator.codesEnabled &&  aggregation == $("#time-period option:first").val()){
                 column_obj = {
                     title: 'Val',
                     field: 'code_'+data_key,
@@ -2804,19 +2987,21 @@ function addSeriesToTable(){
             }
 
             // column for to the coverage percentage
-            column_obj = {
-                title: 'Perc',
-                field: 'perc_'+data_key,
-                headerSort: false,
-                accessorDownload: function(value){
-                    if( ! value || value == '--')
-                        return '';
-                    else
-                        return value.replace('.', ',');
-                }
-            };
+            if(analyserOptions.tabulator.percEnabled){
+                column_obj = {
+                    title: 'Perc',
+                    field: 'perc_'+data_key,
+                    headerSort: false,
+                    accessorDownload: function(value){
+                        if( ! value || value == '--')
+                            return '';
+                        else
+                            return value.replace('.', ',');
+                    }
+                };
 
-            columns.push(column_obj);
+                columns.push(column_obj);
+            }
         }
 
     });

@@ -5,7 +5,7 @@ export default class MetadataController {
    * Get available stations
    */
   async stations(ctx) {
-    ctx.log.info("stations");
+    ctx.log.info("Function stations");
 
     // get data from db
     var json_data = await ctx.models.metadata.getStations();
@@ -16,7 +16,7 @@ export default class MetadataController {
    * Get available stations per region
    */
   async stationsRegion(ctx) {
-    ctx.log.info("stationsRegion");
+    ctx.log.info("Function stationsRegion");
 
     // get param
     ctx.log.info(`region ${ctx.stash.id}`);
@@ -31,7 +31,7 @@ export default class MetadataController {
    * @param id station id
    */
   async station(ctx) {
-    ctx.log.info("station");
+    ctx.log.info("Function station");
 
     // get param
     ctx.log.info(`station ${ctx.stash.id}`);
@@ -45,10 +45,21 @@ export default class MetadataController {
  * Get available parameters
  */
   async parameters(ctx) {
-    ctx.log.info("parameters");
+    ctx.log.info("Function parameters");
 
     // get data from db
     var json_data = await ctx.models.metadata.getParameters();
+    await ctx.render({ json: json_data || {} });
+  }
+
+  /**
+ * Get parameters typologies
+ */
+  async parametersType(ctx) {
+    ctx.log.info("Function parameters type");
+
+    // get data from db
+    var json_data = await ctx.models.metadata.getParametersType();
     await ctx.render({ json: json_data || {} });
   }
 
@@ -57,7 +68,7 @@ export default class MetadataController {
    * @param id parameter id
    */
   async parameter(ctx) {
-    ctx.log.info("parameter");
+    ctx.log.info("Function parameter");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.id}`);
@@ -72,7 +83,7 @@ export default class MetadataController {
    * @param id parameter id
    */
   async stationParameters(ctx) {
-    ctx.log.info("stationParameters");
+    ctx.log.info("Function stationParameters");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.stid}`);
@@ -87,7 +98,7 @@ export default class MetadataController {
    * Get available sites
    */
   async sites(ctx) {
-    ctx.log.info("sites");
+    ctx.log.info("Function sites");
 
     // get data from db
     var json_data = await ctx.models.metadata.getSites();
@@ -95,11 +106,11 @@ export default class MetadataController {
   }
 
   /**
-   * Get campaings per station
+   * Get campaigns per station
    * @param id station id
    */
   async campaigns(ctx) {
-    ctx.log.info("campaigns");
+    ctx.log.info("Function campaigns");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.id}`);
@@ -110,11 +121,11 @@ export default class MetadataController {
   }
 
   /**
-  * Get campaings per station
+  * Get campaigns per station
   * @param id station id
   */
   async campaignsDates(ctx) {
-    ctx.log.info("campaignsDates");
+    ctx.log.info("Function campaignsDates");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.id}`);
@@ -125,7 +136,7 @@ export default class MetadataController {
     if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(ctx.stash.ep)) {
       epoch = moment(ctx.stash.ep).unix();
     }
-    ctx.log.info(`epoch ${epoch}`);
+    ctx.log.debug(`epoch ${epoch}`);
 
     // get data from db
     var json_data = await ctx.models.metadata.getCampaignsDates(
@@ -139,7 +150,7 @@ export default class MetadataController {
   * Get available series
   */
   async series(ctx) {
-    ctx.log.info("series");
+    ctx.log.info("Function series");
 
     // get data from db
     var json_data = await ctx.models.metadata.getSeries();
@@ -150,7 +161,7 @@ export default class MetadataController {
   * Get available series per region
   */
   async seriesRegion(ctx) {
-    ctx.log.info("seriesRegion");
+    ctx.log.info("Function seriesRegion");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.id}`);
@@ -164,7 +175,7 @@ export default class MetadataController {
 * Get available series per station
 */
   async seriesStation(ctx) {
-    ctx.log.info("seriesStation");
+    ctx.log.info("Function seriesStation");
 
     // get param
     ctx.log.info(`parameter ${ctx.stash.id}`);

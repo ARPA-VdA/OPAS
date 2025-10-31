@@ -1,0 +1,12 @@
+{
+  "external-emails" => "[]",
+  "mlist-company" => -1,
+  "mlist-desc" => "",
+  "mlist-id" => "",
+  "mlist-name" => "Test",
+  "portal-users" => "[1]",
+  "q" => [
+           "",
+           ""
+         ]
+}

@@ -440,22 +440,15 @@ sub delete_param_by_stprid {
     $self->app->log->debug("Bobo::Model::DbcnfParametri sub delete_param_by_stprid");
 
     my $tx;
+    my $res;
 
     eval {
         $tx = $self->pg->db->begin;
 
         # query
-        my $sql = "DELETE FROM metadata.stations_params_status WHERE stpr_id = ?";
+        my $sql = "SELECT metadata.f_delete_station_parameter( ?::integer ) AS res";
 
-        $self->pg->db->query($sql, $stprid);
-
-        $sql = "DELETE FROM metadata.stations_params_info WHERE stpr_id = ?";
-
-        $self->pg->db->query($sql, $stprid);
-
-        $sql = "DELETE FROM metadata.stations_parameters WHERE stpr_id = ?";
-
-        $self->pg->db->query($sql, $stprid);
+        $res = $self->pg->db->query($sql, $stprid)->hash->{res};
     };
 
     # error check
@@ -467,7 +460,7 @@ sub delete_param_by_stprid {
     }
     else {
        $tx->commit;
-       return 1;
+       return $res;
     }
 }
 

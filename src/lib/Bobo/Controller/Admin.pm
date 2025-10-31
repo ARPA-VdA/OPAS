@@ -171,6 +171,35 @@ sub get_group_pages_grants {
     $self->render(json => $json);
 }
 
+sub get_page_groups_grants {
+    my $self = shift;
+
+    $self->app->log->debug("Bobo::Controller::Admin sub get_page_groups_grants");
+
+    my $userid = $self->session('it.ecometer.bobo');
+
+    my $page = $self->param('page'); # post
+    $self->app->log->debug("Page id: $page");
+
+    # get group pages grants by an ajax call
+    my $groups = $self->dbadmin->get_page_groups_grants($userid, $page);
+
+    my $json;
+    if (defined $groups) {
+        $json = {
+            res => "OK",
+            groups => $groups
+        };
+    }
+    else {
+       $json = {
+            res => "ERR"
+        };
+    }
+
+    $self->render(json => $json);
+}
+
 sub get_group_stations_grants {
     my $self = shift;
 
@@ -295,7 +324,6 @@ sub get_options {
     # render
     $self->render(json => $json);
 }
-
 
 sub put_group {
     my $self = shift;
@@ -707,6 +735,19 @@ Funzione per recuperare, dato l'id, i permessi alle pagine di un determinato gru
 Argomenti:  * id del gruppo ('grid');
 
 Return:     json contenente la risposta "OK" e i permessi, oppure solamente la risposta "ERR".
+
+=cut
+
+=head1 get_page_groups_grants
+
+Funzione per recuperare, dato l'id di una pagina, i permessi per ciascun gruppo visibile all'amministratore.
+
+Argomenti:  
+* id dell'utente ('userid');
+* id della pagina ('page');
+
+Return:     
+json contenente la risposta "OK" e i gruppi, oppure solamente la risposta "ERR".
 
 =cut
 

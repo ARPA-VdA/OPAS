@@ -206,7 +206,7 @@ $(document).ready(function() {
                     var ticket = result.ticket;
                     console.dir(ticket);
 
-                    var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tk'+tkid+'" role="tab"><span class="hidden-sm-up"><i class="fa fa-file-text-o"></i></span> <span class="hidden-xs-down">'+ticket.tk_title+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-ticket" data-close="tk'+tkid+'"></i></a></li>';
+                    var html = '<li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tk'+tkid+'" role="tab"><span class="hidden-sm-up"><i class="fa-regular fa-memo-pad"></i></span> <span class="hidden-xs-down">'+ticket.tk_title+'</span>&nbsp;&nbsp;<i class="fa fa-times text-danger close-ticket" data-close="tk'+tkid+'"></i></a></li>';
                     $('.nav').append(html);
 
                     // create ticket detail
@@ -925,6 +925,23 @@ $(document).ready(function() {
     }
 
     /**
+     * Function that returns row's class in the main table
+     *
+     * @param {text} status Ticket last status
+     *
+     * @return status class
+     */
+    function getRowClass(status){
+
+        if(status == 'closed')
+            return 'closed';
+        else if (status == 'taken charge')
+            return 'text-muted-sec';
+        else
+            return '';
+    }
+
+    /**
      * Function that retrieves the stations of a given province.
      *
      * @param {integer} prid Province ID.
@@ -958,7 +975,6 @@ $(document).ready(function() {
                 // build html for stations divided into option group
                 // each group represent a different network
                 $.each(stations, function(index, station){
-                    // stations_id.push(station.station_id);
 
                     if(net != station.station_network_type_id){
 
@@ -1161,9 +1177,6 @@ $(document).ready(function() {
                     // loop through all elements
                     // for each ticket, build a html row to be added to the datable
                     $.each(tickets, function(index, ticket){
-                        var classClosed = '';
-                        if(ticket.tk_status == 'closed')
-                            classClosed = 'ticket-closed';
 
                         var userCanModify = false;
 
@@ -1171,17 +1184,17 @@ $(document).ready(function() {
                         if( isCompAdmin == 1 || ticket.tk_opening_comp_fk == userComp)
                             userCanModify = true;
 
-                        html += '<tr class="'+classClosed+' "data-id="'+ticket.tk_id+'" data-type="'+ticket.tt_id+'">';
-                        html += '    <td class="bobo-nowrap icons-little">';
-                        html += '        <a href="javascript:void(0)" class="show-ticket" data-toggle="tooltip" data-original-title="Visualizza"> <i class="ti-zoom-in text-info"></i> </a>';
+                        html += '<tr class="'+getRowClass(ticket.tk_status)+' "data-id="'+ticket.tk_id+'" data-type="'+ticket.tt_id+'">';
+                        html += '    <td class="bobo-nowrap tkt-icons">';
+                        html += '        <a href="javascript:void(0)" class="show-ticket" data-toggle="tooltip" data-original-title="Visualizza"> <i class="fa-light fa-magnifying-glass-arrow-right text-info"></i> </a>';
                         // if user has update grant and ticket has been at least taken in charge
                         if(update_grant && ticket.tk_status != null){
                             // if closed
                             if ( ticket.tk_status == 'closed' && userCanModify ){
-                                html += '        <a href="javascript:void(0)" class="locked-ticket" data-toggle-second="tooltip" data-original-title="Ticket CHIUSO" data-target="#ticket-comment" data-toggle="modal"> <i class="mdi mdi-lock text-success"></i> </a>';
+                                html += '        <a href="javascript:void(0)" class="locked-ticket" data-toggle-second="tooltip" data-original-title="Ticket CHIUSO" data-target="#ticket-comment" data-toggle="modal"> <i class="fa-light fa-lock-keyhole text-success"></i> </a>';
                             }
                             else if( ticket.tk_status != 'closed' && (userCanModify || ticket.tk_recipient_comp_fk == userComp) ) {
-                                html += '        <a href="javascript:void(0)" class="unlocked-ticket" data-toggle-second="tooltip" data-original-title="Ticket APERTO" data-target="#ticket-comment" data-toggle="modal"> <i class="mdi mdi-lock-open-outline text-primary"></i> </a>';
+                                html += '        <a href="javascript:void(0)" class="unlocked-ticket" data-toggle-second="tooltip" data-original-title="Ticket APERTO" data-target="#ticket-comment" data-toggle="modal"> <i class="fa-light fa-lock-keyhole-open text-primary"></i> </a>';
                             }
                         }
 
@@ -1189,33 +1202,34 @@ $(document).ready(function() {
                         if(ticket.tk_status == null && userCanModify){
                             html += '        <br>';
                             if(update_grant){
-                                html += '        <a href="javascript:void(0)" class="edit-ticket" data-toggle="tooltip" data-original-title="Modifica"> <i class="icon-pencil text-info"></i> </a>';
+                                html += '        <a href="javascript:void(0)" class="edit-ticket" data-toggle="tooltip" data-original-title="Modifica"> <i class="fa-light fa-pencil text-info"></i> </a>';
                             }
                             if(delete_grant){
-                                html += '        <a href="javascript:void(0)" class="delete-ticket" data-toggle="tooltip" data-original-title="Elimina"> <i class="icon-trash text-danger"></i> </a>';
+                                html += '        <a href="javascript:void(0)" class="delete-ticket" data-toggle="tooltip" data-original-title="Elimina"> <i class="fa-light fa-trash-can text-danger"></i> </a>';
                             }
                         }
 
                         html += '    </td>';
+                        html += '    <td>'+ticket.tk_id+'</td>';
                         html +='    <td class="bobo-nowrap operators-company">';
-                        html +='        <img src="'+ticket.us_avatar_thumb+'">';
                         html +='        <span>'+ticket.us_fullname+'<br><small>'+ticket.opening_comp_name+'</small></span>';
                         html +='    </td>';
+                        html += '    <td>'+moment(ticket.tk_opening_date).format('DD/MM/YYYY<br>HH:mm')+'</td>';
                         if(ticket.tk_expiry_date == 'infinity')
                             html += '    <td>Assente</td>';
                         else
-                            html += '    <td>'+getFormattedDateDT(ticket.tk_expiry_date, 'basic_timeStartMin')+'</td>';
+                            html += '    <td>'+moment(ticket.tk_expiry_date).format('DD/MM/YYYY<br>HH:mm')+'</td>';
 
-                        html += '    <td>'+ticket.tu_desc+'</td>';
+                        html += '    <td><span class="badge badge-'+ticket.tu_colour+'">'+ticket.tu_desc+'</span></td>';
                         if(ticket.tk_status != null ){
-                            html += '    <td><i class="icon-check text-info"></i></td>';
+                            // html += '    <td><i class="icon-check text-info"></i></td>';
 
                             switch(ticket.tk_status){
                                 case 'taken charge':
-                                    html += '    <td>Aperto</td>';
+                                    html += '    <td>Preso in carico</td>';
                                     break;
                                 case 'closed':
-                                    html += '    <td>'+moment(ticket.tk_status_date).format('DD/MM/YYYY HH:mm')+'</td>';
+                                    html += '    <td>Chiuso</td>';
                                     break;
                                 case 'rejected':
                                     html += '    <td>Riaperto</td>';
@@ -1225,18 +1239,17 @@ $(document).ready(function() {
                             }
                         }
                         else{
-                            html += '    <td><i class="icon-close text-danger"></i></td>';
                             html += '    <td>Aperto</td>';
                         }
 
                         var badge = badges[ ticket.tk_recipient_comp_fk % badges.length ];
 
-                        html += '    <td><span class="badge '+badge+'">'+ticket.comp_name+'</span></td>';
+                        html += '    <td class="font-bold">'+ticket.comp_name+'</td>';
                         html += '    <td>'+ticket.tt_desc+'</td>';
                         html += '    <td><span class="badge badge-type"><i class="'+ticket.tc_class+'"></i>&nbsp;'+ticket.tc_desc+'</span></td>';
                         html += '    <td>'+ticket.station_name+'</td>';
                         html += '    <td>'+ticket.equipment_name+'</td>';
-                        html += '    <td>'+ticket.tk_title+'</td>';
+                        html += '    <td class="font-bold">'+ticket.tk_title+'</td>';
                         html += '    <td></td>';
                         html += '</tr>';
                     });
@@ -1380,7 +1393,7 @@ $(document).ready(function() {
 
         var badge = badges[ ticket.tk_recipient_comp_fk % badges.length ];
 
-        html += '            <div class="col-md-4 view-param"><span class="badge '+badge+'">'+ticket.comp_name+'</span></div>';
+        html += '            <div class="col-md-4 view-param">'+ticket.comp_name+'</div>';
         html += '        </div>';
         html += '        <div class="form-group row">';
         html += '            <label for="" class="control-label col-md-2 col-form-label">Ripetizione</label>';

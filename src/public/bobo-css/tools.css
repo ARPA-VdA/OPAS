@@ -298,6 +298,16 @@ h2.jq-toast-heading{
 
 /* -- datatable -- */
 
+.modal ul.pagination{
+    justify-content: flex-end;
+}
+.modal .page-link{
+    color: #018ea4;
+}
+.page-item.active .page-link{
+    background-color: #018ea4;
+    border-color: #018ea4;
+}
 .dataTables_wrapper {
     position: relative;
     clear: both;

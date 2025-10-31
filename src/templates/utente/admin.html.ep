@@ -333,37 +333,116 @@
                     </div>
 
                     <div class="tab-pane p-20" id="page-tab" role="tabpanel">
-                        <h4 class="tab-title">Pagine da visualizzare</h4>
-                        <h6 class="tab-subtitle">Seleziona per ogni gruppo di utenti quali pagine può visualizzare</h6>
-                        <div class="row m-b-10 row-filter">
-                            <div class="col-lg-6">
-                                <select class="custom-select col-12" id="filter-group-pages" name="filter-group-pages">
-                                </select>
-                            </div>
-                            <div class="col-lg-6">
-                                <a id="pages-group-detail" href="#info-gruppi" role="button" class="info-box" data-toggle="modal"><i class="icon-info"></i> Informazioni visibilità gruppo</a>
-                            </div>
-                        </div>
-                        <div class="pages-table like-head">
-                            <div class="pages-head">Pagina</div>
-                            <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
-                            <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
-                            <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
-                            <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
-                        </div>
                         <div class="row">
-                            <div class="col-lg-12">
-                                <div id="accordion-as-table">
+                            <div class="col-lg-7">
+                                <h4 class="tab-title">Permessi delle pagine</h4>
+                                <h6 class="tab-subtitle">Seleziona un gruppo di utenti e scegli quali pagine possono visualizzare e quali permessi assegnare.</h6>
+                                <div class="row m-b-10 row-filter">
+                                    <div class="col-lg-7">
+                                        <select class="custom-select col-12" id="filter-group-pages" name="filter-group-pages">
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <a id="pages-group-detail" href="#info-gruppi" role="button" class="info-box" data-toggle="modal"><i class="icon-info"></i> Informazioni visibilità gruppo</a>
+                                    </div>
+                                </div>
+                                <div class="pages-table like-head">
+                                    <div class="pages-head">Pagina</div>
+                                    <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
+                                    <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
+                                    <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
+                                    <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div id="accordion-as-table">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pages-table like-head">
+                                    <div class="pages-head">Pagina</div>
+                                    <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
+                                    <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
+                                    <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
+                                    <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
                                 </div>
                             </div>
+                            <div class="col-lg-5">
+                                <h4 class="tab-title">Permessi dei gruppi <span class="font-bold">in visualizzazione</span></h4>
+                                <h6 class="tab-subtitle">Seleziona una pagina e controlla quali gruppi possono vederla e che permessi hanno.</h6>
+                                <div class="row m-b-10 row-filter">
+                                    <div class="col-lg-12">
+                                        <select class="custom-select col-12" id="filter-pages" name="filter-pages">
+                                            <option value="-1">Seleziona...</option>
+                                            % my $nlevel = 2;
+                                            % my $user_closed = 0;
+                                            % my $submenu_closed = 0;
+                                            
+                                            <optgroup label="Menu utente">
+                                            
+                                            % foreach my $page (@{$pages}){
+                                        
+                                                % # chiudo optgroup Menu utenti
+                                                % if ($page->{'menu_type'} ne 'usernav' && $user_closed == 0){
+                                                    </optgroup>
+                                                    % $user_closed = 1;
+                                                % }
+                                                
+                                                % # passaggio ad un livello superiore, chiudo optgroup precedente
+                                                % if ($nlevel > $page->{'nlevel'}){
+                                                    % $submenu_closed = 1;
+                                                    </optgroup>
+                                                % }
+                                                
+                                                % if (!defined $page->{'page_id'}){
+                                                    % $submenu_closed = 0;
+                                                    <optgroup label="<%= $page->{'mp_name'} %>">
+                                                % }
+                                                % else{
+                                                    <option value="<%= $page->{'page_id'} %>">
+                                                        <%= $page->{'mp_name'} %>
+                                                    </option>
+                                                % }
+                                            
+                                                % $nlevel = $page->{'nlevel'}
+                                            % }
+                                            
+                                            % if ($submenu_closed == 0){
+                                                </optgroup>
+                                            % }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <table id="groups-table" class="display responsive table table-hover table-striped table-compressed-middle tbl-va-center resp-plus tbl-arrgd" cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-right text-info"><i class="fa-solid fa-people-group"></i> Gruppo</th>
+                                            <th class="text-center">Visualizza</th>
+                                            <th class="text-center">Inserisci</th>
+                                            <th class="text-center">Modifica</th>
+                                            <th class="text-center">Elimina</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-right text-info"><i class="fa-solid fa-people-group"></i> Gruppo</th>
+                                            <th class="text-center">Visualizza</th>
+                                            <th class="text-center">Inserisci</th>
+                                            <th class="text-center">Modifica</th>
+                                            <th class="text-center">Elimina</th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                            </div>
                         </div>
-                        <div class="pages-table like-head">
-                            <div class="pages-head">Pagina</div>
-                            <div class="pages-cols sho">Visualizza <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di visualizzare la pagina"></i></div>
-                            <div class="pages-cols ins">Inserisci <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di inserimento nella pagina"></i></div>
-                            <div class="pages-cols mod">Modifica <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di modifica nella pagina"></i></div>
-                            <div class="pages-cols del">Elimina  <i class="ti-help-alt text-danger" data-toggle="tooltip" data-original-title="Se abilitato consente di eseguire azioni di eliminazione nella pagina"></i></div>
-                        </div>
+
                     </div>
 
                     <div class="tab-pane p-20" id="station-tab" role="tabpanel">
@@ -644,6 +723,7 @@
                                                 <h5 class="text-success p-t-10 p-b-5">Di seguito il <strong>menu utente</strong> che gli verrà mostrato con i relativi permessi</h5>
                                                 <div id="user-secondary-menu-list" class="usr-list">
                                                     <ul>
+                                                        <!-- @hilla: da modificare, non è se tu sei admin ma se l'utente inserito è admin allora aggiungo la relativa voce di menu -->
                                                         <li id="show-admin"><strong>Admin</strong>
                                                             <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Aggiunta nuovi elementi"> <i class=" icon-plus text-info"></i> </a>
                                                             <a href="javascript:void(0)" data-toggle="tooltip" data-original-title="Modifica degli elementi"> <i class="icon-pencil text-info"></i> </a>

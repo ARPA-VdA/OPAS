@@ -2,6 +2,7 @@
 -- | - Script Name   : minimum_data.sql                                                           |
 -- | - Author        : Ecometer s.n.c.                                                            |
 -- | - Creation Date : 2025-03-31                                                                 |
+-- | - Update Date   : 2025-06-30                                                                 |
 -- | - Description   : Script to insert PostgreSQL 'opas' database minimum data.                  |
 -- +----------------------------------------------------------------------------------------------+
 
@@ -191,6 +192,9 @@
     INSERT INTO bobo.groups (gr_name, gr_shortname, gr_sys_admin) VALUES ('Guest'    , 'Guest'     , FALSE); -- 2
     INSERT INTO bobo.groups (gr_name, gr_shortname, gr_sys_admin) VALUES ('OpasAdmin', 'OpasAdmin' ,  TRUE); -- 3
 
+    INSERT INTO bobo.groups (gr_id, gr_name, gr_shortname, gr_sys_admin) VALUES (125, 'Ticket Centro'   , 'Ticket Centro'   ,  FALSE);
+    INSERT INTO bobo.groups (gr_id, gr_name, gr_shortname, gr_sys_admin) VALUES (126, 'Manutentori CED' , 'Manutentori CED' ,  FALSE);
+
     -- ------------------------------------------------------------------------------------------------
     -- USERS
     -- ------------------------------------------------------------------------------------------------
@@ -231,7 +235,7 @@
     VALUES
         (0, 'Benvenuto nel portale OPAS', '/bobo-img/logo.png', '/bobo-img/logo-little.png', 'OPen Air System', NULL, NULL, 'OPen Air System');
 
-    INSERT INTO bobo.portal_properties (admin_gr_id, admin_comp_id, portal_id, linked_gr_id, linked_comp_id, region_id, db_schema_names) VALUES (3, 1, 0, ARRAY[1, 2, 3], ARRAY[1,2], NULL, ARRAY['client_test']);
+    INSERT INTO bobo.portal_properties (admin_gr_id, admin_comp_id, portal_id, linked_gr_id, linked_comp_id, region_id, db_schema_names) VALUES (3, 1, 0, ARRAY[1, 2, 3, 125, 126], ARRAY[1,2], NULL, ARRAY['client_test']);
 
     -- ------------------------------------------------------------------------------------------------
     -- RELATION USER - COMPANY
@@ -273,7 +277,7 @@
         (24, 'Analisi copertura'       , '/stat_ana_copertura'  , 'fa-regular fa-spider-web'                        ),
         (25, 'Parametri'               , '/ang_parametri'       , 'fa-solid fa-wifi'                                ),
         (26, 'Stazioni'                , '/cnf_stazioni'        , 'fa-solid fa-house-chimney-window'                ),
-        (27, 'Strumenti'               , '/cnf_strumenti'       , 'fa-solid fa-tower-cell'                          ),
+        (27, 'Strumenti'               , '/cnf_strumenti'       , 'fa-regular fa-box-isometric'                     ),
         (28, 'Tarature automatiche'    , '/dat_tarature_aut'    , 'fa-solid fa-diagram-sankey'                      ),
         (29, 'Periferia'               , '/plan_attivita'       , 'fa-solid fa-list-check'                          ),
         (30, 'Calendario'              , '/calendario'          , 'fa-regular fa-calendar-check'                    ),
@@ -284,6 +288,7 @@
         (35, 'Diagnostici'             , '/dat_diagnostici'     , 'fa-regular fa-calendar-lines-pen'                ),
         (36, 'Analyser'                , '/str_ava_analyser'    , 'fa-solid fa-compass-drafting'                    ),
         (37, 'Visualizer'              , '/str_ava_visualizer'  , 'fa-solid fa-forklift'                            ),
+        (38, 'Media'                   , '/media'               , 'fa-regular fa-photo-film'                        ),
         (39, 'Allarmi'                 , '/dat_allarmi'         , 'fa-solid fa-bell-exclamation'                    ),
         (40, 'Validazione'             , '/str_ava_validazione' , 'fa-solid fa-toolbox'                             ),
         (42, 'Warning strumenti'       , '/dat_warning'         , 'fa-regular fa-sensor-triangle-exclamation'       ),
@@ -303,11 +308,12 @@
         (64, 'Immagini Horiba'         , '/dat_horiba'          , 'fa-regular fa-diagram-venn'                      ),
         (65, 'Stazioni'                , '/ang_stazioni'        , 'fa-regular fa-house-signal'                      ),
         (67, 'Parametri di stazione'   , '/cnf_parametri'       , 'fa-regular fa-signal-stream'                     ),
+        (68, 'Centro'                  , '/plan_centro'         , 'fa-solid fa-list-tree'                           ),
         (69, 'Notifiche'               , '/div_notifiche'       , 'fa-regular fa-message-lines'                     ),
-        (70, 'System Admin'            , '/usr_sysadmin'        , 'fa-regular fa-user-astronaut'                    )
-    RETURNING page_id;
+        (70, 'System Admin'            , '/usr_sysadmin'        , 'fa-regular fa-user-astronaut'                    ),
+        (71, 'Strumenti'               , '/stnz_strumenti'      , 'fa-regular fa-shelves'                           );
 
-    SELECT setval('bobo.pages_page_id_seq', 70, true);
+    SELECT setval('bobo.pages_page_id_seq', 71, true);
 
     -- ------------------------------------------------------------------------------------------------
     -- RELATION GROUP PAGES WITH GRANTS
@@ -359,6 +365,7 @@
         (3, 35, '111'),
         (3, 36, '111'),
         (3, 37, '111'),
+        (3, 38, '111'),
         (3, 39, '111'),
         (3, 40, '111'),
         (3, 42, '111'),
@@ -378,8 +385,11 @@
         (3, 64, '111'),
         (3, 65, '111'),
         (3, 67, '111'),
+        (3, 68, '111'),
         (3, 69, '111'),
-        (3, 70, '111')
+        (3, 70, '111'),
+        (3, 71, '111')
+
     ON CONFLICT ON CONSTRAINT bobo_group_pages_ukey DO NOTHING;
 
     -- ------------------------------------------------------------------------------------------------
@@ -447,6 +457,7 @@
         (46, 1, NULL, 'Avanzate'                , 'sidebar1.avanzate'                  , 175),
         (47, 1,   36, 'Analyser'                , 'sidebar1.avanzate.analyser'         , 176),
         (48, 1,   37, 'Visualizer'              , 'sidebar1.avanzate.visualizer'       , 177),
+        (49, 1,   38, 'Media'                   , 'sidebar1.media'                     , 800),
         (50, 1,   39, 'Allarmi'                 , 'sidebar1.dat.allarmi'               , 157),
         (51, 1,   40, 'Validazione'             , 'sidebar1.avanzate.validazione'      , 178),
         (53, 1,   42, 'Warning strumenti'       , 'sidebar1.dat.warning'               , 156),
@@ -470,11 +481,13 @@
         (79, 1,   64, 'Immagini Horiba'         , 'sidebar1.dat.horiba'                , 160),
         (80, 1,   65, 'Stazioni'                , 'sidebar1.anagrafica.stazioni'       , 453),
         (82, 1,   67, 'Parametri di stazione'   , 'sidebar1.conf.parametri'            , 402),
+        (83, 1,   68, 'Centro'                  , 'sidebar1.planning.centro'           , 352),
         (84, 1,   69, 'Notifiche'               , 'sidebar1.divulgazione.notifiche'    , 704),
-        (85, 3,   70, 'System Admin'            , 'user.sysadmin'                      ,   2)   
-    RETURNING mp_id;
+        (85, 3,   70, 'System Admin'            , 'user.sysadmin'                      ,   2),
+        (86, 1, null, 'Stanziamenti'            , 'sidebar1.stanziamenti'              , 425),
+        (87, 1,   71, 'Strumenti'               , 'sidebar1.stanziamenti.strumenti'    , 426);
 
-    SELECT setval('bobo.menu_pages_mp_id_seq', 85, true);
+    SELECT setval('bobo.menu_pages_mp_id_seq', 87, true);
 
     INSERT INTO bobo.menu_css
         (menu_css_id, mp_id, menu_css_class, menu_css_expanded, menu_css_icon, menu_css_blank, menu_css_beta)
@@ -508,13 +521,14 @@
         (10, 30, NULL                               , true , NULL                                 , true , false),
         (15, 31, NULL                               , true , NULL                                 , false, false),
         (14, 32, NULL                               , true , NULL                                 , false, false),
-        (28, 33, 'has-arrow waves-effect waves-dark', false, 'wi wi-barometer'                    , false, false),
+        (28, 33, 'has-arrow waves-effect waves-dark', false, 'fa-light fa-box-archive'            , false, false),
         (29, 34, NULL                               , true , NULL                                 , false, false),
         (30, 35, NULL                               , true , NULL                                 , false, false),
         (31, 36, NULL                               , true , NULL                                 , false, false),
         (12, 37, NULL                               , true , NULL                                 , false, false),
         (25, 38, 'has-arrow waves-effect waves-dark', false, 'ti-agenda'                          , false, false),
         (26, 39, NULL                               , true , NULL                                 , false, false),
+        (79, 83, NULL                               , true , NULL                                 , false, false),
         (27, 40, 'waves-effect waves-dark'          , true , 'ti-blackboard'                      , false, false),
         ( 8, 41, NULL                               , true , NULL                                 , false, false),
         (32, 42, NULL                               , true , NULL                                 , false, false),
@@ -547,9 +561,11 @@
         (75, 79, NULL                               , true , NULL                                 , false, false),
         (76, 80, NULL                               , true , NULL                                 , false, false),
         (78, 82, NULL                               , true , NULL                                 , false, false),
-        (80, 84, NULL                               , true , NULL                                 , false, false);
+        (80, 84, NULL                               , true , NULL                                 , false, false),
+        (82, 86, 'has-arrow waves-effect waves-dark', false, 'fa-light fa-cart-flatbed-boxes'     , false, false),
+        (83, 87, NULL                               , false, NULL                                 , false, false);
 
-    SELECT setval('bobo.menu_css_menu_css_id_seq', 81, true);
+    SELECT setval('bobo.menu_css_menu_css_id_seq', 83, true);
 
     -- ----------------------------------------------------------------------------------------------
     -- FAQ
@@ -586,18 +602,32 @@
         (
             'dataview',
             '{
-            "desc":"Dati osservati di qualità dell''aria",
-            "footer":"Open Air System",
-            "big_logo":"/bobo-img/dataview/logo-opas.png",
-            "link_url":null,
-            "link_name":null,
-            "main_site":"",
-            "chart_logo":"/bobo-img/opas/loghi/logo-little.png",
-            "chart_label":"OPAS",
-            "little_logo":"/bobo-img/dataview/logo-opas-long.png",
-            "main_site_name":""
+                "desc":"Dati osservati di qualità dell''aria",
+                "footer":"Open Air System",
+                "big_logo":"/bobo-img/dataview/logo-opas.png",
+                "link_url":null,
+                "link_name":null,
+                "main_site":"",
+                "chart_logo":"/bobo-img/opas/loghi/logo-little.png",
+                "chart_label":"OPAS",
+                "little_logo":"/bobo-img/dataview/logo-opas-long.png",
+                "main_site_name":""
             }'::jsonb
+        ),
+        (
+            'sysadmin',
+            '{ "maintenance": 0 }'::jsonb
         );
+
+    INSERT INTO bobo_tools.homepage_widgets
+        (wdg_id, wdg_name, wdg_description, wdg_image_url, wdg_page_html)
+    VALUES
+        (DEFAULT, 'Aggiornamento dati stazioni'     , 'Tabella riportante lo stato delle stazioni', 'bobo-img/widget-ps/ritardi.png', '/ritardi');
+
+    INSERT INTO bobo.group_widgets
+        ( gw_id, gr_id, wdg_id  )
+    VALUES
+        (DEFAULT, 3,  1 );
 
 -- SCHEMA metadata
     INSERT INTO metadata.measures_cadence
@@ -627,18 +657,18 @@
 
     INSERT INTO metadata.parameters
         (param_id, param_name, param_unit, param_unit_conv, param_decimals)
-    VALUES 
+    VALUES
         (0, 'Param. generico', '--', '--', 0);
 
 
     INSERT INTO metadata.parameters_info
         (param_id, pm_info_shortname, pm_info_type_fk)
-    VALUES 
+    VALUES
         (0, 'Generico', 1);
 
     INSERT INTO metadata.parameters_conversions
         (param_id, pc_conv, pc_from_fulldate, pc_to_fulldate)
-    VALUES 
+    VALUES
         (0, 1, '-infinity', 'infinity');
 
     INSERT INTO metadata.stations_roaming_type
@@ -652,9 +682,9 @@
         (2, 'Tipologia UNO', 'Descrizione ...');
 
     INSERT INTO metadata.stations_network_type
-        (st_network_id, st_network_desc, st_network_logo, st_network_name)
+        (st_network_id, st_network_desc, st_network_logo, st_network_name, st_network_basepath)
     VALUES
-        (DEFAULT, 'Rete UNO', '/bobo-img/logo.png', 'Rete UNO');
+        (DEFAULT, 'Rete UNO', '/bobo-img/logo.png', 'Rete UNO', 'media/rete1');
 
     INSERT INTO bobo.group_networks
         (gr_id, st_network_id, gn_iud_grants)
@@ -726,10 +756,28 @@
 
 -- SCHEMA reports
 
-    INSERT INTO reports.ticket_categories VALUES (1, 'Categoria UNO' );
+    INSERT INTO reports.ticket_categories VALUES (1, 'Categoria UNO', 'mdi-tag text-success' );
     INSERT INTO reports.ticket_types VALUES (1, 'Tipo UNO' );
-    INSERT INTO reports.ticket_urgencies VALUES ( 1, 'Urgenza UNO' );
+    INSERT INTO reports.ticket_urgencies VALUES ( 1, 'Urgenza UNO', 'info' );
     INSERT INTO reports.ticket_frequencies (tf_id, tf_desc, tf_label, tf_db, tf_order) VALUES ( 0, 'Solo una volta', '1v', NULL,  0 ); -- 0
+
+
+    INSERT INTO reports.ced_ticket_types
+        (ctt_id, ctt_name, ctt_desc, ctt_icon, ctt_colour)
+    VALUES
+        ( 1, 'Flusso dati (import)'     , 'I dati non vengono acquisiti correttamente dalla periferia'         , 'fa-solid fa-arrow-progress'       , 'purple'  ),
+        ( 2, 'Web service (export)'     , 'I dati non vengono trasmessi correttamente verso sistemi esterni'   , 'fa-solid fa-arrow-right-from-line', 'primary' ),
+        ( 3, 'Bug software'             , 'Il software presenta un comportamento anomalo o inatteso'           , 'fa-solid fa-bug'                  , 'violet'  ),
+        ( 4, 'Malfunzionamento software', 'Una funzionalità che è sempre stata operativa, ora non funziona più', 'fa-solid fa-circle-exclamation'   , 'danger'  ),
+        ( 5, 'Richiesta di assistenza'  , 'Hai bisogno di supporto su una pagina o funzione del sistema'       , 'fa-solid fa-messages'             , 'info'    ),
+        (99, 'Altro'                    , 'La segnalazione non rientra nelle tipologie precedenti'             , 'fa-solid fa-waves-sine'           , 'esmerald');
+
+    -- inserts
+    INSERT INTO reports.ced_ticket_urgencies VALUES ( 1, 'Bassa'    , 'malfunzionamenti del sistema che non impediscono il regolare svolgimento di un processo applicativo, ma che siano causa di disagi nell’uso per l’utente.<br>(Esempio Dataview, Grafici OpenAir, Reportistica)', 'warning' );
+    INSERT INTO reports.ced_ticket_urgencies VALUES (10, 'Media'    , 'malfunzionamenti tali da non impedire il regolare svolgimento di un processo applicativo, ma che siano causa di inefficienza o di problemi operativi per l’utente.<br>(Esempio Ticketing, Anagrafica, Mapper, Validazione Multilivello)', 'primary' );
+    INSERT INTO reports.ced_ticket_urgencies VALUES (20, 'Alta'     , 'malfunzionamenti che impediscono l’utilizzo corretto di una singola funzionalità, pur non impedendo totalmente lo svolgimento del processo applicativo al quale la funzionalità appartiene;<br>(Esempio Visualizer, Analyser , Export Dati, Web Service)', 'danger'  );
+    INSERT INTO reports.ced_ticket_urgencies VALUES (30, 'Bloccante', 'malfunzionamenti che impediscono il regolare svolgimento di un intero processo applicativo;<br>(Esempio i moduli Portale/Autenticazione, Validazione, Statistiche, Import Dati)', 'purple'  );
+
 
     INSERT INTO reports.calibration_reasons (calib_re_id, calib_re_name) VALUES (DEFAULT, 'Motivo UNO' );
     INSERT INTO reports.calibration_methods (calib_me_id, calib_me_name) VALUES (DEFAULT, 'Metodo UNO' );

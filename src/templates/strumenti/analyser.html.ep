@@ -84,11 +84,6 @@
 <div class="row bg-grey no-gutters" id="analyser-nogutters">
     <div class="col-sm-12">
         <div class="analyser-buttons clearfix">
-            <!-- BOTTONI DI ESEMPIO
-            <button type="button" class="btn btn-primary"><i class="ti-settings"></i></button>
-            <button type="button" class="btn btn-secondary"><i class="mdi mdi-home-variant"></i></button>
-            <button type="button" class="btn btn-info"><i class="ti-ruler-alt"></i></button>
-            <button type="button" class="btn btn-link">Link</button> -->
 
             <div class="btn-set" id="btnset-time">
                 <div class="input-group group-buttons">
@@ -153,16 +148,6 @@
             </div>
 
             <span class="btn button-divider"></span>
-
-            <!-- <div class="btn-group" role="group">
-                <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Nuovo
-                </button>
-                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                    <a class="dropdown-item" id="add-tab-chart" href="#">Grafico</a>
-                    <a class="dropdown-item" id="add-tab-table" href="#">Tabella</a>
-                </div>
-            </div> -->
             <div class="btn-set" id="btnset-tab">
                 <div class="btn-group mr-1" role="group">
                     <button id="btnGroupDrop3" type="button" class="btn btn-primary dropdown-toggle disabled-table disabled-windrose disabled-multi" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle-second="tooltip" data-placement="left" title="Modifica il tipo di grafico da visualizzare nel tab">
@@ -183,7 +168,6 @@
                     <div class="dropdown-menu" aria-labelledby="btnGroupDrop3" id="treatment">
                         % foreach my $treatment (@{$treatments}){
                             <a class="dropdown-item" data-type="<%= $treatment->{'treatment_id'} %>" href="#"> <%= $treatment->{'treatment_name'} %></a>
-                            <!-- <option value="<%= $treatment->{'treatment_id'} %>"><%= $treatment->{'treatment_name'} %></option> -->
                         % }
                     </div>
                 </div>
@@ -222,9 +206,7 @@
             </div>
 
 
-            <!-- <span class="btn button-divider"></span>
 
-            <button type="button" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Informazioni su Analyser"><i class="icon-info"></i></button> -->
         </div>
         <div class="analyser-buttons clearfix">
             <div class="btn-set" id="btnset-limit">
@@ -292,14 +274,6 @@
                     <input class="disabled-table disabled-windrose disabled-multi" name="chart-per-year" id="chart-per-year" type="checkbox" autocomplete="off"> Grafico per anno
                 </label>
             </div>
-            <!-- <div class="btn-set"> -->
-                <!-- <label class="switch">
-                    <input class="disabled-table disabled-windrose disabled-multi" type="checkbox" name="chart-per-year" id="chart-per-year">
-                    <span class="slider round"></span>
-                </label>
-                <strong>Grafico per anno</strong> -->
-            <!-- </div> -->
-
             <span class="btn button-divider"></span>
 
             <div class="btn-set" id="btnset-download">
@@ -316,16 +290,6 @@
                         <a class="dropdown-item disabled-peryear" data-type="server" href="#" id="download-from-server"> Dati dal server</a>
                     </div>
                 </div>
-
-                <!-- OLD CSV BUTTONS STYLES
-                    <button id="download-csv" type="button" class="btn btn-primary disabled-multi mr-1" data-toggle="tooltip" data-placement="top" title="Scarica i dati in .csv">
-                        <i class="ti-download"></i> CSV
-                    </button>
-                    <button id="download-from-server" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Scarica un CSV direttamente da server sulla base delle date e della fascia temporale richiesta">
-                        <i class="icon-cloud-download"></i> CSV da server
-                    </button>
-                -->
-
             </div>
             <span class="btn button-divider"></span>
             <button id="keyboard-info" type="button" class="btn btn-danger clipboard-hide rounded-circle mr-1 mt-1 circle-tool" data-toggle-second="tooltip" data-placement="top" data-original-title="Informazioni sull'utilizzo delle scorciatoie da tastiera" data-target="#keyboard-shortcuts-info" data-toggle="modal">
@@ -477,12 +441,13 @@
                                 <h4>Grafici &raquo; Generiche</h4>
                                 <h5>Visualizzazione dati</h5>
                                 <div class="form-group row">
-                                    <label for="chart-notes" class="col-sm-4 col-form-label">Recupera note</label>
+                                    <label for="chart-minmax" class="col-sm-4 col-form-label">Visualizza min-max</label>
                                     <div class="col-sm-8 pt-1">
                                         <label class="switch">
-                                            <input type="checkbox" name="chart-notes" id="chart-notes">
+                                            <input type="checkbox" name="chart-minmax" id="chart-minmax">
                                             <span class="slider round"></span>
                                         </label>
+                                        <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -616,7 +581,27 @@
                                 Al momento non è possibile modificare le impostazioni -->
                                 <h5>Layout</h5>
                                 <div class="form-group row">
-                                    <label for="table-codes" class="col-sm-4 col-form-label">Visualizza codici</label>
+                                    <label for="table-minmax" class="col-sm-4 col-form-label">Visualizza min-max</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="table-minmax" id="table-minmax">
+                                            <span class="slider round"></span>
+                                        </label>
+                                        <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="table-perc" class="col-sm-4 col-form-label">Visualizza % dati</label>
+                                    <div class="col-sm-8 pt-1">
+                                        <label class="switch">
+                                            <input type="checkbox" name="table-perc" id="table-perc">
+                                            <span class="slider round"></span>
+                                        </label>
+                                        <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="table-codes" class="col-sm-4 col-form-label">Visualizza codici validazione</label>
                                     <div class="col-sm-8 pt-1">
                                         <label class="switch">
                                             <input type="checkbox" name="table-codes" id="table-codes">
@@ -881,6 +866,24 @@
                                                 <label for="macro-param-moving-window" class="col-sm-5 col-form-label">Finestra media mobile</label>
                                                 <div class="col-sm-7">
                                                     <input type="number" class="form-control clear-macro" id="macro-param-moving-window" name="macro-param-moving-window" min="2" max="10" placeholder="Finestra media mobile">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="macro-param-min" class="col-sm-3 col-form-label">Valori minimi</label>
+                                                <div class="col-sm-3 pt-1">
+                                                    <label class="switch">
+                                                        <input type="checkbox" name="macro-param-min" id="macro-param-min">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                    <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
+                                                </div>
+                                                <label for="macro-param-max" class="col-sm-3 col-form-label">Valori massimi</label>
+                                                <div class="col-sm-3 pt-1">
+                                                    <label class="switch">
+                                                        <input type="checkbox" name="macro-param-max" id="macro-param-max">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                    <span class="btn btn-circle-mini" data-toggle="tooltip" data-html="true" data-placement="top" data-custom-class="custom-tooltip" data-title="<i class='fa-solid fa-bell fa-shake'></i> Novità (Beta testing)" style="margin-left: 2px"><i class="fa-solid fa-sparkle"></i></span>
                                                 </div>
                                             </div>
                                             <hr>
@@ -1154,8 +1157,9 @@
                 <h5>Scorciatoie da tastiera per i <strong>GRAFICI</strong></h5>
                 <p>Utilizzando queste <strong>scorciatoie sui grafici</strong> potrai attivare delle funzionalità aggiuntive che potrebbero tornarti utili durante la navigazione:</p>
                 <ul>
-                    <li><code class="font-bold">SHIFT + click sinistro premuto</code>&nbsp;&nbsp;::&nbsp;&nbsp;sposta visualizzazione dello zoom</li>
-                    <li><code class="font-bold">CTRL + click sinistro</code>&nbsp;&nbsp;::&nbsp;&nbsp;apre in una nuova pagina l'intorno del punto sul tool validazione</li>
+                    <li><code class="font-bold">SHIFT + click sinistro premuto</code>&nbsp;&nbsp;::&nbsp;&nbsp;sposta visualizzazione dello zoom;</li>
+                    <li><code class="font-bold">CTRL + click sinistro</code>&nbsp;&nbsp;<strong> -> sulla linea del grafico</strong>&nbsp;&nbsp;::&nbsp;&nbsp;apre in una nuova pagina l'intorno del punto sul tool validazione;</li>
+                    <li><code class="font-bold">CTRL + click sinistro</code>&nbsp;&nbsp;<strong> -> sulla legenda</strong>&nbsp;&nbsp;::&nbsp;&nbsp;nasconde tutti gli altri elementi del grafico, lasciando visibile solo quello selezionato.</li>
                 </ul>
             </div>
             <div class="modal-footer">

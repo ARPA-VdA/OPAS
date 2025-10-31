@@ -299,7 +299,7 @@ $(document).ready(function() {
     $('#new-user-session').val("86400"); // default 1 giorno
 
     // initialize plugin
-    $("#filter-group, #filter-group-pages, #filter-group-stations, #filter-group-other").select2();
+    $("#filter-group, #filter-group-stations, #filter-group-other").select2();
 
     /**
      * Change event on filter group
@@ -907,6 +907,7 @@ $(document).ready(function() {
  * Third tab: PAGES
  */
 {
+    $("#filter-group-pages, #filter-pages").select2();
     /**
      * Accordion events: hide and show of collapsible elements
      * Take care of icons and classes based on accordion status
@@ -928,6 +929,8 @@ $(document).ready(function() {
 
     // hide container and table's headers
     $("#pages-group-detail").hide();
+    $('#groups-table').hide();
+
     $(".like-head").hide();
 
 
@@ -950,7 +953,33 @@ $(document).ready(function() {
         else{
             $("#pages-group-detail").hide();
         }
+    }); 
 
+    /**
+     * Change event on pages filter
+     */
+    $('#filter-pages').on("change", function (e) {
+        e.preventDefault();
+
+        // get selected group ID
+        var pageid = parseInt($(this).val());
+        // load grants for selected page
+        loadPageGroupsGrants(pageid);
+
+        // check ID
+        // if equal to -1 then hide main container otherwise show it
+        if (pageid != -1) {
+            $('#groups-table').show();
+        }
+        else {
+            $('#groups-table').hide();
+
+            // reset datatables
+            if ($('#groups-table').DataTable())
+                $('#groups-table').DataTable().destroy();
+            // clear tables
+            $('#groups-table tbody').empty();
+        }
     });
 
     /**
@@ -2223,6 +2252,120 @@ $(document).ready(function() {
 
         })
         .fail(function(xhr, err) {
+            // at the end of the process hide preloader
+            $(".inner-preloader").hide();
+            // error message
+            swal("Errore!", "Errore durante il recupero dei dati del gruppo selezionato", "error");
+        });
+    }
+
+    /**
+     * Function that retrieves groups grants of a given page.
+     *
+     * @param {integer} pageid Page ID.
+     */
+    function loadPageGroupsGrants(pageid) {
+
+        // show preloader, waiting for the end of the process
+        $(".inner-preloader").show();
+
+        // reset datatables
+        if ($('#groups-table').DataTable())
+            $('#groups-table').DataTable().destroy();
+        // clear tables
+        $('#groups-table tbody').empty();
+        
+        // get metadata via an ajax call
+        var jqxhr = $.ajax({
+            url: '/usr_admin_get_page_groups_grants',
+            type: "post",
+            dataType: "json",
+            data: {
+                page: pageid
+            }
+        })
+        .done(function (result) {
+
+            // check result
+            // if OK then build menu structure
+            if (result.res == 'OK') {
+                var groups = result.groups;
+                // check if at least one element exists
+                if (groups.length > 0) {
+                    // variables for dinamically building the html
+                    let html = '';
+                    // loop through all elements
+                    // for each group, build a html item to be added to the list
+                    $.each(groups, function (idx, el) {
+
+                        html += '<tr>';
+                        html += '    <th>'+el.gr_name+'</th>';
+                        html += '    <td align="center">';
+                        html += '        <div class="custom-control custom-checkbox ckb-tables">';
+                        html += '            <input type="checkbox" class="custom-control-input" name="page-visibility" ' + el.page_visibility +' disabled>';
+                        html += '            <label class="custom-control-label"></label>';
+                        html += '        </div>';
+                        html += '    </td>';
+                        html += '    <td align="center">';
+                        html += '        <div class="custom-control custom-checkbox ckb-tables">';
+                        html += '            <input type="checkbox" class="custom-control-input" name="page-insert" ' + el.page_insert +' disabled>';
+                        html += '            <label class="custom-control-label"></label>';
+                        html += '        </div>';
+                        html += '    </td>';
+                        html += '    <td align="center">';
+                        html += '        <div class="custom-control custom-checkbox ckb-tables">';
+                        html += '            <input type="checkbox" class="custom-control-input" name="page-update" ' + el.page_update +' disabled>';
+                        html += '            <label class="custom-control-label"></label>';
+                        html += '        </div>';
+                        html += '    </td>';
+                        html += '    <td align="center">';
+                        html += '        <div class="custom-control custom-checkbox ckb-tables">';
+                        html += '            <input type="checkbox" class="custom-control-input" name="page-delete" ' + el.page_delete +' disabled>';
+                        html += '            <label class="custom-control-label"></label>';
+                        html += '        </div>';
+                        html += '    </td>';
+                        html += '    <td></td>';
+                        html += '</tr>';
+                        
+                    });
+
+                    $('#groups-table tbody').append(html);
+                    
+                    // if items are greater then 15 then initialize a datatable
+                    // to add table's pagination
+                    if (groups.length > 15) {
+                        $.fn.DataTable.ext.pager.numbers_length = 5;
+                        $('#groups-table').DataTable({
+                            // dom: "Bfrtip",
+                            pageLength: 15,
+                            pagingType: 'simple_numbers',
+                            layout: {
+                                bottomEnd: {
+                                    paging: {
+                                        buttons: 5,
+                                        type: 'simple_numbers'
+                                    }
+                                }
+                            },
+                            // 'copy', 'csv', 'excel', 'pdf', 'print'
+                            searching: true,
+                            ordering: false,
+                            lengthChange: false,
+                            buttons: []
+                        });
+                    }
+                }
+            }
+            else {
+                // error message
+                swal("Errore!", "Errore durante il recupero dei dati del gruppo selezionato", "error");
+            }
+
+            // at the end of the process hide preloader
+            $(".inner-preloader").hide();
+
+        })
+        .fail(function (xhr, err) {
             // at the end of the process hide preloader
             $(".inner-preloader").hide();
             // error message

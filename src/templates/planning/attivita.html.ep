@@ -90,11 +90,12 @@
                             <thead>
                                 <tr>
                                     <th class="bobo-nowrap"></th>
-                                    <th>Creatore</th>
+                                    <th>ID</th>
+                                    <th>Operatore</th>
+                                    <th>Creato il</th>
                                     <th>Scadenza</th>
                                     <th>Priorità</th>
-                                    <th>In&nbsp;carico</th>
-                                    <th>Chiusura</th>
+                                    <th>Stato</th>
                                     <th>Assegnato</th>
                                     <th>Tipo</th>
                                     <th>Categoria</th>
@@ -109,11 +110,12 @@
                             <tfoot>
                                 <tr>
                                     <th class="bobo-nowrap"></th>
-                                    <th>Creatore</th>
+                                    <th>ID</th>
+                                    <th>Operatore</th>
+                                    <th>Creato il</th>
                                     <th>Scadenza</th>
                                     <th>Priorità</th>
-                                    <th>In&nbsp;carico</th>
-                                    <th>Chiusura</th>
+                                    <th>Stato</th>
                                     <th>Assegnato</th>
                                     <th>Tipo</th>
                                     <th>Categoria</th>

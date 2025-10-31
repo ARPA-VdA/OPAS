@@ -148,6 +148,7 @@
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highstock.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/highcharts-more.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/map.js'))%>"></script>
+    <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/gantt.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/data.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/annotations.js'))%>"></script>
     <script src="<%=url_for(helperGetFileVersion('/node_modules/highstock/accessibility.js'))%>"></script>
@@ -179,9 +180,9 @@
     <script src="<%=url_for('/node_modules/wizard/jquery.steps.js')%>"></script>
 
     <!-- Summernote Editor -->
-    <link  href="<%=url_for(helperGetFileVersion('/node_modules/summernote/dist/summernote-bs4.css'))%>" rel="stylesheet">
-    <script src="<%=url_for('/node_modules/summernote/dist/summernote-bs4.js')%>"></script>
-    <script src="<%=url_for('/node_modules/summernote/dist/lang/summernote-it-IT.min.js')%>"></script>
+    <link  href="<%=url_for(helperGetFileVersion('/node_modules/summernote/summernote-bs4.css'))%>" rel="stylesheet">
+    <script src="<%=url_for('/node_modules/summernote/summernote-bs4.js')%>"></script>
+    <script src="<%=url_for('/node_modules/summernote/lang/summernote-it-IT.min.js')%>"></script>
 
     <!-- multi-select -->
     <script src="<%=url_for('/node_modules/multi-select/quicksearch.js')%>"></script>
@@ -210,9 +211,9 @@
     <link href="<%=url_for(helperGetFileVersion('/node_modules/jsoneditor/jsoneditor.min.css'))%>" rel="stylesheet">
     <link href="<%=url_for(helperGetFileVersion('/node_modules/jsoneditor/darktheme.css'))%>" rel="stylesheet">
 
-    <!-- Font Awesome 6 -->
+    <!-- Font Awesome 7 -->
     <!-- <script src="https://kit.fontawesome.com/XXXXXXXX.js" crossorigin="anonymous"></script> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Morris JS -->
     <link href="<%=url_for(helperGetFileVersion('/node_modules/morrisjs/morris.css'))%>" rel="stylesheet">
@@ -614,7 +615,7 @@
 
         <footer class="footer">
             © Copyright <%= $tm->strftime("%Y"); %> <%= $user->{'portal_footer_text'} %> - developed by <a href="http://www.ecometer.it/" target="_blank" title="www.ecometer.it">Ecometer S.n.c</a>
-            <span class="pull-right release-txt font-bold text-info" data-toggle="modal" data-target=".modal-result"><i class="fa-solid fa-star-of-life"></i> v.2.0.0</span>
+            <span class="pull-right release-txt font-bold text-info" data-toggle="modal" data-target=".modal-result"><i class="fa-solid fa-star-of-life"></i> v.2.0.3</span>
         </footer>
         <!-- ============================================================== -->
         <!-- End footer -->
@@ -636,7 +637,49 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <div class="modal-body release-sw">
-                    <h5>Revisione <strong>v.2.0.0</strong></h5>
+                    <h5>Revisione <strong>v.2.0.3</strong> <span>30 sett 2025</span></h5>
+                    <ul>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuovi contenuti in <a target="_blank" href="/usr_sysadmin">Utente > SysAdmin</a> per avere facile accesso a statistiche ed elementi del sistema;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuova tipologia di visualizzazione in <a target="_blank" href="/usr_sysadmin">Utente > Admin</a> che permette di estrarre per pagina la lista dei permessi assegnati a ciascun gruppo del proprio portale;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuova funzionalità che consente di eliminare un parametro associato a una stazione;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> in Analyser nuova combinazione tasti: ctrl+ click sinistro su legenda per disattivare tutte le serie tranne quella cliccata;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> evoluto script per creazione PDF anagrafica stazione e modalità di download file;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> in Dataview limitata la visualizzazione dei dati Gamma;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> ai fini di coerenza logica di funzionamento del portale, è stata aggiunta la pagina <a target="_blank" href="/stnz_strumenti">Stanziamenti > Strumenti</a> per visualizzare e gestire in maniera separata gli stanziamenti degli strumenti;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> migliorata query di recupero dati delle tarature automatiche con notevole riduzione dei tempi di attesa;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> proseguimento evoluzione pacchetto icone nelle pagine che hanno subito aggiornamenti;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretto baco popolamento maschera in fase di modifica di dotazioni e bombole;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretto baco Dataview per la visualizzazione sui grafici dei limiti per inquinante;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretti bachi vari;</li>
+                    </ul>
+                    <h5>Revisione <strong>v.2.0.2</strong> <span>25 ago 2025</span></h5>
+                    <ul>
+                        <li><strong class="text-success"><i class="fa-solid fa-sparkles"></i> Nuova versione: </strong> restyling pagina <a target="_blank" href="/plan_attivita">Tickets > Periferia</a>;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuove impostazioni in <a target="_blank" href="/str_analyser">Strumenti > Analyser</a> per abilitare nei grafici e nelle tabelle la visualizzazione delle serie minime / massime e delle percentuali di letture acquisite;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuovi campi nella macro di Analyser per gestire la visualizzazione dei minimi e dei massimi;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> in validazione nuova colonna con le percentuali dei dati acquisiti;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> evolute funzioni nel database per gestire le tabelle in cui vengono salvate tutte le letture della periferia;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> modificate voci pre-impostate nel calendario della sezione <a target="_blank" href="/dat_tarature_aut">Dati > Tarature automatiche</a> e aggiunta la possibilità di selezionare le ore di inizio e fine periodo;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> aggiunto filtro per recuperare solo le tarature automatiche fallite;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretta generazione automatica di macro su Visualizer;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretti bachi vari in Validazione a seguito di aggiornamento plugin;</li>
+                    </ul>
+                    <h5>Revisione <strong>v.2.0.1</strong> <span>30 giu 2025</span></h5>
+                    <ul>
+                        <li><strong class="text-success"><i class="fa-solid fa-sparkles"></i> Nuova versione: </strong> release aggiornamenti su <a target="_blank" href="https://github.com/ARPA-VdA/OPAS">GitHub</a>;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> sezione <a target="_blank" href="/media">Media</a> per gestire i file delle singole stazioni;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> sezione <a target="_blank" href="/plan_centro">Tickets > Centro</a> per inviare segnalazioni di malfunzionamenti del portale OPAS;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> visualizzazioni grafiche degli stanziamenti di strumenti, bombole e mezzi mobili;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> widget per import dati laboratorio tramite procedura SCRIPTA [<strong>ArpaVdA</strong>];</li>
+                        <li><strong class="text-warning"><i class="fa-solid fa-coffee-bean"></i> Versione beta: </strong> gestione dei permessi (inserimento, modifica ed eliminazione) nella nuova sezione Media;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> migliorate visualizzazioni delle anagrafiche dei vari elementi della rete (strumenti, bombole, dotazioni, campagne);</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> aggiunta sezione nell'anagrafica della stazione per visualizzare gli allegati;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> aggiunte legende e informazioni descrittive per aumentare la fruibilità del progetto;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretto header file csv esportato in Analyser;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretta funzione DB per parsing configurazione json;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> correzione bachi vari.</li>
+                    </ul>
+                    <h5>Revisione <strong>v.2.0.0</strong> <span>31 mar 2025</span></h5>
                     <ul>
                         <li><strong class="text-success"><i class="fa-solid fa-sparkles"></i> Nuova versione: </strong> release codice sorgente progetto su <a target="_blank" href="https://github.com/ARPA-VdA/OPAS">GitHub</a> con licenza AGPL-3.0;</li>
                         <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> sezione System Admin per gestire la sospensione del sistema OPAS;</li>

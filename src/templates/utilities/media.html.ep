@@ -1,0 +1,89 @@
+% layout 'default';
+% title 'Media';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/utilities/media.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Visualizza tutti i <strong>media</strong></h4>
+                <h6 class="card-subtitle">Da questa pagina puoi visualizzare tutti i media relativi alla tua rete.</h6>
+                <div class="media-file-system first-step">
+                    <hr class="m-b-10">
+                    <div class="media-breadcrump">
+                        <em>La tua posizione:</em> <span><a class="nav-file-system go-back" href="#" data-dir="down" data-path="<%= $root %>"><%= $root %></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-new-folder" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info"><strong>Aggiungi una cartella</strong> nella tua posizione attuale</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="media-breadcrump">
+                    <em>La tua posizione:</em> <span>principale</span> <i class="fal fa-angle-double-right"></i> <span></span>
+                </div>
+                <hr>
+                <form class="form" id="add-folder-form" name="add-folder-form">
+                    <div class="form-group row">
+                        <label for="folder-name" class="col-3 col-form-label">Nome cartella</label>
+                        <input type="hidden" class="form-control clear-input" id="folder-source" value="">
+                        <div class="col-6">
+                            <input type="text" class="form-control clear-input" id="folder-name" name="folder-name" placeholder="Nome...">
+                        </div>
+                        <div class="col-3">
+                            <button type="submit" class="btn btn-primary"> <i class="fas fa-folder-plus"></i> Cartella</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">CHIUDI</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="rename-file" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info"><strong>Modifica nome file</strong> nella tua posizione attuale</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="media-breadcrump">
+                    <em>La tua posizione:</em> <span>principale</span> <i class="fal fa-angle-double-right"></i> <span>cartella 01</span>
+                </div>
+                <hr>
+                <form class="form" id="rename-file-form" name="rename-file-form">
+                    <input  type="hidden" class="form-control clear-input" id="file-path" name="file-path">
+                    <div class="form-group row">
+                        <label for="folder-name" class="col-3 col-form-label">Nome files</label>
+                        <div class="col-6">
+                            <input type="text" class="form-control clear-input" id="file-name" name="file-name" placeholder="Nome...">
+                        </div>
+                        <div class="col-3">
+                            <button type="submit" class="btn btn-primary"> <i class="fas fa-file-edit"></i> Rinomina file</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">CHIUDI</button>
+            </div>
+        </div>
+    </div>
+</div>

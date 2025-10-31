@@ -1,0 +1,99 @@
+-- CHANGELOG
+
+-- 2025-09-30 - V2.0.3
+
+- Creata nuova sezione Stanziamenti per gestire gli stanziamenti degli elementi in maniera separata dall'anagrafica
+- Aggiunto recupero informazioni di sistema nella pagina System Admin
+- Aggiunta visualizzazione permessi per pagina in Admin
+- Aggiunta funzionalità per eliminare il parametro associato alla stazione
+  > creata funzione nel database per eliminazione parametro
+  > aggiornate chiamate server
+- Aggiunto in Tarature automatiche filtro "tarature fallite" e aggiunta possibilità di selezionare le ore per estrarre i dati con voce predefinita "ultime 24h"
+  > Aggiornate chiamate server con miglioramento delle prestazioni
+  > Aggiornato client (js e html)
+- Aggiunto in Analyser recupero valori "min", "max" e "perc"
+  > aggiunte nuove impostazioni utente nell'applicativo
+  > aggiornata struttura delle Macro allineandola con quella di Visualizer
+  > aggiunte nuove impostazioni macro nell'applicativo
+  > aggiornate le route server per gestire le nuove impostazioni e colonne 
+- Aggiunta in Analyser nuova combinazione tasti: ctrl+ click sinistro su legenda per disattivare tutte le serie tranne quella cliccata
+- Aggiunto in Validazione recupero colonna "Percentuale" nel dettaglio dell'intorno del dato
+  > Aggiornato file .js
+  > Aggiornata query per estrazione dati
+- Aggiornata interfaccia Tickets > Periferia
+  > Aggiornate tabelle e vista nel database con nuove colonne
+  > Aggiornate chiamate server
+  > Aggiornato client (js e html)
+- Gestita visualizzazione Gamma in Dataview [ArpaVDA]
+- Aggiornato script per creazione PDF stazione e modalità di download file
+- Aggiornata funzione clients.f_data_extraction per estrarre la percentuale di letture dei dati arrivati da periferia
+- Aggiunta nuova tabella template e aggiornate funzioni template.f_create_table_like_template e template.f_create_opas_tables
+- Aggiornata funzione client_vda.f_audit_ozone per invio segnalazioni superamenti ozono: rimosso caso di taratura [ArpaVDA]
+- Miglioramenti grafici: inizio aggiornamento icone
+- Correzioni bachi Validazione legati all'aggiornamento del plugin Tabulator
+- Corretto baco Validazione dati bloccati. Controllo oggetto pre-invio per presenza di dati bloccati
+- Corretto baco popolamento in fase di edit dotazioni e bombole.js
+- Corretto baco Dataview per la visualizzazione sui grafici dei limiti per inquinante
+- Correzione bachi vari
+- Aggiornati file "README.md" e "INSTALL.md" su Github
+
+-- 2025-06-30 - V2.0.1
+- Aggiunta sezione Media per gestire i file delle singole stazioni
+  > Modificato bobo.conf
+  > Aggiunti file .js, .html (client) e .pm (server)
+  > Aggiunto plugin per gestione File System
+- Aggiunta sezione Tickets > Centro per inviare segnalazioni di malfunzionamenti del portale OPAS
+  > Create tabelle, viste e funzioni per il funzionamento dell'applicativo
+  > Aggiunti file .js, .html (client) e .pm (server)
+  > Creato canale Telegram per invio notifiche in fase di apertura ticket
+- Aggiunta visualizzazioni grafiche degli stanziamenti di strumenti, bombole e mezzi mobili
+- Aggiunta widget per import dati laboratorio tramite procedura SCRIPTA
+- Migliorate visualizzazioni delle anagrafiche dei vari elementi della rete (strumenti, bombole, dotazioni, campagne);
+- Aggiunta sezione nell'anagrafica della stazione per visualizzare gli allegati;
+- Aggiunte legende e informazioni descrittive per aumentare la fruibilità del progetto;
+- Aggiunti campi alle tabelle metadata.stations_info e metadata.stations_network_type
+- Aggiornata vista webservice.v1_series
+- Aggiornata funzione template.f_create_opas_tables con gestione trigger specifici per agenzia
+- Aggiornata funzione metadata.f_get_parameters_from_station_config_v3 per correzione baco
+- Aggiornata funzione metadata.f_get_cc_from_station_config per correzione baco
+- Aggiornamento plugin Summernote
+- Corretto header file csv esportato in Analyser
+- Corretta funzione DB per parsing configurazione json
+- Correzione bachi vari
+- Aggiornato Webservice: aggiunta cadenza acquisizione nelle chiamate metadata
+- Aggiornati file "README.md" e "INSTALL.md" su Github
+
+-- 2025-03-31 - V2.0.0
+
+- Aggiunta sezione System Admin per gestire la sospensione del sistema OPAS
+- Aggiunte informazioni versioning
+- Aggiunti link rapidi tra le pagine di Anagrafica, Mapper, Istantanei
+- Aggiunta in Analyser il recupero dei dati per stanziamento dei mezzi mobili
+  > creazione vista metadata.view_sites_parameters
+  > aggiornamento funzione clients.f_data_extraction
+  > aggiornamento funzione clients.f_calc_dynamic_moving_mean
+  > aggiornamento funzione clients.f_sldavg_data_extraction
+  > aggiornamento funzione metadata.f_get_conversion_by_date_stprid
+  > creata nuova funzione metadata.f_get_view_sites_parameters
+- Aggiornata funzione metadata.f_get_parameters_from_station_config_v3 con gestione paramID che arriva dalla configurazione di periferia e assegnazione parametro generico per parametri non trovati
+- Aggiornata funzione template.f_create_opas_tables con gestione trigger specifici per agenzia
+- Aggiornate funzioni template.f_create_cc_view e metadata.f_get_cc_from_station_config per gestione CC H2S.
+- Aggiunta funzione webservice.f_data_extraction_v2 per estrazione serie giornaliere
+- Aggiunti campi dotazioni: marca, modello e data di consegna. Aggiornate viste
+- Aggiornamento plugin DataTables, Highcharts e Tabulator e modifiche per mantenimento funzionalità
+  > evoluzione sistema di selezione dei dati nel tool Validazione
+- Ottimizzazione query di estrazione dati 
+- Backend: Script import dati, tarature, dati tarature istantanee ecc; configurazione SFTP
+  > aggiunto file "~/scripts/backend/import/import-cal.pl"
+  > aggiunto file "~/scripts/backend/import/import-data.pl"
+  > aggiunto file "~/scripts/backend/import/import-data.sh"
+  > aggiunto file "~/scripts/backend/import/import-inst.pl"
+  > aggiunto file "~/scripts/backend/import/import-inst.sh"
+  > aggiunto file "~/scripts/backend/import/library-dbh.pl"
+  > aggiunto file "~/scripts/backend/import/library-utils.pl"
+  > aggiunto file "~/scripts/backend/import/settings.pl"
+- Backend: Script export dati (trigger, tabella script); configurazione SFTP
+  > aggiunto file "~/scripts/backend/export/exporter_data.py"
+  > aggiunto file "~/scripts/backend/export/exporter.sql": trigger e tabella
+- Aggiornati file "README.md" e "INSTALL.md" su Github
+- Correzione bachi vari

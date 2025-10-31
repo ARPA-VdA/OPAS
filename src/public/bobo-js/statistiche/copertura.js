@@ -125,7 +125,7 @@ $(document).ready(function() {
         e.preventDefault();
         // create file name
         var fileName = 'copertura_validita_'+$( "#stations" ).find('option:selected').text()+'_'+moment(dateFrom).format("YYYY")+'.csv';
-        table.download("csv", fileName, {}, "all");
+        tableVal.download("csv", fileName, {}, "all");
     });
 
     /*
@@ -135,7 +135,7 @@ $(document).ready(function() {
         e.preventDefault();
         // create file name
         var fileName = 'copertura_validita_'+$( "#stations" ).find('option:selected').text()+'_'+moment(dateFrom).format("YYYY")+'.xlsx';
-        table.download("xlsx", fileName, {sheetName:"Copertura validità"});
+        tableVal.download("xlsx", fileName, {sheetName:"Copertura validità"});
     });
 
     /**

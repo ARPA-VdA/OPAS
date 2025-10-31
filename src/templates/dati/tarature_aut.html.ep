@@ -25,41 +25,51 @@
                 </div>
 
                 <div class="row m-b-10">
-                    <div class="input-group col-md-2">
+                    <div class="input-group col-md-6">
                         <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
                         </div>
                     </div>
-                    <div class="col-lg-2">
+                    <div class=" col-md-3">
+                        <input type="checkbox" id="result-active" name="result-active" class="js-switch" data-color="#79a030" />
+                        <label for="result-active">Taratura con risultato</label>
+                    </div>
+                    <div class=" col-md-3">
+                        <input type="checkbox" id="result-failed" name="result-failed" class="js-switch" data-color="#79a030" />
+                        <label for="result-failed">Tarature fallite</label>
+                    </div>
+                </div>
+                <div class="row m-b-10">
+                    <div class="col-lg-3">
                         <select class="custom-select col-12" id="networks" name="networks">
                             <option value="-1">Seleziona rete...</option>
                             % foreach my $net (@{$networks}){
-                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            <option value="<%= $net->{'st_network_id'} %>">
+                                <%= $net->{'st_network_desc'} %>
+                            </option>
                             % }
                         </select>
                     </div>
-                    <div class=" col-md-2">
+                    <div class=" col-md-3">
                         <select class="custom-select col-12" id="provinces" name="provinces">
                             <option value="-1">Seleziona provincia...</option>
                         </select>
                     </div>
-                    <div class=" col-md-2">
+                    <div class=" col-md-3">
                         <select class="custom-select col-12" id="stations" name="stations">
                             <option value="-1">Seleziona stazione...</option>
                         </select>
                     </div>
-                    <div class=" col-md-2">
+                    <div class=" col-md-3">
                         <select class="custom-select col-12" id="parameters" name="parameters">
                             <option value="-1">Seleziona parametro...</option>
                             % foreach my $parameter (@{$parameters}){
-                                <option value="<%= $parameter->{'param_id'} %>"><%= $parameter->{'param_name'} %></option>
+                            <option value="<%= $parameter->{'param_id'} %>">
+                                <%= $parameter->{'param_name'} %>
+                            </option>
                             % }
                         </select>
-                    </div>
-                    <div class=" col-md-2">
-                        <input type="checkbox" id="result-active" name="result-active" class="js-switch" data-color="#79a030" />
-                        <label for="result-active">Taratura con risultato</label>
                     </div>
                 </div>
 

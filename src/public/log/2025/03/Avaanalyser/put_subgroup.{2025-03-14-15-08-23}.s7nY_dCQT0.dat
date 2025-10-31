@@ -1,0 +1,12 @@
+{
+  "provinces" => -1,
+  "q" => [
+           "",
+           ""
+         ],
+  "subgroup-fill" => "",
+  "subgroup-groups" => 3,
+  "subgroup-id" => "",
+  "subgroup-name" => "Test",
+  "subgroup-stat[]" => 1000
+}

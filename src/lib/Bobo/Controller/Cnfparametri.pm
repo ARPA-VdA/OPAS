@@ -243,13 +243,13 @@ sub del_station_param {
     # my $res = 1;
 
     # check result
-    if ($res) {
+    if ($res > 0) {
         $self->app->log->debug('Result: OK');
         $self->render(json => 1);
     }
     else {
         $self->app->log->debug('Result: ERROR');
-        $self->render(json => 0);
+        $self->render(json => $res);
     }
 }
 

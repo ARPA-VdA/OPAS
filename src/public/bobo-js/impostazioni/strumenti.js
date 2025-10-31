@@ -1958,28 +1958,58 @@ $(document).ready(function() {
 
                     html += '        <h4 class="box-title m-t-30">Location attuale dello strumento <strong>'+fullname+'</strong></h4>\n';
                     html += '        <hr class="m-t-0 m-b-20">\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Provincia</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_prov+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Stazione</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '        <div class="row">\n';
+                    html += '            <div class="col-md-7 col-xl-6">\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Provincia</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_prov+'</div>\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Stazione</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '                </div>\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Data/ora inizio</label>\n';
+                    html += '                    <div class="col-7 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Data/ora fine</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_end+'</div>\n';
+                    html += '                </div>\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Parametri collegati</label>\n';
+                    html += '                    <div class="col-7 view-param">'+(actualLoc.location_params.length == 0 ? '--' : actualLoc.location_params.join(', '))+'</div>\n';
+                    html += '                    <div class="col-7 offset-5 view-param">'+formatFlagField(actualLoc.location_master)+' Strumento principale</div>\n';
+                    html += '                </div>\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Note location</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_note+'</div>\n';
+                    html += '                </div>\n';
+                    html += '            </div>\n';
+                    html += '            <div class="col-md-5 col-xl-6">\n';
+                    html += '                 <div id="map-view-'+inid+'" class="mini-map" tabindex="0"></div>\n';
+                    html += '            </div>\n';
                     html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora inizio</label>\n';
-                    html += '            <div class="col-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora fine</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_end+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Parametri collegati</label>\n';
-                    html += '            <div class="col-4 view-param">'+(actualLoc.location_params.length == 0 ? '--' : actualLoc.location_params.join(', '))+'</div>\n';
-                    html += '            <div class="col-4 offset-2 view-param">'+formatFlagField(actualLoc.location_master)+' Strumento principale</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Note location</label>\n';
-                    html += '            <div class="col-10 view-param">'+actualLoc.location_note+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div id="map-view-'+inid+'" class="mini-map" tabindex="0"></div>\n';
+
+                    // html += '        <hr class="m-t-0 m-b-20">\n';
+                    // html += '        <div class="form-group row">\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Provincia</label>\n';
+                    // html += '            <div class="col-4 view-param">'+actualLoc.location_prov+'</div>\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Stazione</label>\n';
+                    // html += '            <div class="col-4 view-param">'+actualLoc.location_name+'</div>\n';
+                    // html += '        </div>\n';
+                    // html += '        <div class="form-group row">\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Data/ora inizio</label>\n';
+                    // html += '            <div class="col-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Data/ora fine</label>\n';
+                    // html += '            <div class="col-4 view-param">'+actualLoc.location_end+'</div>\n';
+                    // html += '        </div>\n';
+                    // html += '        <div class="form-group row">\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Parametri collegati</label>\n';
+                    // html += '            <div class="col-4 view-param">'+(actualLoc.location_params.length == 0 ? '--' : actualLoc.location_params.join(', '))+'</div>\n';
+                    // html += '            <div class="col-4 offset-2 view-param">'+formatFlagField(actualLoc.location_master)+' Strumento principale</div>\n';
+                    // html += '        </div>\n';
+                    // html += '        <div class="form-group row">\n';
+                    // html += '            <label for="" class="control-label col-2 col-form-label">Note location</label>\n';
+                    // html += '            <div class="col-10 view-param">'+actualLoc.location_note+'</div>\n';
+                    // html += '        </div>\n';
+                    // html += '        <div id="map-view-'+inid+'" class="mini-map" tabindex="0"></div>\n';
                 }
                 else{
                     // last location already closed
@@ -2027,6 +2057,9 @@ $(document).ready(function() {
                     html += '                </tr>\n';
                     html += '            </tfoot>\n';
                     html += '        </table>\n';
+                    html += '        <hr class="m-t-20 m-b-20">\n';
+                    html += '        <div id="container-instr-'+inid+'" class="">\n';
+                    html += '        </div>\n';
                 }
             }
 
@@ -2083,6 +2116,42 @@ $(document).ready(function() {
                             }
                         ],
                         "order": [[ 1, "desc" ]]
+                    });
+
+                    // create the gantt chart with all the previous locations
+                    let obj = result.gantt_locations;
+                    let locs = JSON.parse(obj.instrument_locations);
+
+                    Highcharts.ganttChart('container-instr-'+ inid, {
+                        title: {
+                            text: obj.instrument_fullname
+                        },
+                        xAxis: [{
+                            labels: {
+                                format: '{value:%Y}'
+                            },
+                            min: locs[0].start,
+                            max: locs[locs.length - 1].end,
+                            tickInterval: 1000 * 60 * 60 * 24 * 365// year
+                        }],
+                        yAxis: {
+                            uniqueNames: true
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                // console.dir(this);
+                                return '<b>' + this.name + '</b><br>Data inizio: <b>' + getFormattedDateDT(this.start, 'basic_timeStartMin') + '</b><br>Data fine: <b>' + getFormattedDateDT(this.end, 'basic_timeStartMin') + '</b>';
+                            }
+                            // format:
+                        },
+                        credits: {
+                            text: '© ' + footer, //Arriving from DB "portal_css_footer_text", default "Bobo Cloud"
+                            href: company_web
+                        },
+                        series: [{
+                            name: 'Stanziamenti',
+                            data: locs
+                        }]
                     });
                 }
             }

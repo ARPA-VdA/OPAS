@@ -1,0 +1,5 @@
+{
+  "disabled" => "[]",
+  "new" => "[{\"id\":1,\"name\":\"Param. generico\",\"note\":\"NOx\",\"prid\":0,\"unit\":\"--\",\"daily\":false,\"module\":3,\"need-group\":true,\"module_name\":\"ENVEA AC32\"},{\"id\":2,\"name\":\"Param. generico\",\"note\":\"NO\",\"prid\":0,\"unit\":\"--\",\"daily\":false,\"module\":3,\"need-group\":true,\"module_name\":\"ENVEA AC32\"},{\"id\":3,\"name\":\"Param. generico\",\"note\":\"NO2\",\"prid\":0,\"unit\":\"--\",\"daily\":false,\"module\":3,\"need-group\":true,\"module_name\":\"ENVEA AC32\"},{\"id\":8,\"name\":\"Param. generico\",\"note\":\"SO2\",\"prid\":0,\"unit\":\"--\",\"daily\":false,\"module\":8,\"need-group\":true,\"module_name\":\"ENVEA AF22\"},{\"id\":20,\"name\":\"Param. generico\",\"note\":\"O3\",\"prid\":0,\"unit\":\"--\",\"daily\":false,\"module\":9,\"need-group\":true,\"module_name\":\"API 400\"}]",
+  "stid" => 1000
+}

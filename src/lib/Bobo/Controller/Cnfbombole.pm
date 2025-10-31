@@ -110,11 +110,13 @@ sub get_cylinder_by_id {
     # get data from dateFrom to dateTo
     my $json;
     my $cylinder = $self->dbcnfbombole->get_cylinder_by_id($cyid);
+    my $locations = $self->dbcnfbombole->get_cylinder_locations_history($cyid);
 
     if (defined $cylinder) {
         $json = {
             res => "OK",
-            cylinder => $cylinder
+            cylinder => $cylinder,
+            gantt_locations => $locations
         };
     }
     else {

@@ -145,7 +145,7 @@
                                 <div class="col-md-4">
                                     <input class="form-control" type="text" value="1" id="param-coef" name="param-coef" placeholder="Coefficiente (separatore dec. PUNTO)">
                                 </div>
-                            </div> -->
+                            </div>
                             <table class="table responsive table-striped table-compressed-middle table-font-smallerform-table m-b-10 hide-filters tbl-titles width-100 tbl-with-form" id="tbl-coeff">
                                 <thead>
                                     <tr>

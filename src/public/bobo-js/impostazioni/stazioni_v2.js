@@ -195,43 +195,43 @@ $(document).ready(function() {
     /**
      * Download station PDF
      */
-    $('#table-stations').on('click', '.pdf-el', function(e){
-        e.preventDefault();
+    // $('#table-stations').on('click', '.pdf-el', function(e){
+    //     e.preventDefault();
 
-        console.log('Download report\'s PDF');
-        // get station id stored in table tr element
-        var stid = parseInt($(this).parent().parent().data("id"));
+    //     console.log('Download report\'s PDF');
+    //     // get station id stored in table tr element
+    //     var stid = parseInt($(this).parent().parent().data("id"));
 
-        // show preloader, waiting for the end of the process
-        $(".inner-preloader").show();
-        var url = "/cnf_stazioni_get_pdf";
+    //     // show preloader, waiting for the end of the process
+    //     $(".inner-preloader").show();
+    //     var url = "/cnf_stazioni_get_pdf";
 
-        /**
-         * http://johnculviner.com/category/jquery-file-download/
-         */
-        $.fileDownload(url, {
-            httpMethod: 'GET',
-            data: {
-                stid: stid
-            },
-            successCallback: function(url) {
-                console.log("PDF scaricato correttamente");
-                // at the end of the process hide preloader
-                $(".inner-preloader").hide();
-            },
-            failCallback: function(responseHtml, url, error) {
-                // take care of any errors from ajax call
-                // error message
-                swal("Errore!", "Il file pdf non è stato creato oppure errore durante lo scarico", "error");
-                // at the end of the process hide preloader
-                $(".inner-preloader").hide();
-            }
-        });
+    //     /**
+    //      * http://johnculviner.com/category/jquery-file-download/
+    //      */
+    //     $.fileDownload(url, {
+    //         httpMethod: 'GET',
+    //         data: {
+    //             stid: stid
+    //         },
+    //         successCallback: function(url) {
+    //             console.log("PDF scaricato correttamente");
+    //             // at the end of the process hide preloader
+    //             $(".inner-preloader").hide();
+    //         },
+    //         failCallback: function(responseHtml, url, error) {
+    //             // take care of any errors from ajax call
+    //             // error message
+    //             swal("Errore!", "Il file pdf non è stato creato oppure errore durante lo scarico", "error");
+    //             // at the end of the process hide preloader
+    //             $(".inner-preloader").hide();
+    //         }
+    //     });
 
-        console.log('End download');
-        // this is critical to stop the click event which will trigger a normal file download!
-        return false;
-    });
+    //     console.log('End download');
+    //     // this is critical to stop the click event which will trigger a normal file download!
+    //     return false;
+    // });
     /////////////////////////////////////////////////////////////////////
     // END TABLE FUNCTIONS
 
@@ -547,8 +547,8 @@ $(document).ready(function() {
 
         // insert action
         if(isNaN(id)){
-        // push station header file
-        form.push({ name: "station-headerfile", value: $('#station-headerfile').val() });
+            // push station header file
+            form.push({ name: "station-headerfile", value: $('#station-headerfile').val() });
         }
 
         // show preloader, waiting for the end of the process
@@ -780,6 +780,36 @@ $(document).ready(function() {
     };
 
     /**
+     * Function to format the icon based on file extension
+     * @param {o} o file object
+     * @returns string with the icon HTML
+     */
+    function formatIcon(o){
+        // <i class="fa-solid fa-file-pdf text-info"></i>
+        // <i class="fa-solid fa-file-xls text-success"></i>
+        // <i class="fa-solid fa-file-xls text-success"></i>
+        // <i class="fa-solid fa-file-csv text-purple"></i>
+        // <i class="fa-solid fa-file-xml text-warning"></i>
+
+        if(o.ext == 'csv')
+            return '<i class="fa-solid fa-file-csv text-purple"></i>';
+        else if (o.ext == 'pdf')
+            return '<i class="fa-solid fa-file-pdf text-info"></i>';
+        else if (o.ext == 'docx')
+            return '<i class="fa-solid fa-file-doc text-success"></i>';
+        else if (o.ext == 'xlsx')
+            return '<i class="fa-solid fa-file-xls text-success"></i>';
+        else if (o.ext == 'xml')
+            return '<i class="fa-solid fa-file-xml text-warning"></i>';
+        else if (['dbf','prj','sbn','sbx','shp','shx'].includes(o.ext))
+            return '<i class="fa-solid fa-file-vector text-primary"></i>';
+        else if (['html','ep', 'css', 'js','sql','pl','pm', 'json', 'yml'].includes(o.ext) )
+            return '<i class="fa-solid fa-file-code text-warning"></i>';
+        else
+            return '<i class="fa-solid fa-file-lines text-default"></i>';
+    }
+
+    /**
      * Function that creates table from inserted name and province
      * No args needed
      */
@@ -870,13 +900,15 @@ $(document).ready(function() {
 
                         rows += '<tr class="'+isActive+'" data-id="'+value.station_id+'">';
                         rows += '    <td class="bobo-nowrap icons-little">';
-                        rows += '        <a href="javascript:void(0)" class="show-el" data-toggle="tooltip" data-original-title="Visualizza"> <i class="ti-zoom-in text-info"></i> </a>';
+                        rows += '        <a href="javascript:void(0)" class="show-el" data-toggle="tooltip" data-original-title="Visualizza"> <i class="fa-light fa-magnifying-glass-plus text-info"></i> </a>';
                         if(update_grant)
-                            rows += '        <a href="javascript:void(0)" class="edit-el" data-toggle="tooltip" data-original-title="Modifica"> <i class="icon-pencil text-info"></i> </a>';
+                            rows += '        <a href="javascript:void(0)" class="edit-el" data-toggle="tooltip" data-original-title="Modifica"> <i class="fa-light fa-pencil text-info"></i> </a>';
                         // download pdf
-                        rows += '        <a href="javascript:void(0)" class="pdf-el" data-toggle="tooltip" data-original-title="Scarica PDF"> <i class="ti-download text-danger"></i> </a>';
-                        if(delete_grant)    
-                        rows += '        <a href="javascript:void(0)" class="delete-el" data-toggle="tooltip" data-original-title="Elimina"> <i class="icon-trash text-danger"></i> </a>';
+                        // rows += '        <a href="javascript:void(0)" class="pdf-el" data-toggle="tooltip" data-original-title="Scarica PDF"> <i class="fa-light fa-download text-danger"></i> </a>';
+                        const fileVersion = Math.random().toString(36).replace('0.', '');
+                        rows += '        <a href="'+value.station_pdf_path+'?v='+fileVersion+'" target="_blank" class="pdf-el" data-toggle="tooltip" data-original-title="Scarica PDF"> <i class="fa-light fa-download text-danger"></i> </a>';
+                        if(delete_grant)
+                            rows += '        <a href="javascript:void(0)" class="delete-el" data-toggle="tooltip" data-original-title="Elimina"> <i class="fa-light fa-trash-can text-danger"></i> </a>';
 
                         if (value.station_active){
                             rows += '        <br>';
@@ -1419,6 +1451,66 @@ $(document).ready(function() {
                 html += '            <div class="m-t-5 font-16"><a class="" href="/str_mapper/'+stid+'" target="_blank"><i class="fa-solid fa-circle-location-arrow text-success" aria-hidden="true"></i> Vai al sinottico di Mapper</a></div>';
                 html += '        </div>';
                 html += '    </div>';
+
+                // check if there are files
+                // if true then add attachments div
+                const images = result.files.filter(function (o) {
+                    // exclude main images
+                    return ( o.is_image == 1 && result.image != o.rel_path );
+                });
+                
+                const others = result.files.filter(function (o) {
+                    return o.is_image == 0;
+                });
+                
+                if( (images.length + others.length) > 0){
+                    // {
+                    //     "basename": "1000.jpg",
+                    //     "ext": "jpg",
+                    //     "is_image": 1,
+                    //     "rel_path": "/media/arpavda/1000/1000.jpg"
+                    // }
+
+                    html += '    <h6 class="title-stat m-b-20"><i class="fa-light fa-paperclip"></i> <strong>Allegati</strong> della stazione</h6>';
+                    html += '    <div class="row">';
+                    html += '        <div class="col-lg-7 m-b-20 report-gallery-big station-gallery">';
+                    html += '            <table class="table table-striped table-compressed main-tit">';
+                    html += '                <thead>';
+                    html += '                    <tr>';
+                    html += '                        <th colspan="4"><i class="fa-light fa-image"></i> Immagini</th>';
+                    html += '                    </tr>';
+                    html += '                </thead>';
+                    html += '            </table>';
+                    images.forEach(function(o){
+                        html += '            <a href="'+o.rel_path+'" class="clearfix thumb-gallery-lg">';
+                        html += '                <img src="'+o.rel_path+'" />';
+                        html += '            </a>';
+                    });
+                    html += '        </div>';
+                    html += '        <div class="col-lg-5 m-b-20">';
+                    html += '            <table class="table table-striped table-compressed main-tit">';
+                    html += '                <thead>';
+                    html += '                    <tr>';
+                    html += '                        <th colspan="4"><i class="fa-light fa-files"></i> Files</th>';
+                    html += '                    </tr>';
+                    html += '                </thead>';
+                    html += '            </table>';
+                    html += '            <ul class="docs-multiline station-docs">';
+                    others.forEach(function(o){
+                        html += '                <li><a href="#" target="_blank">'+formatIcon(o)+' '+o.basename+'</a></li>';
+                    });
+                    html += '            </ul>';
+                    html += '        </div>';
+                    html += '    </div>';
+
+                }
+
+                // check if the station is a mobile vehicle
+                if (el.station_roaming_type_id == 2 && result.gantt_locations.mm_locations != null){
+                    html += '    <h6 class="title-stat m-b-10"><i class="ti-map-alt"></i> <strong>Storico stanziamenti</strong> stazione</h6>';
+                    html += '    <div id="container-mm-' + stid + '" class="">';
+                    html += '    </div>';
+                }
                 html += '    <hr class="m-t-0">';
                 html += '    <div class="form-group row">';
                 html += '        <div class="col-12">';
@@ -1434,6 +1526,16 @@ $(document).ready(function() {
 
                 // append html
                 $('.tab-content').append(html);
+
+                $('.report-gallery-big').each(function() { // the containers for all your galleries
+                    $(this).magnificPopup({
+                        delegate: 'a', // the selector for gallery item
+                        type: 'image',
+                        gallery: {
+                          enabled:true
+                        }
+                    });
+                });
 
                 mapView[stid] = initMap('map-'+stid, footer);
 
@@ -1452,6 +1554,51 @@ $(document).ready(function() {
                     mapView[stid].getView().fit(feature.getGeometry(), {
                         minResolution: 15
                     });
+                }
+
+                if (el.station_roaming_type_id == 2 && result.gantt_locations.mm_locations != null) {
+
+                    let obj = result.gantt_locations;
+                    let locs = JSON.parse(obj.mm_locations);
+
+                    if(locs.length > 0){
+
+                        Highcharts.ganttChart('container-mm-' + stid, {
+                            title: {
+                                text: obj.station_name
+                            },
+                            xAxis: [{
+                                labels: {
+                                    format: '{value:%Y}'
+                                },
+                                min: locs[0].start,
+                                max: locs[locs.length - 1].end,
+                                tickInterval: 1000 * 60 * 60 * 24 * 365// year
+                            }],
+                            yAxis: {
+                                uniqueNames: true
+                            },
+                            tooltip: {
+                                formatter: function () {
+                                    // console.dir(this);
+                                    let msg = '<b>' + this.name + '</b><br>';
+                                    msg += 'Data inizio: <b>' + getFormattedDateDT(this.start, 'basic_timeStartMin') + '</b><br>';
+                                    msg += 'Data fine: <b>' + getFormattedDateDT(this.end, 'basic_timeStartMin') + '</b><br>';
+                                    msg += 'Note: <b>' + this.note + '</b>';
+                                    return msg;
+                                }
+                                // format:
+                            },
+                            credits: {
+                                text: '© ' + footer, //Arriving from DB "portal_css_footer_text", default "Bobo Cloud"
+                                href: company_web
+                            },
+                            series: [{
+                                name: 'Stanziamenti',
+                                data: locs
+                            }]
+                        });
+                    }
                 }
 
                 // show the detail tab

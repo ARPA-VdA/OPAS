@@ -20,56 +20,79 @@ $(document).ready(function() {
         var date    = moment.utc(parseInt(dateStart*1000));
 
         // variable for loadData function
-        dateTo = date.format('YYYY-MM-DD 23:59:59');
-        dateFrom = date.format('YYYY-MM-DD');
+        dateTo = date.endOf('day').format('YYYY-MM-DD HH:mm');
+        dateFrom = date.startOf('day').format('YYYY-MM-DD HH:mm');
     }
     else{
         // variable for loadData function
-        dateTo = moment().format('YYYY-MM-DD 23:59:59');
-        dateFrom = moment(dateTo).format('YYYY-MM-DD');
+        dateTo = moment().format('YYYY-MM-DD HH:mm');
+        dateFrom = moment().subtract(24, 'hours').format('YYYY-MM-DD HH:mm');
     }
-
-
-    // variable for datepicker plugin (different format)
-    var start = moment(dateFrom).format("DD/MM/YYYY");
-    var end = moment(dateTo).format("DD/MM/YYYY");
-
-    // initialize switchery
-    mySwitchActive = new Switchery($("#result-active")[0], $("#result-active").data());
 
     // Daterange picker
     $('.input-daterange-datepicker').daterangepicker({
-        startDate: start,
-        endDate: end,
-        maxDate: end,
+        startDate: moment(dateFrom),
+        endDate: moment(dateTo),
         buttonClasses: ['btn', 'btn-sm'],
         applyClass: 'btn-danger',
         cancelClass: 'btn-inverse',
+        timePicker: true,
+        timePicker24Hour: true,
         ranges: {
-            'Oggi': [moment(), moment()],
-            'Ieri': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Ultimi 3 giorni': [moment().subtract(3, 'days'), moment()]
+            'Ultime 24h': [moment().subtract(24, 'hours'), moment()],
+            'Oggi': [moment().startOf('day'), moment().endOf('day')],
+            'Ieri': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+            'Ultimi 3 giorni': [moment().subtract(3, 'days').startOf('day'), moment().endOf('day')]
         },
         alwaysShowCalendars: true,
-        locale: dateRangePickerSettings.locale
+        locale: {
+            "format": "DD/MM/YYYY HH:mm",
+            "separator": " - ",
+            "applyLabel": "Applica",
+            "cancelLabel": "Annulla",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Personalizza",
+            "daysOfWeek": [
+                "Do",
+                "Lu",
+                "Ma",
+                "Me",
+                "Gi",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Gennaio",
+                "Febbraio",
+                "Marzo",
+                "Aprile",
+                "Maggio",
+                "Giugno",
+                "Luglio",
+                "Agosto",
+                "Settembre",
+                "Ottobre",
+                "Novembre",
+                "Dicembre"
+            ],
+            "firstDay": 1,
+        }
     }, function(start, end) {
 
         //on change event, get data within new daterange
-        console.log(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
-        dateFrom = start.format('YYYY-MM-DD');
-        dateTo = end.format('YYYY-MM-DD 23:59:59');
-
-        // retrieve other metadata from filters
-        var network = parseInt($( "#networks" ).val());
-        var province = parseInt($( "#provinces" ).val());
-        var stid = parseInt($( "#stations" ).val());
-        var prid = parseInt($('#parameters').val());
-        var flag = $('#result-active').is(':checked');
+        console.log(start.format('YYYY-MM-DD HH:mm'), end.format('YYYY-MM-DD HH:mm'));
+        dateFrom = start.format('YYYY-MM-DD HH:mm');
+        dateTo = end.format('YYYY-MM-DD HH:mm');
 
         // refresh data list
         loadData(dateFrom, dateTo);
 
     });
+
+    // initialize switchery
+    const mySwitchActive = new Switchery($("#result-active")[0], $("#result-active").data());
+    const mySwitchFailed = new Switchery($("#result-failed")[0], $("#result-failed").data());
 
     // select2 initializations
     $("#provinces, #networks" ).select2();
@@ -81,7 +104,8 @@ $(document).ready(function() {
     table = $('#calibs-table').DataTable({
         // https://datatables.net/reference/option/dom
         "dom": '<"row"<"col-lg-6 col-sm-4"B><"col-lg-3 col-sm-4"l><"col-lg-3 col-sm-4 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
-        pageLength: 25,
+        pageLength: 50,
+        // ordering: false,
         // 'copy', 'csv', 'excel', 'pdf', 'print'
         "buttons": [
             'csv',
@@ -129,15 +153,26 @@ $(document).ready(function() {
 
         // refresh list of stations based on selected province and network
         loadStations(province, network);
-        // referesh data
-        loadData(dateFrom, dateTo);
     });
 
     /*
     * Change event on other filters
     */
-    $( "#stations, #parameters, #result-active" ).on("change", function(e){
+    $( "#stations, #parameters, #result-active, #result-failed" ).on("change", function(e){
         e.preventDefault();
+        if ($(this).attr('id') === 'result-failed'){
+            if (mySwitchFailed.isChecked()){
+                if (!mySwitchActive.isChecked()) {
+                    // mySwitchActive.handleOnchange(false);
+                    mySwitchActive.setPosition(true);
+                }
+
+                mySwitchActive.disable();
+            }
+            else{
+                mySwitchActive.enable();
+            }
+        }
 
         // referesh data
         loadData(dateFrom, dateTo);
@@ -146,8 +181,6 @@ $(document).ready(function() {
     ////////////////////////////////////////////////////////////
     // END FILTERS
 
-    // select option -1 and load all stations
-    // $( "#networks" ).trigger("change");
     // refresh list of stations based on selected province and network
     loadStations(-1, -1);
 
@@ -311,7 +344,7 @@ $(document).ready(function() {
                     $('#stations').val(stid).trigger('change');
                 }
                 else{
-                    $('#stations').val(-1);
+                    $('#stations').val(-1).trigger('change');
                 }
             }
             else{
@@ -341,7 +374,8 @@ $(document).ready(function() {
         var provid = parseInt($( "#provinces" ).val());
         var stid = parseInt($('#stations').val());
         var prid = parseInt($('#parameters').val());
-        var flag = $('#result-active').is(':checked');
+        var result = $('#result-active').is(':checked');
+        var failed = $('#result-failed').is(':checked');
 
         console.log(dateFrom);
         console.log(dateTo);
@@ -364,7 +398,8 @@ $(document).ready(function() {
                 provid: provid,
                 stid: stid,
                 prid: prid,
-                flag: flag
+                result: result,
+                failed: failed
             }
         })
         .done(function(result) {
@@ -375,12 +410,13 @@ $(document).ready(function() {
             if (result.res = 'OK'){
                 // variable for dynamically building the html
                 var html= '';
+                console.log(result.data.length);
                 // loop through all elements
                 // for each data, build a html row to be added to the datatable
                 $.each(result.data, function(index, value) {
 
                     html += '<tr role="row" data-id="'+value.calibration_id+'">';
-                    html += '    <td><a href="#lightbox-chart" class="show-chart" data-original-title="Visualizza grafico" data-toggle="tooltip"><i class="mdi mdi-chart-areaspline text-info"></i></a></td>';
+                    html += '    <td><a href="#lightbox-chart" class="show-chart" data-original-title="Visualizza grafico" data-toggle="tooltip"><i class="fa-regular fa-chart-line-up text-info icon-big"></i></a></td>';
                     html += '    <td>'+getFormattedDateDT(value.calibration_date_time, 'basic_timeStartMin')+'</td>';
                     html += '    <td>'+value.station_name+'</td>';
                     html += '    <td>'+value.param_name+'</td>';

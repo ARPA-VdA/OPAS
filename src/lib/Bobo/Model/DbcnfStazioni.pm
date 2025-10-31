@@ -131,7 +131,7 @@ sub get_stations_by_province_net {
         SELECT
             sm.station_id,
             sm.station_name,
-            '/downloads/anagrafica/report-anagrafica-'||sm.station_id||'.pdf' AS station_pdf_path,
+            '/downloads/anagrafica/stazioni/report-anagrafica-'||sm.station_id||'.pdf' AS station_pdf_path,
             sm.station_active,
             ss.ss_suspended AS station_suspended,
             ss.ss_dataview_publish AS station_published,
@@ -217,7 +217,7 @@ sub get_station_by_id {
             vsi.station_active,
             vsi.station_base_path,
             vsi.station_base_path || '/' || vsi.station_id AS station_media_path,
-            '/downloads/anagrafica/report-anagrafica-'||vsi.station_id||'.pdf' AS station_pdf_path,
+            '/downloads/anagrafica/stazioni/report-anagrafica-'||vsi.station_id||'.pdf' AS station_pdf_path,
             vsi.station_external_id                                 AS station_external_id,
             vsi.station_file_header                                 AS station_file_header,
             station_remote_ctrl,
@@ -334,6 +334,8 @@ sub insert_station {
     my $sql;
 
     my $stid;
+    my $basepath;
+
     eval {
         $tx = $self->pg->db->begin;
 
@@ -346,7 +348,7 @@ sub insert_station {
 
         $stid = $self->pg->db->insert('metadata.stations', {
             station_name         => $self->app->helperEscapeParam($params->{'station-name'}),
-            station_active       => 1,
+            station_active       => 0,
             station_schema       => $params->{'station-schemadb'},
             station_table        => $params->{'station-tabledb'},
             station_file_header  => $self->app->helperEscapeParam($params->{'station-headerfile'}),
@@ -377,6 +379,15 @@ sub insert_station {
         # ##################################################################
         $self->app->log->debug("Bobo::Model::DbcnfStazioni STEP 3");
 
+        $sql = qq{
+            SELECT st_network_basepath FROM metadata.stations_network_type WHERE st_network_id = ?;
+        };
+
+        $basepath = $self->pg->db->query(
+                        $sql,
+                        $params->{'station-network'}
+                    )->hash->{'st_network_basepath'};
+
         $self->pg->db->insert('metadata.stations_info', {
             station_id              => $stid,
 
@@ -387,6 +398,7 @@ sub insert_station {
             st_info_lat_wgs84       => $self->app->helperEscapeParam($params->{'station-wgs84-lat'}),
             st_info_lon_wgs84       => $self->app->helperEscapeParam($params->{'station-wgs84-lon'}),
             st_info_network_type_fk => $params->{'station-network'},
+            st_info_basepath        => $basepath,
             # al primo inserimento lo impongo uguale al nome inserito
             st_info_shortname       => $self->app->helperEscapeParam($params->{'station-name'}),  # NOT NULL
             st_info_roaming_type_fk => $params->{'station-roaming'} # NOT NULL
@@ -475,6 +487,11 @@ sub insert_station {
        $tx->commit;
 
        eval {
+
+            # create directory for station's attachments
+            my $station_dir = $self->app->static->paths->[0].'/'.$basepath.'/'.$stid;
+            $self->app->helperCreatePath($station_dir);
+
             # /!\ PARTE 2:  DDL - Data Definition Language /!\
 
             # ##################################################################
@@ -605,10 +622,24 @@ sub update_station {
             st_info_export_id       => $self->app->helperEscapeParam($params->{'station-export-id'}),
             st_info_ws_name         => $self->app->helperEscapeParam($params->{'station-ws-name'}),
             st_info_import_ws_id    => $self->app->helperEscapeParam($params->{'station-import-id'})
+
         }, { station_id => $params->{'station-id'} });
 
+        # set refresh_dependents to true in order to run specific scripts to update all products linked to the station
+        # like map screenshot, pdf ecc ecc
+        $sql = qq{
+            UPDATE metadata.stations_info
+            SET st_info_obj= jsonb_set(st_info_obj, '{refresh_dependents}', 'true'::jsonb, true)
+            WHERE station_id = ?;
+        };
+
+        $self->pg->db->query(
+            $sql,
+            $params->{'station-id'}
+        );
+
         # ##################################################################
-        # 4- modifica stazione status
+        # 4- modifica status stazione
         # ##################################################################
         $self->app->log->debug("Bobo::Model::DbcnfStazioni STEP 4");
 

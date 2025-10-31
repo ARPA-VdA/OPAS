@@ -113,7 +113,7 @@ $(document).ready(function() {
             $('.select-place, #active-loc').hide();
             $('#active-bomb').show();
         }
-    
+
         // refresh cylinders list in the first tab
         loadCylinders(dateFrom, dateTo);
     });
@@ -300,9 +300,13 @@ $(document).ready(function() {
 
                 // compile fields of the form with data arriving from database
                 $('#modal-loc-id').val(location.stcy_id);
-                $('#modal-loc-tank').val(location.cy_id).trigger('change');
+                $('#modal-loc-tank').val(location.cy_id).trigger('change.select2');
+                $('#modal-networks').val( JSON.stringify( $('#modal-loc-tank option:selected').data('nets') ));
+                // reload stations
                 $('#modal-loc-prov').trigger('change', location.station_id);
-                
+                // show "new location" form
+                $('.hide-loc').show('slow');
+
                 /**
                  * stcy_id
                  * station_id
@@ -1915,35 +1919,31 @@ $(document).ready(function() {
                 // check if the location is still active
                 if (actualLoc.stcy_dismiss_date == 'infinity' || moment(actualLoc.stcy_dismiss_date).isSameOrAfter(moment()) ){
 
-                    /**
-                     * location_id
-                     * location_name
-                     * location_prov
-                     * location_lat
-                     * location_lon
-                     * location_start
-                     * location_end
-                     * location_note
-                     */
                     html += '        <h4 class="box-title m-t-30">Location attuale della bombola <strong>'+fullname+'</strong></h4>\n';
                     html += '        <hr class="m-t-0 m-b-20">\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Provincia</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_prov+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Stazione</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '        <div class="row">\n';
+                    html += '            <div class="col-md-7 col-xl-6">\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Provincia</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_prov+'</div>\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Stazione</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_name+'</div>\n';
+                    html += '                </div>\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Data/ora inizio</label>\n';
+                    html += '                    <div class="col-7 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Data/ora fine</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_end+'</div>\n';
+                    html += '                </div>\n';
+                    html += '                <div class="form-group row">\n';
+                    html += '                    <label for="" class="control-label col-5 col-form-label">Note location</label>\n';
+                    html += '                    <div class="col-7 view-param">'+actualLoc.location_note+'</div>\n';
+                    html += '                </div>\n';
+                    html += '            </div>\n';
+                    html += '            <div class="col-md-5 col-xl-6">\n';
+                    html += '                <div id="map-view-'+cyid+'" class="mini-map" tabindex="0"></div>\n';
+                    html += '            </div>\n';
                     html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora inizio</label>\n';
-                    html += '            <div class="col-4 view-param">'+moment(actualLoc.location_start).format('DD/MM/YYYY HH:mm')+'</div>\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Data/ora fine</label>\n';
-                    html += '            <div class="col-4 view-param">'+actualLoc.location_end+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div class="form-group row">\n';
-                    html += '            <label for="" class="control-label col-2 col-form-label">Note location</label>\n';
-                    html += '            <div class="col-10 view-param">'+actualLoc.location_note+'</div>\n';
-                    html += '        </div>\n';
-                    html += '        <div id="map-view-'+cyid+'" class="mini-map" tabindex="0"></div>\n';
 
                 }
                 else{
@@ -1993,6 +1993,9 @@ $(document).ready(function() {
                     html += '                </tr>\n';
                     html += '            </tfoot>\n';
                     html += '        </table>\n';
+                    html += '        <hr class="m-t-20 m-b-20">\n';
+                    html += '        <div id="container-cy-' + cyid + '" class="">\n';
+                    html += '        </div>\n';
                 }
             }
 
@@ -2038,7 +2041,7 @@ $(document).ready(function() {
                 // then initialize datatable
                 if(locations.length >1 ){
                     $('#pos-table-'+cyid).DataTable({
-                        "dom": "Bfrtip",
+                        "dom": '<"row"<"col-6" B><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
                         // 'copy', 'csv', 'excel', 'pdf', 'print'
                         "buttons": [
                             'csv',
@@ -2053,6 +2056,42 @@ $(document).ready(function() {
                             "url": "/bobo-js/italian.json"
                         }
 
+                    });
+
+                    // create the gantt chart with all the previous locations
+                    let obj = result.gantt_locations;
+                    let locs = JSON.parse(obj.cylinder_locations);
+
+                    Highcharts.ganttChart('container-cy-' + cyid, {
+                        title: {
+                            text: obj.cylinder_name
+                        },
+                        xAxis: [{
+                            labels: {
+                                format: '{value:%Y}'
+                            },
+                            min: locs[0].start,
+                            max: locs[locs.length - 1].end,
+                            tickInterval: 1000 * 60 * 60 * 24 * 365// year
+                        }],
+                        yAxis: {
+                            uniqueNames: true
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                // console.dir(this);
+                                return '<b>' + this.name + '</b><br>Data inizio: <b>' + getFormattedDateDT(this.start, 'basic_timeStartMin') + '</b><br>Data fine: <b>' + getFormattedDateDT(this.end, 'basic_timeStartMin') + '</b>';
+                            }
+                            // format:
+                        },
+                        credits: {
+                            text: '© ' + footer, //Arriving from DB "portal_css_footer_text", default "Bobo Cloud"
+                            href: company_web
+                        },
+                        series: [{
+                            name: 'Stanziamenti',
+                            data: locs
+                        }]
                     });
                 }
             }

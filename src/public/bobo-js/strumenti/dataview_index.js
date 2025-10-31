@@ -902,7 +902,7 @@ $( document ).ready(function() {
         styleArray.push(
             new ol.style.Style({
                 text: new ol.style.Text({
-                    font: 'normal 900 24px/1 "Font Awesome 6 Pro"',
+                    font: 'normal 900 24px/1 "Font Awesome 7 Pro"',
                     text: String.fromCharCode(parseInt('f063', 16)), // f063
                     rotation: feature.get('param_dir') * 0.01745,
                     fill: new ol.style.Fill({

@@ -356,7 +356,7 @@ function refreshChart(macroIdx, numDays){
                                     radius: 2.5
                                 };
 
-                    var series = charts[macroIdx].addSeries(options, false);
+                    charts[macroIdx].addSeries(options, false);
 
                     if(param.maxval){
                         max.type     = 'line';
@@ -410,7 +410,6 @@ function refreshChart(macroIdx, numDays){
                     charts[macroIdx].redraw();
                     // loop through all legend items
                     charts[macroIdx].legend.allItems.forEach(function(item){
-
                         // overwrite click event
                         Highcharts.addEvent(
                             item.legendItem.group.element,

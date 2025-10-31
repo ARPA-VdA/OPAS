@@ -1,0 +1,4 @@
+{
+  "cells" => "[{\"table\":\"client_test.ao_stazione_01\",\"tableid\":2,\"stprid\":2,\"grant\":1,\"date\":\"2025-03-13 10:00:00\",\"code\":1,\"value\":3,\"oldvalue\":\"--\",\"dirty\":1,\"decimals\":0}]",
+  "converted" => "true"
+}

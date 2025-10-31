@@ -1432,9 +1432,15 @@ $(document).ready(function() {
             contentItem.setTitle('TABELLA');
             console.log('Destroy main table');
             // destroy the main table
-            maintable.destroy();
             maintable.clearData();
+            maintable.destroy(true);
             maintable = null;
+
+            // HACK IN ORDER TO REMOVE ALL COPY - PASTE ELEMENTS !!
+            const container = $('#maintable-container').parent();
+            $('#maintable-container').off();
+            $('#maintable-container').remove();
+            container.append('<div id="maintable-container" class="grid" style="height: 100%;"></div>');
 
             // reset global variables
             $("#deselect-cells").trigger('click');
@@ -1922,8 +1928,67 @@ function initialiseElements(){
     $("#validation-main").on("click", "#reset-code", function(e){
         e.preventDefault();
 
+        // if clipboard is enabled then disable all other events (return from event)
+        if(clipboardEnabled == true)
+            return;
+
         var cellArray = [];
         var checkGrant;
+
+        // check if selectedCells is empty
+        // if true data may be blocked due to the settings set by the portal admin
+        if(!selectedCells || selectedCells.length == 0){
+            swal({
+                title: 'Attenzione',
+                text: '<strong>Nessuna cella selezionata</strong> da resettare',
+                type: 'info',
+                html: true
+            });
+            return false;
+        }
+        else if(selectedCells.length == 1){
+
+            var cellDate = selectedCells[0].getRow().getCells()[0].getValue();
+            // check if value date is before closure date (portal options)
+                // - if true then select do nothing
+                // - else continue
+            if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY'))){
+                swal({
+                    title: 'Attenzione',
+                    text: 'Il dato selezionato è <strong>bloccato</strong>. Impossibile resettare il codice di validazione',
+                    type: 'warning',
+                    html: true
+                });
+                return false;
+            }
+        }
+        else{
+            // check if in the selected range there are cells with dates
+            // more recent than closure date
+            let flagCtrl = true;
+            selectedCells.forEach(function(cell){
+                var cellDate = cell.getRow().getCells()[0].getValue();
+                // check if value date is before closure date (portal options)
+                // - if true then select do nothing
+                // - else continue
+                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY')))
+                    flagCtrl = false;
+            });
+            
+            if(!flagCtrl){
+                swal({
+                    title: 'Attenzione',
+                    text: 'Nel range selezionato sono presenti dei dati <strong>bloccati</strong>. Impossibile resettare il codice di validazione',
+                    type: 'warning',
+                    html: true
+                });
+                // reset all selected cells - validazione_setting.js
+                $("#deselect-cells").trigger("click");
+
+                return false;
+            }
+        }
+
         // loop through all selected cells
         // for each element build an object to be sent to the server
         selectedCells.forEach(function(cell) {
@@ -1999,7 +2064,7 @@ function initialiseElements(){
         if(!selectedCells || selectedCells.length == 0){
             swal({
                 title: 'Attenzione',
-                text: '<strong>Nessuna cella selezionata</strong> a cui applicare il codice di validazione oppure <strong>dati bloccati</strong>',
+                text: '<strong>Nessuna cella selezionata</strong> a cui applicare il codice di validazione',
                 type: 'info',
                 html: true
             });
@@ -2015,9 +2080,35 @@ function initialiseElements(){
                 swal({
                     title: 'Attenzione',
                     text: 'Il dato selezionato è <strong>bloccato</strong>. Impossibile applicare il codice di validazione',
-                    type: 'info',
+                    type: 'warning',
                     html: true
                 });
+                return false;
+            }
+        }
+        else{
+            // check if in the selected range there are cells with dates
+            // more recent than closure date
+            let flagCtrl = true;
+            selectedCells.forEach(function(cell){
+                var cellDate = cell.getRow().getCells()[0].getValue();
+                // check if value date is before closure date (portal options)
+                // - if true then select do nothing
+                // - else continue
+                if(closureDate && moment(cellDate).isBefore(moment(closureDate, 'DD/MM/YYYY')))
+                    flagCtrl = false;
+            });
+            
+            if(!flagCtrl){
+                swal({
+                    title: 'Attenzione',
+                    text: 'Nel range selezionato sono presenti dei dati <strong>bloccati</strong>. Impossibile applicare il codice di validazione',
+                    type: 'warning',
+                    html: true
+                });
+                // reset all selected cells - validazione_setting.js
+                $("#deselect-cells").trigger("click");
+
                 return false;
             }
         }

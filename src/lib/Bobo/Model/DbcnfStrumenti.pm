@@ -351,6 +351,68 @@ sub get_location_by_id {
     return $self->pg->db->query($sql, $stinid)->hash;
 }
 
+sub get_instrument_locations_history{
+    my ( $self, $inid ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::DbcnfStrumenti sub get_instrument_locations_history");
+
+    # query
+    my $sql = qq{
+        WITH t AS (
+            SELECT
+                row_number() OVER (PARTITION BY instr_id ORDER BY stin_startup_date ASC) AS rownum,
+                stin_id,
+                station_id AS main_station_id,
+                CASE
+                    WHEN stin_dismiss_date = 'infinity' THEN metadata.f_get_stationid_by_date(station_id, CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome')
+                    ELSE metadata.f_get_stationid_by_date(station_id, stin_dismiss_date)
+                END AS station_id,
+                stin_startup_date,
+                CASE
+                    WHEN stin_dismiss_date = 'infinity' THEN CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome'
+                    ELSE stin_dismiss_date
+                END AS stin_dismiss_date,
+                stin_note,
+                stpr_group_id,
+                stin_master
+            FROM
+                metadata.stations_instruments
+            WHERE
+                instr_id = ?
+            ORDER BY 
+                stin_startup_date ASC
+        )
+        SELECT 
+            vi.instr_type_fullname || COALESCE(' - '|| vi.instrument_name, '') || COALESCE(' ['|| vi.instrument_serial_num||']', '') AS instrument_fullname,
+            (
+            SELECT 
+                to_json(ARRAY_AGG(json_strip_nulls(row_to_json(l))))
+                FROM (
+                    SELECT 
+                        t.rownum::text AS id,
+                        vsi.station_name AS name,
+                        t.stin_startup_date AS start,
+                        t.stin_dismiss_date AS end,
+                        CASE
+                            WHEN t.rownum = 1 THEN NULL
+                            ELSE (t.rownum-1)::text 
+                        END 				AS dependency
+                    FROM
+                        t
+                        LEFT JOIN metadata.view_stations_info vsi USING (station_id)
+                    ORDER BY
+                        rownum
+                ) l 
+            ) AS instrument_locations	
+        FROM equipments.view_instruments vi
+        WHERE instr_id = ?;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $inid, $inid)->hash();
+}
+
 sub insert_new_instrument {
     my( $self, $userid, $params ) = @_;
 
@@ -856,6 +918,17 @@ Return:     Risultato della query.
 Funzione che recupera, dato l'id, le informazioni di una determinata location dal database.
 
 Argomenti:  * id della location ('stinid');
+
+Return:     Risultato della query.
+
+=cut
+
+=head1 get_instrument_locations_history
+
+Funzione che dato l'id dello strumento ne recupera lo storico degli stanziamenti, organizzandoli in un unico jsonb.
+L'oggetto viene utilizzato per la costruzione di un GANTT
+
+Argomenti:  * id dello strumento ('inid');
 
 Return:     Risultato della query.
 

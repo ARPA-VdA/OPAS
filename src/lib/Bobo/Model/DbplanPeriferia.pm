@@ -269,15 +269,10 @@ sub get_tickets {
             tt_desc              ,
             tc_id                ,
             tc_desc              ,
-            CASE tc_id
-                WHEN 1 THEN 'icon-tag text-success'
-                WHEN 2 THEN 'ti-import text-danger'
-                WHEN 3 THEN 'ti-settings text-info'
-                WHEN 4 THEN 'icon-magic-wand text-muted'
-                ELSE 'ti-location-pin text-warning'
-            END AS tc_class      ,
+            tc_class             ,
             tu_id                ,
             tu_desc              ,
+            tu_colour            ,
             tf_id                ,
             tf_desc              ,
             tk_title          AS tk_title       ,
@@ -387,18 +382,13 @@ sub get_calendar_tickets {
             tt_desc              ,
             tc_id                ,
             tc_desc              ,
-            CASE tc_id
-                WHEN 1 THEN 'icon-tag'
-                WHEN 2 THEN 'ti-import'
-                WHEN 3 THEN 'ti-settings'
-                WHEN 4 THEN 'icon-magic-wand'
-                ELSE 'ti-location-pin'
-            END AS tc_class      ,
+            REGEXP_REPLACE(tc_class, '( text-\\w+\$)', '' ) AS tc_class,
             tu_id                ,
             tu_desc              ,
+            tu_colour            ,
             tf_id                ,
             tf_desc              ,
-            tk_title          AS tk_title       ,
+            tk_title          AS tk_title,
             COALESCE(tk_opening_note, '--')   AS tk_opening_note,
             s.tk_status,
             s.tk_status_date
@@ -483,15 +473,10 @@ sub get_ticket_by_id {
                 tt.tt_desc           ,
                 tu_id                ,
                 tu.tu_desc           ,
+                tu.tu_colour         ,
                 tc_id                ,
                 tc.tc_desc           ,
-                CASE tc_id
-                    WHEN 1 THEN 'icon-tag text-success'
-                    WHEN 2 THEN 'ti-import text-danger'
-                    WHEN 3 THEN 'ti-settings text-info'
-                    WHEN 4 THEN 'icon-magic-wand text-muted'
-                    ELSE 'ti-location-pin text-warning'
-                END AS tc_class      ,
+                tc.tc_class          ,
                 tf_id                ,
                 tf.tf_desc           ,
                 tk_title          AS tk_title       ,

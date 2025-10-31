@@ -9,9 +9,9 @@ export default function helperPlugin(app) {
    * Dump object to console
    */
   app.addHelper('logObj', (ctx, info, obj) => {
-    ctx.log.debug('Helper logObj');
+    ctx.log.trace('Helper logObj');
 
-    ctx.log.debug(info + ": " + util.inspect(obj, {
+    ctx.log.trace(info + ": " + util.inspect(obj, {
       showHidden: true, depth: 4,
       colorize: true, compact: false
     }));
@@ -22,7 +22,7 @@ export default function helperPlugin(app) {
    * @returns user agent and ip
    */
   app.addHelper('whois', ctx => {
-    ctx.log.info('Helper whois');
+    ctx.log.debug('Helper whois');
 
     const agent = ctx.req.get('User-Agent') ?? 'Anonymous';
     const ip = ctx.req.ip;
@@ -35,7 +35,7 @@ export default function helperPlugin(app) {
    * @returns token string
    */
   app.addHelper('authExtractToken', ctx => {
-    ctx.log.info('Helper authExtractToken');
+    ctx.log.debug('Helper authExtractToken');
 
     // get bearer <token>
     const authHeader = ctx.req.get('Authorization');
@@ -44,7 +44,7 @@ export default function helperPlugin(app) {
     if (!authHeader)
       return null;
     const token = authHeader.split(" ")[1];
-    ctx.log.trace(`token: ${token}`);
+    ctx.log.trace(`Token: ${token}`);
 
     // return token
     return token;
@@ -57,7 +57,7 @@ export default function helperPlugin(app) {
    * @returns jwt token
    */
   app.addHelper('jwtSign', (ctx, user, jwtConf) => {
-    ctx.log.info('Helper jwtSign');
+    ctx.log.debug('Helper jwtSign');
 
     // https://github.com/auth0/node-jsonwebtoken
 
@@ -68,7 +68,7 @@ export default function helperPlugin(app) {
       jwtConf.secret,
       { expiresIn: jwtConf.tokenLife }
     );
-    ctx.log.debug(`Token: ${token}`);
+    // ctx.log.debug(`Token: ${token}`);
     return token;
   });
 
@@ -78,7 +78,7 @@ export default function helperPlugin(app) {
    * @returns custom res object
    */
   app.addHelper('jwtValidate', (ctx, token, jwtConf) => {
-    ctx.log.info('Helper jwtValidate');
+    ctx.log.debug('Helper jwtValidate');
     // ctx.logObj('token', token);
     // ctx.logObj('jwtConf', jwtConf);
 
@@ -88,7 +88,7 @@ export default function helperPlugin(app) {
     // check token against secret salt
     jwt.verify(token, jwtConf.secret, function (err, decoded) {
       if (err) {
-        ctx.log.error(`jwt verify err: ${err}`);
+        ctx.log.error(`Jwt verify err: ${err}`);
 
         if (err.name == 'JsonWebTokenError') {
           /*
@@ -152,10 +152,10 @@ export default function helperPlugin(app) {
    * @returns jwt decoded items
    */
   app.addHelper('jwtDecode', (ctx, token) => {
-    ctx.log.info('Helper jwtDecode');
+    ctx.log.debug('Helper jwtDecode');
 
     var decoded = jwt.decode(token, { complete: true });
-    ctx.logObj('token decoded', decoded);
+    ctx.logObj('Token decoded', decoded);
 
     // decoded all items (header, payload, signature)
     return decoded;
@@ -176,7 +176,7 @@ export default function helperPlugin(app) {
     } catch {
       // err
     }
-    ctx.logObj('token decoded', decoded);
+    ctx.logObj('Token decoded', decoded);
 
     // decoded payload only
     return decoded;
@@ -188,10 +188,10 @@ export default function helperPlugin(app) {
  * @returns jwt decoded user
  */
   app.addHelper('jwtDecodeUser', (ctx, token) => {
-    ctx.log.info('Helper jwtDecodeUser');
+    ctx.log.debug('Helper jwtDecodeUser');
 
     var decoded = jwt.decode(token, { complete: true });
-    ctx.logObj('token decoded', decoded);
+    ctx.logObj('Token decoded', decoded);
 
     // decoded user
     return decoded.payload.user;

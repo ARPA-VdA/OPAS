@@ -2,6 +2,7 @@
 -- | - Script Name   : foreign_keys.sql                                                           |
 -- | - Author        : Ecometer s.n.c.                                                            |
 -- | - Creation Date : 2025-03-31                                                                 |
+-- | - Update Date   : 2025-06-30                                                                 |
 -- | - Description   : Script to create PostgreSQL 'opas' database foreign keys.                  |
 -- +----------------------------------------------------------------------------------------------+
 
@@ -204,6 +205,13 @@ ALTER TABLE ONLY reports.tickets_mlists ADD CONSTRAINT reports_tickets_mlists_fk
 ALTER TABLE ONLY reports.tickets_status ADD CONSTRAINT reports_tickets_status_fkey FOREIGN KEY (tk_id) REFERENCES reports.tickets(tk_id) ON UPDATE CASCADE ON DELETE RESTRICT;
 ALTER TABLE ONLY reports.tickets_status ADD CONSTRAINT reports_tickets_status_fkey2 FOREIGN KEY (us_id) REFERENCES bobo.users(us_id) ON UPDATE CASCADE ON DELETE RESTRICT;
 ALTER TABLE ONLY reports.tickets_status ADD CONSTRAINT reports_tickets_status_fkey3 FOREIGN KEY (ma_id) REFERENCES reports.maintenances(ma_id) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets ADD CONSTRAINT reports_ced_tickets_fkey2 FOREIGN KEY (us_id) REFERENCES bobo.users (us_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status ADD CONSTRAINT reports_ced_tickets_status_fkey FOREIGN KEY (ct_id) REFERENCES reports.ced_tickets (ct_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status ADD CONSTRAINT reports_ced_tickets_status_fkey2 FOREIGN KEY (us_id) REFERENCES bobo.users (us_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status ADD CONSTRAINT reports_ced_tickets_status_fkey3 FOREIGN KEY (gr_id) REFERENCES bobo.groups (gr_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status ADD CONSTRAINT reports_ced_tickets_status_fkey4 FOREIGN KEY (ctt_id) REFERENCES reports.ced_ticket_types (ctt_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status ADD CONSTRAINT reports_ced_tickets_status_fkey5 FOREIGN KEY (ctu_id) REFERENCES reports.ced_ticket_urgencies (ctu_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY reports.ced_tickets_status_attachments ADD CONSTRAINT reports_ced_tickets_status_attachments_fk1 FOREIGN KEY (cts_id) REFERENCES reports.ced_tickets_status (cts_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE ONLY client_lig_alims.filters ADD CONSTRAINT client_lig_alims_filters_fkey1 FOREIGN KEY (rep_id) REFERENCES client_lig_alims.reports (rep_id) ON UPDATE CASCADE ON DELETE RESTRICT;
 ALTER TABLE ONLY client_lig_alims.reports ADD CONSTRAINT client_lig_alims_reports_fkey1 FOREIGN KEY (us_id) REFERENCES bobo.users (us_id) ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE ONLY client_lig_alims.reports ADD CONSTRAINT client_lig_alims_reports_fkey2 FOREIGN KEY (arg_id) REFERENCES client_lig_alims.arguments (arg_id) ON UPDATE CASCADE ON DELETE NO ACTION;
