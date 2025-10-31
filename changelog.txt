@@ -63,6 +63,7 @@
 - Aggiornato Webservice: aggiunta cadenza acquisizione nelle chiamate metadata
 - Aggiornati file "README.md" e "INSTALL.md" su Github
 
+
 -- 2025-03-31 - V2.0.0
 
 - Aggiunta sezione System Admin per gestire la sospensione del sistema OPAS
