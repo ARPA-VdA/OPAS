@@ -374,41 +374,41 @@ sub register {
         }
     });
 
-    # -----------------------------------------------------------------------------
-    # -- send email via mail - gateway
-    # -----------------------------------------------------------------------------
-    $app->helper(helperSendEmailPEC =>
+    $app->helper(helperNewUserEmailHTML =>
     sub {
         my $self       = shift;
         my $sender_app = shift;
         my $subject    = shift;
         my $body       = shift;
         my $logo       = shift;
+        my $send       = shift;
         my @recipients = @_;
 
-        $self->app->log->debug("helperSendEmailPEC");
-        $self->app->log->debug("title: ".$sender_app);
-        # $self->app->log->debug("subject: $subject");
-        # $self->app->log->debug("body: $body");
+        $self->app->log->debug("helperNewUserEmailHTML");
+        $self->app->log->debug("title: BOBO ".$sender_app);
+        $self->app->log->debug("subject: $subject");
+        $self->app->log->debug("body: $body");
         $self->app->log->debug("recipients: @recipients");
+        
+        $self->app->log->debug("send: $send");
+
+        $sender_app = 'OPAS '. $sender_app;
 
         # sql
-        my $sql = "INSERT INTO gateways.pec_mails(app, recipients, subject, body, logo) VALUES (?,?,?,?,?) RETURNING id;";
+        my $sql = "INSERT INTO gateways.html_mails(app, recipients, subject, body, logo, status) VALUES (?,?,?,?,?,?);";
 
-        my $id;
         # execute
         eval {
-            $id = $self->pg->db->query($sql, $sender_app, join(";", @recipients ), $subject, encode_utf8($body), $logo)->hash->{'id'};
-            $self->app->log->debug("$id");
+            $self->pg->db->query($sql, $sender_app, join(";", @recipients ), $subject, encode_utf8($body), $logo, ($send ? undef : 1));
         };
 
-        # error check
+         # error check
         if ($@) {
            $self->app->log->warn("Error: ".$@);
            return 0;
         }
         else {
-           return $id;
+           return 1;
         }
     });
 
@@ -909,62 +909,6 @@ sub register {
     });
 }
 
-# OLD BUT GOLD
-    # Ack for opas ARPAL
-    # $app->helper(helperManageIspraSeqId=>
-    # sub {
-    #     my $self = shift;
-    #     my $seq = shift;
-
-    #     # Get the local system's IP address that is "en route" to "the internet":
-    #     my $address = Net::Address::IP::Local->public;
-
-    #     # esegui le operazioni solo se si è su ArpaL
-    #     # altrimenti ritorna sempre TRUE
-    #     if ($address eq '10.24.193.32') {
-    #         # user agent
-    #         my $json = JSON->new;
-    #         #my $ua = LWP::UserAgent->new;
-    #         my $ua = LWP::UserAgent->new(
-    #             timeout => 10,
-    #             ssl_opts => {
-    #                 verify_hostname => 0,
-    #                 SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-    #             },
-    #             agent => 'Mozilla/5.0'
-    #         ) ;
-    #         # $ua->agent('Mozilla/5.0');
-    #         # $ua->timeout(10);
-    #         $ua->env_proxy;
-    #         my $ws_url = $self->config->{ws_ispra}->{url};
-    #         my $token = $self->config->{ws_ispra}->{token};
-
-
-    #         my $url = $ws_url."/get_next_seq_id";
-    #         my $response = $ua->post( $url, {
-    #             'token' => $token,
-    #             'seq'   => $seq
-    #         });
-
-    #         if ($response->is_success) {
-    #             #$self->app->log->debug('Content type is ', $response->content_type);
-    #             #$self->helperDumper(( $json->decode($response->decoded_content) ));
-    #             my $ws_res = $json->decode($response->decoded_content);
-    #             my $id = $ws_res->{'id'};
-
-    #             $self->dbutilities->put_next_seq_id( $seq, $id );
-    #             return 1;
-    #         }
-    #         else {
-    #             $self->app->log->error("ERROR: Failed UserAgent $url, code: ".$response->code);
-    #             return 0;
-    #         }
-    #     }
-    #     else {
-    #         return 1;
-    #     }
-    # });
-
 1;
 
 =head1 helperDumper
@@ -1095,6 +1039,24 @@ Return:     valore 1/0:
                 - 1: OK
 
                 - 0: ERRORE
+
+=cut
+
+=head1 helperNewUserEmailHTML
+
+Funzione che inserisce una mail con contenuto HTML nella coda di invio del database,
+utilizzata specificamente per le email di registrazione/nuovo utente.
+
+Argomenti:
+* sender_app: nome dell'app mittente ('sender_app')
+* subject: oggetto della mail ('subject')
+* body: corpo HTML della mail ('body')
+* logo: path del logo ('logo')
+* send: flag (true/false) che indica se inviare subito o lasciare in coda (status)
+* recipients: lista dei destinatari (uno o più indirizzi)
+
+Return:
+Valore 1 in caso di successo, 0 in caso di errore.
 
 =cut
 

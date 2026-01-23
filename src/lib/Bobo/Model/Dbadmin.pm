@@ -28,22 +28,16 @@ sub get_users {
     $self->app->log->debug("Bobo::Model::Dbadmin sub get_users");
 
     my $sql;
-    my $filter = '';
-
-    # check group id
-    if ($grid != -1) {
-        $filter = qq{AND groups_id @> ARRAY[ $grid ]};
-    };
 
     # select
     $sql = qq{
         SELECT
             user_id,
             user_email,
-            user_name,
+            CONCAT_WS(' ', user_name, user_second_name) AS user_name,
             user_second_name,
             user_surname,
-            user_name || ' ' || COALESCE(user_second_name, '') || ' ' || user_surname AS user_fullname,
+            CONCAT_WS(' ', user_name, user_second_name, user_surname) AS user_fullname,
             user_active,
             (
                 SELECT
@@ -87,12 +81,12 @@ sub get_users {
                     )
                 )
             )
-        $filter
-        ORDER BY user_active, user_fullname;
+        AND ( ? = -1 OR groups_id @> ARRAY[ ? ]::integer[] )
+        ORDER BY user_active, CONCAT_WS(' ', user_surname, user_name, user_second_name);
     };
 
     # return
-    return $self->pg->db->query($sql, $userid, $userid)->hashes;
+    return $self->pg->db->query($sql, $userid, $userid, $grid, $grid)->hashes;
 }
 
 sub get_groups_menu {
@@ -101,11 +95,9 @@ sub get_groups_menu {
     # log
     $self->app->log->debug("Bobo::Model::Dbadmin sub get_groups_menu");
 
-    # concatenate group ids for the query
-    my $grid_string = join ',' , @{$groups_id};
-    $self->app->log->debug($grid_string);
+    my $grid_pg_array = '{' . join(',', @{$groups_id}) . '}';
+    $self->app->log->debug($grid_pg_array);
 
-    # query
     my $sql = qq{
         SELECT *,
         (
@@ -114,12 +106,12 @@ sub get_groups_menu {
                 SELECT gp_iud_grants
                 FROM bobo.group_pages
                 WHERE page_id = vmp.page_id
-                AND gr_id IN ( $grid_string )
+                AND gr_id = ANY((?)::int[])
             ) AS tbit
         ) AS total_user_grants,
         (
             SELECT
-                CASE WHEN '{$grid_string}'::int[] && (
+                CASE WHEN (?)::int[] && (
                     SELECT ARRAY_AGG(admin_gr_id)
                     FROM bobo.portal_properties
                 ) THEN TRUE
@@ -135,7 +127,7 @@ sub get_groups_menu {
             AND page_id IN (
                 SELECT DISTINCT(page_id)
                 FROM bobo.group_pages
-                WHERE gr_id IN ( $grid_string )
+                WHERE gr_id = ANY((?)::int[])
             )
         ) > 0
         AND menu_id = 1
@@ -143,8 +135,9 @@ sub get_groups_menu {
         ORDER BY menu_page_order;
     };
 
-    # return
-    $self->pg->db->query($sql)->hashes;
+    # return - pass the prepared array literal as parameter
+    $self->pg->db->query($sql, $grid_pg_array, $grid_pg_array, $grid_pg_array)->hashes;
+
 }
 
 sub get_groups_stations {
@@ -154,8 +147,8 @@ sub get_groups_stations {
     $self->app->log->debug("Bobo::Model::Dbadmin sub get_groups_stations");
 
     # concatenate group ids for the query
-    my $grid_string = join ',' , @{$groups_id};
-    $self->app->log->debug($grid_string);
+    my $grid_pg_array = '{' . join(',', @{$groups_id}) . '}';
+    $self->app->log->debug($grid_pg_array);
 
     # query
     my $sql = qq{
@@ -171,7 +164,7 @@ sub get_groups_stations {
                         SELECT gs_iud_grants
                         FROM bobo.group_stations
                         WHERE station_id = vs.station_id
-                        AND gr_id IN ($grid_string)
+                        AND gr_id = ANY((?)::int[])
                     ) AS tbit
             ) AS total_user_grants,
             COALESCE(vsm.mu_name, '--') AS mu_name,
@@ -183,12 +176,12 @@ sub get_groups_stations {
         FROM bobo.group_stations gs
         LEFT JOIN metadata.view_stations_info vs USING (station_id)
         LEFT JOIN metadata.view_stations_municipality vsm USING (station_id)
-        WHERE gr_id IN ($grid_string)
+        WHERE gr_id = ANY((?)::int[])
         ORDER BY station_id;
     };
 
     # return
-    $self->pg->db->query($sql)->hashes;
+    $self->pg->db->query($sql, $grid_pg_array, $grid_pg_array)->hashes;
 }
 
 sub get_portals {
@@ -518,6 +511,9 @@ sub get_group_stations_grants {
     # log
     $self->app->log->debug("Bobo::Model::Dbadmin sub get_group_stations_grants");
 
+    $prid = ($prid != -1 ? "^$prid\$": ".*");
+    $netid = ($netid != -1 ? "^$netid\$": ".*");
+
     # query
     my $sql = qq{
         WITH t AS (
@@ -540,23 +536,8 @@ sub get_group_stations_grants {
             )
             AND vs.st_info_roaming_type_fk != 4 -- No siti con stanziamento
             AND station_id >= 1
-    };
-
-    # check province id
-    if ($prid != -1) {
-        $sql .= qq{
-            AND vsm.province_id = $prid
-        };
-    }
-
-    # check network id
-    if ($netid != -1) {
-        $sql .= qq{
-            AND vs.st_info_network_type_fk = $netid
-        };
-    }
-
-    $sql .= qq{
+            AND vsm.province_id::text ~ ?
+            AND vs.st_info_network_type_fk::text ~ ?
         ),
         u AS (
             SELECT
@@ -589,14 +570,12 @@ sub get_group_stations_grants {
             END AS station_delete
         FROM t
         LEFT JOIN u USING (station_id)
-    };
-
-    $sql .= qq{
-        ORDER BY t.station_network_type_desc, t.station_name;
+        ORDER BY 
+            t.station_network_type_desc, t.station_name;
     };
 
     # return
-    $self->pg->db->query($sql, $userid, $grid)->hashes;
+    $self->pg->db->query($sql, $userid, $prid, $netid, $grid)->hashes;
 }
 
 sub get_group_networks_grants {
@@ -916,9 +895,15 @@ sub insert_new_user {
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbadmin STEP 2");
 
-        my $sql;
+        # Controlla che l'utente sia system admin
+        my $sql = qq{
+            SELECT user_sys_admin FROM bobo.view_user_authentication WHERE user_id = ?;
+        };
+
+        my $is_sys_admin = $self->pg->db->query($sql, $us_admin)->hash->{user_sys_admin};
+
         my $new_us_portal;
-        if (defined $params->{'new-user-portal'}) {
+        if (defined $params->{'new-user-portal'} && $is_sys_admin) {
             $new_us_portal = $params->{'new-user-portal'};
         }
         else {
@@ -950,6 +935,29 @@ sub insert_new_user {
         else {
             push @groups_id, $params->{'new-user-groups'};
         }
+
+        my $groups_array = '{' . join(',', @groups_id ) . '}';
+
+        # Controlla che i gruppi del nuovo utente siano visibili dall'amministratore
+        $sql = qq{
+            SELECT 
+                /**
+                 * anyarray @> anyarray → boolean
+                 * Does the first array contain the second, that is:
+                 * does each element appearing in the second array equal some element of the first array?
+                 * (Duplicates are not treated specially, thus ARRAY[1] and ARRAY[1,1] are each considered to contain the other.)
+                 */
+                linked_gr_id @> ((?)::int[]) AS res
+            FROM bobo.portal_properties
+            WHERE admin_gr_id IN (
+                SELECT gr_id
+                FROM bobo.user_groups
+                WHERE us_id = ?
+            );
+        };
+
+        die "The user does not have sufficient permissions to assign the selected groups!"
+            unless $self->pg->db->query($sql, $groups_array, $us_admin)->hash->{'res'};
 
         my $shared = 0;
         for my $gr_id (@groups_id) {
@@ -1178,7 +1186,7 @@ sub insert_validation_options {
 }
 
 sub update_user {
-    my( $self, $params ) = @_;
+    my( $self, $us_admin, $params ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::Dbadmin sub update_user");
@@ -1211,8 +1219,16 @@ sub update_user {
         # 2- modifica metadata (comp_id) dell'utente
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbadmin STEP 2");
+
+        # Controlla che l'utente sia system admin
+        my $sql = qq{
+            SELECT user_sys_admin FROM bobo.view_user_authentication WHERE user_id = ?;
+        };
+
+        my $is_sys_admin = $self->pg->db->query($sql, $us_admin)->hash->{user_sys_admin};
+
         # $self->app->log->debug($params->{'new-user-comp'});
-        if (defined $params->{'new-user-portal'}) {
+        if (defined $params->{'new-user-portal'} && $is_sys_admin ) {
             $self->pg->db->update('bobo.users_metadata', {
                 portal_id => $params->{'new-user-portal'}
             }, {us_id => $params->{'new-user-id'}});
@@ -1226,12 +1242,6 @@ sub update_user {
         # 3- eliminazione associazioni utente-gruppi e inserimento nuove associazioni
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbadmin STEP 3");
-        my $sql = qq{
-            DELETE FROM bobo.user_groups WHERE us_id = ?
-        };
-
-        $self->pg->db->query($sql, $params->{'new-user-id'});
-
         my @groups_id;
 
         if (ref($params->{'new-user-groups'}) eq 'ARRAY') {
@@ -1240,6 +1250,37 @@ sub update_user {
         else {
             push @groups_id, $params->{'new-user-groups'};
         }
+
+        my $groups_array = '{' . join(',', @groups_id ) . '}';
+
+        # Controlla che i gruppi del nuovo utente siano visibili dall'amministratore
+        $sql = qq{
+            SELECT 
+                /**
+                 * anyarray @> anyarray → boolean
+                 * Does the first array contain the second, that is:
+                 * does each element appearing in the second array equal some element of the first array?
+                 * (Duplicates are not treated specially, thus ARRAY[1] and ARRAY[1,1] are each considered to contain the other.)
+                 */
+                linked_gr_id @> ((?)::int[]) AS res
+            FROM bobo.portal_properties
+            WHERE admin_gr_id IN (
+                SELECT gr_id
+                FROM bobo.user_groups
+                WHERE us_id = ?
+            );
+        };
+
+        my $res = $self->pg->db->query($sql, $groups_array, $us_admin)->hash->{res};
+
+        die "The user does not have sufficient permissions to assign the selected groups!"
+            unless $res;
+        
+        $sql = qq{
+            DELETE FROM bobo.user_groups WHERE us_id = ?
+        };
+
+        $self->pg->db->query($sql, $params->{'new-user-id'});
 
         my $shared = 0;
         for my $gr_id (@groups_id) {
@@ -1453,10 +1494,6 @@ sub delete_group {
 
     eval {
         $tx =  $self->pg->db->begin;
-
-        # DA IMPLEMENTARE
-        # check link ad altre tabelle
-        # https://stackoverflow.com/questions/5347050/postgresql-sql-script-to-get-a-list-of-all-tables-that-have-a-particular-column
 
         # ##################################################################
         # 1- eliminazione gruppo

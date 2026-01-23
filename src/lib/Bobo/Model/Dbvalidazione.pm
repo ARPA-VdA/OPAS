@@ -145,8 +145,6 @@ sub get_group_stations {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbvalidazione sub get_station_groups");
-    $self->app->log->debug("stidEnabled: ".$options->{general}{stidEnabled});
-    $self->app->log->debug("altitudeEnabled: ".$options->{general}{altitudeEnabled});
 
     # query
     my $sql = qq{
@@ -234,8 +232,6 @@ sub get_group_stations {
         ) d;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
     return $self->pg->db->query($sql, $grid, $nodeid, $user_id, $nodeid, $grid)->hash()->{'json_tree'};
 }
@@ -316,8 +312,6 @@ sub get_group_stations_no_options {
             )
         ) d;
     };
-
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $grid, $nodeid, $user_id, $nodeid, $grid)->hash()->{'json_tree'};
@@ -421,8 +415,6 @@ sub get_group_params {
         ) d;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
     return $self->pg->db->query($sql, $grid, $user_id, $nodeid, $nodeid, $grid)->hash()->{'json_tree'};
 }
@@ -485,8 +477,6 @@ sub get_group_suspects {
             ORDER BY t.station_name
         ) d;
     };
-
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $from, $to, $user_id, $nodeid)->hash()->{'json_tree'};
@@ -599,8 +589,13 @@ sub get_stations_by_province {
             -- AND sm.station_id >= 1000
     };
 
+    my @binds;
+    # g binds
+    push @binds, $user_id;
+
     if ($province_id != -1) {
-        $sql .= qq{AND smu.province_id = $province_id};
+        $sql .= qq{AND smu.province_id = ? };
+        push @binds, $province_id;
     }
 
     $sql .= qq {
@@ -608,10 +603,8 @@ sub get_stations_by_province {
             sm.station_network_type_id, sm.station_active DESC, sm.station_name;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql, $user_id)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_ordered_stpr_by_station {
@@ -1028,25 +1021,6 @@ sub insert_new_subgroup {
     my $tx;
     my $new_soubgroup_id;
 
-    # 'subgroup-id' => '',
-    # 'subgroup-fill' => '1',
-    # 'subgroup-group' => [
-    #                     '5',
-    #                     '6',
-    #                     '4'
-    #                   ],
-    # 'subgroup-vis[]' => [
-    #                     '1',
-    #                     '2',
-    #                     '3',
-    #                     '5'
-    #                   ],
-    # 'subgroup-stat[]' => [
-    #                      '13050',
-    #                      '2960'
-    #                    ],
-    # 'subgroup-name' => 'Prova'
-
     eval {
         $tx = $self->pg->db->begin;
 
@@ -1062,20 +1036,16 @@ sub insert_new_subgroup {
             push @stations, $params->{'subgroup-stat[]'};
         }
 
-        # preparo stringa nel formato (1200,1), (3110,2), (1170,3), ...
-        my $inner_sql;
-        my $count = 0;
-        for my $stid (@stations) {
-            if ($count == 0) {
-                $inner_sql .= qq{ ( $stid, $count )};
-            }
-            else {
-                $inner_sql .= qq{, ( $stid, $count )};
-            }
+        # prepare parallel arrays for station ids and positions
+        my @positions = ();
+        if (@stations) {
+            @positions = (0 .. $#stations);
+        }
 
-            $count++;
-        };
+        my $stations_array  = (@stations) ? '{' . join(',', @stations) . '}'  : '{}';
+        my $positions_array = (@positions) ? '{' . join(',', @positions) . '}' : '{}';
 
+        # query - use unnest on the two arrays to avoid interpolating VALUES
         my $sql = qq {
             INSERT INTO bobo_tools.validation_trees (tree_name, tree_object, tree_public, tree_owner)
             (
@@ -1084,7 +1054,8 @@ sub insert_new_subgroup {
                         st.station_id   ,
                         st.station_name ,
                         t.station_pos
-                    FROM  ( VALUES $inner_sql ) t(station_id, station_pos)
+                    FROM  
+                        ( SELECT * FROM unnest((?)::int[], (?)::int[]) AS t(station_id, station_pos) ) t
                         LEFT JOIN metadata.view_stations_info st USING (station_id)
                     ORDER BY t.station_pos
                 )
@@ -1109,7 +1080,10 @@ sub insert_new_subgroup {
             RETURNING tree_id;
         };
 
-        $new_soubgroup_id = $self->pg->db->query($sql,
+        $new_soubgroup_id = $self->pg->db->query(
+            $sql,
+            $stations_array,        # unnest 1
+            $positions_array,       # unnest 2
             $params->{'subgroup-name'},
             $self->app->helperGetBoolean($params, 'subgroup-public'),
             $user_id
@@ -1181,19 +1155,6 @@ sub insert_new_limit {
 
     eval {
         $tx = $self->pg->db->begin;
-        #  0: {name: "abn-plid", value: ""}
-        #  1: {name: "abn-param", value: "8"}
-        #  2: {name: "abn-date-from", value: "10"}
-        #  3: {name: "abn-date-to", value: "50"}
-        #  4: {name: "abn-error-min", value: "-15"}
-        #  5: {name: "abn-susp-min", value: "0"}
-        #  6: {name: "abn-susp-max", value: "5"}
-        #  7: {name: "abn-error-max", value: "15"}
-        #  8: {name: "abn-gap-error", value: "20"}
-        #  9: {name: "abn-gap-susp", value: "15"}
-        # 10: {name: "abn-pers-susp", value: "15"}
-        # 11: {name: "abn-pers-error", value: "20"}
-
 
         my @nets;
         if (ref($params->{'abn-net'}) eq 'ARRAY'){
@@ -1249,18 +1210,6 @@ sub insert_new_station_limit {
 
     eval {
         $tx = $self->pg->db->begin;
-        #  0: {name: "abn-plid", value: ""}
-        #  1: {name: "abn-param", value: "8"}
-        #  2: {name: "abn-date-from", value: "10"}
-        #  3: {name: "abn-date-to", value: "50"}
-        #  4: {name: "abn-error-min", value: "-15"}
-        #  5: {name: "abn-susp-min", value: "0"}
-        #  6: {name: "abn-susp-max", value: "5"}
-        #  7: {name: "abn-error-max", value: "15"}
-        #  8: {name: "abn-gap-error", value: "20"}
-        #  9: {name: "abn-gap-susp", value: "15"}
-        # 10: {name: "abn-pers-susp", value: "15"}
-        # 11: {name: "abn-pers-error", value: "20"}
 
         $id = $self->pg->db->insert('clients.stations_param_limits', {
             stpr_id                 => $params->{'abn-param'},
@@ -1332,20 +1281,16 @@ sub update_subgroup {
             push @stations, $params->{'subgroup-stat[]'};
         }
 
-        # preparo stringa nel formato (1200,1), (3110,2), (1170,3), ...
-        my $inner_sql;
-        my $count = 0;
-        for my $stid (@stations) {
-            if ($count == 0) {
-                $inner_sql .= qq{ ( $stid, $count )};
-            }
-            else {
-                $inner_sql .= qq{, ( $stid, $count )};
-            }
+        # prepare parallel arrays for station ids and positions
+        my @positions = ();
+        if (@stations) {
+            @positions = (0 .. $#stations);
+        }
 
-            $count++;
-        };
+        my $stations_array  = (@stations) ? '{' . join(',', @stations) . '}'  : '{}';
+        my $positions_array = (@positions) ? '{' . join(',', @positions) . '}' : '{}';
 
+        # query - use unnest on the two arrays to avoid interpolating VALUES
         my $sql = qq{
             UPDATE bobo_tools.validation_trees
             SET tree_object = (
@@ -1354,7 +1299,8 @@ sub update_subgroup {
                                     st.station_id   ,
                                     st.station_name ,
                                     t.station_pos
-                                FROM  ( VALUES $inner_sql ) t(station_id, station_pos)
+                                FROM  
+                                    ( SELECT * FROM unnest((?)::int[], (?)::int[]) AS t(station_id, station_pos) ) t
                                     LEFT JOIN metadata.view_stations_info st USING (station_id)
                                 ORDER BY t.station_pos
                             )
@@ -1381,6 +1327,8 @@ sub update_subgroup {
         };
 
         $self->pg->db->query($sql,
+            $stations_array,        # unnest 1
+            $positions_array,       # unnest 2
             $params->{'subgroup-name'},
             $self->app->helperGetBoolean($params, 'subgroup-public'),
             $params->{'subgroup-id'}
@@ -1464,18 +1412,6 @@ sub update_limit {
 
     eval {
         $tx = $self->pg->db->begin;
-        #  0: {name: "abn-plid", value: ""}
-        #  1: {name: "abn-param", value: "8"}
-        #  2: {name: "abn-date-from", value: "10"}
-        #  3: {name: "abn-date-to", value: "50"}
-        #  4: {name: "abn-error-min", value: "-15"}
-        #  5: {name: "abn-susp-min", value: "0"}
-        #  6: {name: "abn-susp-max", value: "5"}
-        #  7: {name: "abn-error-max", value: "15"}
-        #  8: {name: "abn-gap-error", value: "20"}
-        #  9: {name: "abn-gap-susp", value: "15"}
-        # 10: {name: "abn-pers-susp", value: "15"}
-        # 11: {name: "abn-pers-error", value: "20"}
 
         my @nets;
         if (ref($params->{'abn-net'}) eq 'ARRAY') {
@@ -1531,18 +1467,6 @@ sub update_station_limit {
 
     eval {
         $tx = $self->pg->db->begin;
-        #  0: {name: "abn-plid", value: ""}
-        #  1: {name: "abn-param", value: "8"}
-        #  2: {name: "abn-date-from", value: "10"}
-        #  3: {name: "abn-date-to", value: "50"}
-        #  4: {name: "abn-error-min", value: "-15"}
-        #  5: {name: "abn-susp-min", value: "0"}
-        #  6: {name: "abn-susp-max", value: "5"}
-        #  7: {name: "abn-error-max", value: "15"}
-        #  8: {name: "abn-gap-error", value: "20"}
-        #  9: {name: "abn-gap-susp", value: "15"}
-        # 10: {name: "abn-pers-susp", value: "15"}
-        # 11: {name: "abn-pers-error", value: "20"}
 
         # query
         $self->pg->db->update('clients.stations_param_limits', {

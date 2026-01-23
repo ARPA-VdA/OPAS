@@ -414,12 +414,9 @@ $(document).ready(function() {
     //FORM FUNCTIONS
     /////////////////////////////////////////////////////////////////////
 
-    // initialize select2 at the tab entry to manage placeholder (it will be cut otherwise)
-    $('#new-report').on('shown.bs.tab', function(){
-
-        $('#analytics-alims').select2({
-            placeholder: "Selezionare pacchetti analitici..."
-        });
+    // initialize select2
+    $('#analytics-alims').select2({
+        placeholder: "Selezionare pacchetti"
     });
 
     // hide containers

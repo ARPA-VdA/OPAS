@@ -44,8 +44,6 @@ sub get_compilers {
         ORDER BY user_surname;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
     return $self->pg->db->query($sql, $user_id)->hashes;
 }
@@ -79,10 +77,15 @@ sub get_reports_by_dates {
             )
     };
 
+    my @binds;
+    push @binds, $from, $to, $userid; 
+
     if ($prov != -1) {
         $sql .= qq{
-            AND province_id = $prov
+            AND province_id = ?
         };
+
+        push @binds, $prov;
     }
 
     $sql .= qq{
@@ -90,7 +93,7 @@ sub get_reports_by_dates {
     };
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $userid)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_report_by_id {
@@ -161,25 +164,6 @@ sub insert_report {
         # 1- creazione nuovo report verbale CIL e recupero id
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbverbali STEP 1");
-        # "array-participants" => [
-        #                          4,
-        #                          2,
-        #                          5
-        #                        ],
-        # "report-date" => "30/05/2022",
-        # "report-id" => "",
-        # "report-locality" => "via garin",
-        # "report-participants" => [
-        #                          4,
-        #                          2,
-        #                          5
-        #                        ],
-        # "report-prov" => 1,
-        # "report-text" => "<p>Prova testo verbale&nbsp;</p>",
-        # "report-time-end" => "11:20",
-        # "report-time-start" => "09:20",
-        # "report-title" => "Test",
-        # "report-verbalizer" => 4
 
         # ARRAY networks
         my @participants;
@@ -230,25 +214,6 @@ sub update_report {
         # 1- modifica report verbale
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbverbali STEP 1");
-        # "array-participants" => [
-        #                          4,
-        #                          2,
-        #                          5
-        #                        ],
-        # "report-date" => "30/05/2022",
-        # "report-id" => "",
-        # "report-locality" => "via garin",
-        # "report-participants" => [
-        #                          4,
-        #                          2,
-        #                          5
-        #                        ],
-        # "report-prov" => 1,
-        # "report-text" => "<p>Prova testo verbale&nbsp;</p>",
-        # "report-time-end" => "11:20",
-        # "report-time-start" => "09:20",
-        # "report-title" => "Test",
-        # "report-verbalizer" => 4
 
         # ARRAY networks
         my @participants;

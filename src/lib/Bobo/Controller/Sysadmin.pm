@@ -63,6 +63,27 @@ sub get_system_emails{
     $self->render(json => $json);
 }
 
+sub get_system_access_logs{
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Sysadmin sub get_system_access_logs");
+
+    my $from = $self->param('from'); # post
+    my $to = $self->param('to'); # post
+    $self->app->log->debug("Date range: $from - $to");
+    # get system admin options
+    my $access_logs = $self->dbsysadmin->get_system_access_logs($from, $to);
+
+    my $json = {
+        res => "OK",
+        access_logs => $access_logs
+    };
+
+    # render
+    $self->render(json => $json);
+}
+
 sub put_options {
     my $self = shift;
 
@@ -111,6 +132,24 @@ Argomenti:
 
 Return:     
 json contenente la risposta "OK" e la lista delle email di sistema.
+
+=cut
+
+=head1 get_system_access_logs
+
+Funzione che recupera i log di accesso al sistema in un intervallo di tempo specificato.
+I record includono:
+- header della richiesta,
+- email associata alla richiesta (se presente),
+- risultato dell'accesso (success/error) formattato per la UI,
+- data/ora di inserimento formattata per la visualizzazione.
+
+Argomenti:  
+* from: data/ora di inizio intervallo ('from') (es. '2025-02-01 00:00')  
+* to:   data/ora di fine intervallo ('to')   (es. '2025-02-28 23:59')
+
+Return:     
+json contenente la risposta "OK" e la lista dei log di accesso (access_logs), formattati per l'interfaccia.
 
 =cut
 

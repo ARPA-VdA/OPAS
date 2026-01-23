@@ -259,6 +259,7 @@ sub get_user_station_media_grants{
     my $sql = qq{
         SELECT 
             ARRAY_AGG(station_id ORDER BY station_id) AS station_ids, 
+            ARRAY_AGG(station_name ORDER BY station_id) AS station_names,
             ARRAY_AGG(DISTINCT replace(st_info_basepath, 'media/', '')) FILTER (WHERE st_info_basepath NOTNULL) AS networks
         FROM bobo.view_user_stations
         LEFT JOIN metadata.stations_info si  USING (station_id)
@@ -307,9 +308,9 @@ sub get_aggregations {
             initcap(app_aggregation_desc) AS app_aggregation_desc,
             app_aggregation_default
         FROM metadata.view_app_aggregations
-        WHERE app_aggregation_cadence_id >= (
+        WHERE app_aggregation_db >= (
             SELECT
-                MIN(COALESCE((vsi.station_cadence_type_id)::text, '0')::integer)
+                MIN(COALESCE((vsi.station_cadence_type_db)::text, '1 hour')::interval)
             FROM
                 bobo.view_user_stations vus
                 LEFT JOIN metadata.view_stations_info vsi USING (station_id)
@@ -904,11 +905,16 @@ sub get_stations_by_nets {
             AND smu.province_id::text ~ ?
     };
 
+    my @binds = ($user_id, $prov);
+
     if (scalar(@{$nets}) > 0) {
-        my $nets_string = join ',' , @{$nets};
+        my $nets_array = '{' . join(',', @{$nets}) . '}';
+
+        # use placeholder and PostgreSQL ANY with array literal
         $sql .= qq{
-            AND sm.station_network_type_id IN ( $nets_string )
+            AND sm.station_network_type_id = ANY((?)::int[])
         };
+        push @binds, $nets_array;
     }
 
     $sql .= qq{
@@ -919,7 +925,7 @@ sub get_stations_by_nets {
 
     # $self->app->log->debug($sql);
     # return
-    return $self->pg->db->query($sql, $user_id, $prov)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_map_stations {
@@ -1339,6 +1345,30 @@ sub get_instruments_by_station_date {
 
     # return
     return $self->pg->db->query($sql, $stid, $dt)->hashes;
+}
+
+sub get_instruments_by_station_range {
+    my ( $self, $stid, $from, $to ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbcommon sub get_instruments_by_station_range");
+
+    # query
+    my $sql = qq{
+        SELECT
+            stin_id,
+            instr_id,
+            CONCAT_WS(' ', instrument_type_fullname, '['||instrument_arpa_id||']', '- '||instrument_name, '- S.N. '||instrument_serial_num) AS instr_fullname,
+            category_id,
+            category_name
+        FROM metadata.view_stations_instruments
+        WHERE station_id = ?
+        AND tsrange(station_instr_startup_date, station_instr_dismiss_date, '[]') && tsrange(?::timestamp, ?::timestamp, '[]')
+        ORDER BY instrument_name;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $stid, $from, $to)->hashes;
 }
 
 sub get_cylinders_by_station_date {
@@ -1918,6 +1948,18 @@ Argomenti:  * id della stazione ('stid');
            * data e ora ('dt');
 
 Return:     Risultato della query;
+
+=cut
+
+=head1 get_instruments_by_station_range
+
+Funzione che recupera, dati l'id della stazione e un intervallo temporale, gli strumenti associati alla stazione che risultano attivi/intersecanti con l'intervallo fornito.
+
+Argomenti:  * id della stazione ('stid');
+           * data di inizio dell'intervallo ('from') (YYYY-MM-DD o timestamp);
+           * data di fine dell'intervallo ('to') (YYYY-MM-DD o timestamp);
+
+Return:     Risultato della query (hashes con gli strumenti trovati).
 
 =cut
 

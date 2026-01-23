@@ -219,6 +219,53 @@ sub get_openair_runs {
 }
 
 # -----------------------------------------------------------------------------
+# FILE PATH
+# -----------------------------------------------------------------------------
+
+sub get_files {
+    my ( $self, $user_id, $net ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbutilities sub get_files");
+
+    $net = ($net != -1 ? "^$net\$": ".*");
+
+    # query
+    my $sql = qq{
+        SELECT
+            dfs.id,
+            dfs.file_name,
+            dfs.file_date,
+            TO_CHAR(dfs.file_date, 'DD/MM/YYYY HH24:MI') AS file_date_format,
+            COALESCE(s.station_name, '--') AS station_name,
+            dfs.data_type,
+            CASE
+                WHEN dfs.data_type = 'dat' THEN '<span class="badge badge-square badge-default"><i class="fa-solid fa-swap-arrows text-purple"></i> Dati</span>'
+                WHEN dfs.data_type = 'cal' THEN '<span class="badge badge-square badge-default"><i class="fa-solid fa-wave-pulse text-success"></i> Calibrazioni</span>'
+                ELSE ''
+            END AS data_type_format,
+            dfs.file_location,
+            CASE
+                WHEN dfs.file_location = 'backup' THEN '<span class="badge badge-warning"><i class="fa-regular fa-box"></i> Backup</span>'
+                WHEN dfs.file_location = 'sftp' THEN '<span class="badge badge-primary"><i class="fa-regular fa-folder-bookmark"></i> SFTP</span>'
+                WHEN dfs.file_location = 'import' THEN '<span class="badge badge-info"><i class="fa-regular fa-arrow-down-to-arc"></i> Import</span>'
+                ELSE ''
+            END AS file_location_format
+
+        FROM
+            clients.data_file_status dfs
+            LEFT JOIN metadata.stations s ON (dfs.file_header = s.station_file_header)
+            LEFT JOIN metadata.stations_network_type snt ON (dfs.data_path = snt.st_network_datapath)
+            LEFT JOIN bobo.view_user_networks vun USING (st_network_id)
+        WHERE
+            vun.user_id = ? -- id utente
+            AND snt.st_network_id::text ~ ? -- id rete
+        ORDER BY id DESC
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id, $net)->hashes();
+}
 # JOBS
 # -----------------------------------------------------------------------------
 sub get_job_command {
@@ -425,6 +472,16 @@ Return:     Risultato della query.
 
 =cut
 
+=head1 get_files
+
+Funzione che recupera la lista dei file disponibile per una specifica rete per l'utente corrente.
+
+Argomenti:  * id dell'utente ('user_id');
+           * id della rete ('net');
+
+Return:     Risultato della query.
+
+=cut
 =head1 get_job_command
 
 Funzione che recupera il comando da lanciare di un determinato job.

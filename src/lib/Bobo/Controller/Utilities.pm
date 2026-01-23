@@ -249,6 +249,46 @@ sub get_alarms_bydate {
     $self->render(json => $json);
 }
 
+# !! FILE PATH
+sub filepath {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Utilities");
+
+    # get the menu with active element based on the current route
+    $self->helperGetMenusStash();
+
+    my $user_id = $self->session('it.ecometer.bobo');
+
+    # get networks
+    my $networks = $self->dbcommon->get_all_networks($user_id);
+    $self->stash(networks => $networks);
+
+    # Render template "dati/filepath.html.ep" with message
+    $self->render('dati/filepath');
+}
+
+sub get_files {
+    my $self = shift;
+
+    # log
+    $self->app->log->debug("Bobo::Controller::Utilities sub get_files");
+
+    my $user_id = $self->session('it.ecometer.bobo');
+    my $net = $self->param('net'); # post
+
+    my $files = $self->dbutilities->get_files($user_id, $net);
+
+    my $json = {
+        res => "OK",
+        files => $files
+    };
+
+    # render
+    $self->render(json => $json);
+}
+
 # !! REPORT AUTOMATICI
 sub automatici {
     my $self = shift;
@@ -514,6 +554,29 @@ Argomenti:  * id dell'utente ('user_id');
            * valore booleano che indica se nascondere o meno gli allarmi di tipo 'Porta aperta' ('flag');
 
 Return:     Risultato della query;
+
+=cut
+
+=head1 filepath
+
+Render della pagina di visualizzazione relativa ai percorsi dei file (file path).
+
+Argomenti:  /
+
+Return:     /
+
+=cut
+
+=head1 get_files
+
+Funzione che recupera la lista dei file disponibile per una specifica rete per l'utente corrente.
+
+Argomenti:  * id dell'utente ('user_id');
+
+           * id della rete ('net');
+
+Return:     json contenente il messaggio "OK" e la lista dei file:
+            { res => "OK", files => [ ... ] }
 
 =cut
 

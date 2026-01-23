@@ -83,12 +83,16 @@ sub get_instruments_by_date {
             AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(vi.instrument_delivery_date, vi.instrument_dismiss_date, '[]')
     };
 
+    my @binds = ($user_id, $from, $to);
+
     if ($net != -1) {
-        $sql .= qq{ AND $net = ANY(vi.network_types) };
+        $sql .= qq{ AND ? = ANY(vi.network_types) };
+        push @binds, $net;
     }
 
     if ($cat != -1) {
-        $sql .= qq{ AND vi.category_id = $cat };
+        $sql .= qq{ AND vi.category_id = ? };
+        push @binds, $cat;
     }
 
     $sql .= qq{
@@ -99,8 +103,7 @@ sub get_instruments_by_date {
     };
 
     # return
-    # $self->app->log->debug($sql, $user_id, $from, $to);
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_instruments_by_date_station {
@@ -149,16 +152,21 @@ sub get_instruments_by_date_station {
         AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(station_instr_startup_date, station_instr_dismiss_date, '[]')
     };
 
+    my @binds = ($user_id, $from, $to);
+
     if ($net != -1) {
-        $sql .= qq{ AND $net = ANY(network_types) };
+        $sql .= qq{ AND ? = ANY(network_types) };
+        push @binds, $net;
     }
 
     if ($stid != -1) {
-        $sql .= qq{ AND station_id = $stid };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stid;
     }
 
     if ($cat != -1) {
-        $sql .= qq{ AND category_id = $cat };
+        $sql .= qq{ AND category_id = ? };
+        push @binds, $cat;
     }
 
     $sql .= qq{
@@ -166,7 +174,7 @@ sub get_instruments_by_date_station {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_params_by_instr_type {
@@ -202,7 +210,6 @@ sub get_params_by_instr_type {
     };
 
     # return
-    # $self->app->log->debug($sql, $user_id, $from, $to);
     return $self->pg->db->query($sql, $intyid, $stid)->hashes();
 }
 
@@ -425,28 +432,6 @@ sub insert_new_instrument {
     eval {
         $tx = $self->pg->db->begin;
 
-        # {
-        #   "add-location" => "on",
-        #   "instr-active" => "on",
-        #   "instr-arpa-id" => "OPAS001",
-        #   "instr-date-delivery" => "04/03/2021",
-        #   "instr-date-disuse" => "",
-        #   "instr-id" => "",
-        #   "instr-name" => "Prova inserimento",
-        #   "instr-networks" => 1,
-        #   "instr-note" => "Prova primo inserimento",
-        #   "instr-serial-num" => "Test test",
-        #   "instr-type" => 170,
-        #   "loc-end-date" => "08/03/2026 09:52",
-        #   "loc-first" => "on",
-        #   "loc-notes" => "Prova inserimento location",
-        #   "loc-params" => 4,
-        #   "loc-prov" => 1,
-        #   "loc-start-date" => "01/03/2022 09:52"
-        #   "loc-stat" => 1000,
-        #   "instr-owner" => "Prova proprietario",
-        # }
-
         # ARRAY networks
         my @networks;
         if (ref($params->{'instr-networks'}) eq 'ARRAY') {
@@ -534,19 +519,6 @@ sub insert_new_location {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfStrumenti insert_new_location");
 
-    # {
-    #   "place-id" => "",
-    #   "place-instr-end-date" => "",
-    #   "place-instr-first" => "on",
-    #   "place-instr-id" => 797,
-    #   "place-instr-notes" => "test",
-    #   "place-instr-params" => 42,
-    #   "place-instr-prov" => -1,
-    #   "place-instr-start-date" => "01/03/2022 15:06",
-    #   "place-instr-stat" => 1006,
-    #   "place-networks" => "[1]"
-    # }
-
     my $id;
 
     eval{
@@ -586,25 +558,6 @@ sub update_instrument_by_id {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfStrumenti update_instrument_by_id");
 
-    # {
-    #   "end-date" => "",
-    #   "instr-arpa-id" => "00518",
-    #   "instr-owner" => "Prova proprietario",
-    #   "instr-date-delivery" => "01/03/2022",
-    #   "instr-date-disuse" => "04/03/2022",
-    #   "instr-id" => 4,
-    #   "instr-name" => "trhdgsd",
-    #   "instr-networks" => 1,
-    #   "instr-serial-num" => 1480,
-    #   "instr-type" => 185,
-    #   "loc-params" => -1,
-    #   "loc-prov" => -1,
-    #   "loc-stat" => -1,
-    #   "note" => "prova note strumento",
-    #   "notes" => "",
-    #   "start-date" => ""
-    # }
-
     # ARRAY networks
     my @networks;
     if (ref($params->{'instr-networks'}) eq 'ARRAY') {
@@ -614,10 +567,6 @@ sub update_instrument_by_id {
         push @networks, $params->{'instr-networks'};
     }
 
-    # INSERT INTO equipments.instruments
-    #     (instr_id, instr_type_id, instr_arpa_id, instr_serial_num, instr_name, instr_active, instr_note, network_types, instr_delivery_date, instr_dismiss_date, insert_time, insert_user)
-    # VALUES
-    #     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
     my $res = $self->pg->db->update('equipments.instruments', {
         # id                  => # id progressivo
@@ -649,17 +598,6 @@ sub update_location_by_id {
 
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfStrumenti update_location_by_id");
-    # {
-    #   "place-id" => 1,
-    #   "place-instr-end-date" => "04/03/2022 00:45",
-    #   "place-instr-first" => "on",
-    #   "place-instr-notes" => "Modifica location",
-    #   "place-instr-params" => 6,
-    #   "place-instr-prov" => -1,
-    #   "place-instr-start-date" => "01/10/2015 00:00",
-    #   "place-instr-stat" => 1000,
-    #   "place-networks" => "[1]"
-    # }
 
     my $res;
 
@@ -785,7 +723,6 @@ sub close_location_by_id {
     }, { stin_id => $stinid });
 
     # error check
-    # my $res = $self->pg->db->query($sql, $self->app->helperGetLocaleFullDate(), $stcyid);
     if (defined $res) {
         return 1;
     }

@@ -141,9 +141,6 @@ sub get_validation_table {
     # log
     $self->app->log->debug("Bobo::Model::Dbvalidazfinale sub get_validation_table");
 
-    my $stations_string = join ', ', @{$stations};
-    my $params_string = join ', ', @{$params};
-
     # query
     my $sql = qq{
         WITH g AS (
@@ -174,14 +171,26 @@ sub get_validation_table {
             LEFT JOIN g USING (station_id)
 
         WHERE
-            station_id IN ( $stations_string )
-            AND param_id IN ( $params_string )
+            station_id = ANY( (?)::int[] )
+            AND param_id = ANY( (?)::int[] )
         ORDER BY
             station_name, param_name;
     };
 
+    my @binds;
+    # g binds
+    push @binds, $user_id;
+    # clients.f_data_validity_statistics binds
+    push @binds, $from, $to, $conv;
+    
+    my $stations_array = '{' . join(',', @{$stations}) . '}';
+    my $params_array = '{' . join(',', @{$params}) . '}';
+
+    push @binds, $stations_array;
+    push @binds, $params_array;
+
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to, $conv)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_activities_log {

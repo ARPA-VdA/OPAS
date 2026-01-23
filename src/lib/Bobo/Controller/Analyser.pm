@@ -516,10 +516,7 @@ sub get_highcharts_data_bydate {
     my $hide_nulls = $self->param('hideNulls'); # post
     my $from = $self->param('from'); # post
     my $to = $self->param('to'); # post
-    my $flag_notes = $self->param('notes'); # post
-
-    $self->app->log->debug("Data inizio: $from, data fine: $to");
-    $self->app->log->debug("Recupero notes: ". $flag_notes);
+    my $flag_notes = $self->param('notes') // 'false'; # post
 
     # get data from dateFrom to dateTo
     my $json;

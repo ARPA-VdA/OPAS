@@ -146,9 +146,6 @@ sub get_methods_by_category {
         ORDER BY calib_me_name;
     };
 
-    # TODO da aggiungere filtro per categoria
-    # $cat
-
     # return
     return $self->pg->db->query($sql)->hashes();
 }
@@ -327,16 +324,22 @@ sub get_reports_by_date_province {
         AND vc.calib_fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $user_id, $from, $to;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.st_info_network_type_fk = $net }
+        $sql .= qq{ AND sm.st_info_network_type_fk = ? };
+        push @binds, $net;
     }
 
     if ($prid != -1) {
-        $sql .= qq{ AND vsm.province_id = $prid }
+        $sql .= qq{ AND vsm.province_id = ? };
+        push @binds, $prid;
     }
 
     if ($catid != -1) {
-        $sql .= qq{ AND vit.category_id = $catid }
+        $sql .= qq{ AND vit.category_id = ? };
+        push @binds, $catid;
     }
 
     $sql .= qq{
@@ -344,7 +347,7 @@ sub get_reports_by_date_province {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_reports_by_date_station {
@@ -433,12 +436,15 @@ sub get_reports_by_date_station {
             LEFT JOIN equipments.view_instruments_type vit USING (instr_type_id)
         WHERE
             vc.calib_fulldate BETWEEN ?::timestamp AND ?::timestamp
-
-        AND vc.station_id = ?
+            AND vc.station_id = ?
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to, $stid;
+
     if ($catid != -1) {
-        $sql .= qq{ AND vit.category_id = $catid }
+        $sql .= qq{ AND vit.category_id = ? };
+        push @binds, $catid;
     }
 
     $sql .= qq{
@@ -446,7 +452,7 @@ sub get_reports_by_date_station {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to, $stid)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_reports_events_by_dates {
@@ -544,9 +550,6 @@ sub get_report_by_id {
         WHERE calib_id = ?
     };
 
-    # TODO da aggiungere filtro per categoria
-    # $cat
-
     # return
     return $self->pg->db->query($sql, $rpid)->hash();
 }
@@ -577,7 +580,6 @@ sub insert_new_attachment {
     $self->app->log->debug("File: $original_name to $new_name");
 
     return $self->pg->db->insert('reports.calibration_attachments', {
-        # att_id        => # id progressivo
         calib_id      => $id,
         file_original => $original_name,
         file_archive  => $new_name,

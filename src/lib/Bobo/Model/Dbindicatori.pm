@@ -21,12 +21,89 @@ has 'app';
 #
 # GETTERS
 #
+sub get_runs{
+    my ( $self, $user_id, $from, $to, $prov ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbindicatori sub get_runs");
+    
+    # query
+    my $sql = qq{
+        SELECT 
+            run_id,
+            r.us_id,
+            CONCAT_WS(' ', u.us_name, u.us_2nd_name, u.us_surname)      AS us_fullname,
+            TO_CHAR( COALESCE(run_update_ts, run_insert_ts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Rome', 'DD/MM/YYYY HH24:MI') AS run_insert_format,
+            run_date,
+            TO_CHAR(run_date, 'DD/MM/YYYY') AS run_date_format,
+            r.province_id,
+            p.province_code,
+            run_result,
+            CASE
+                WHEN run_result IS TRUE THEN '<i class="fa-solid fa-check text-success"></i> Si'
+                WHEN run_result IS FALSE THEN '<i class="fa-solid fa-xmark text-danger"></i> No'
+                ELSE '--'
+            END AS run_result_format,
+            run_pdf,
+            CASE
+                WHEN run_pdf THEN 'report_giornaliero_'||p.province_code||'-'||run_date||'.pdf'
+                ELSE '--'
+            END AS run_pdf_name,
+            CASE
+                WHEN run_pdf THEN '/downloads/statistiche/indicatori/'||TO_CHAR(run_date, 'YYYY/MM')||'/report_giornaliero_'||p.province_code||'-'||run_date||'.pdf' 
+                ELSE ''
+            END AS run_pdf_path,
+            run_pdf_creator,
+            CONCAT_WS(' ', u2.us_name, u2.us_2nd_name, u2.us_surname)      AS run_pdf_creator_fullname,
+            run_pdf_last_mod,
+            COALESCE(TO_CHAR(run_pdf_last_mod AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Rome', 'DD/MM/YYYY HH24:MI'), '--') AS run_pdf_last_modified
+            
+        FROM clients_stats.runs r
+        LEFT JOIN main.provinces p USING (province_id)
+        LEFT JOIN bobo.users u USING (us_id)
+        LEFT JOIN bobo.users u2 ON ( u2.us_id = r.run_pdf_creator )
+        WHERE
+            run_date BETWEEN ?::date AND ?::date
+    };
+    my @binds;
+    push @binds, $from, $to;
+
+    if ($prov != -1) {
+        $sql .= qq{ AND province_id = ? };
+        push @binds, $prov;
+    }
+    else{
+        $sql .= qq{ AND province_id IN (
+                SELECT 
+                    DISTINCT smu.province_id
+                FROM
+                    metadata.view_stations_municipality smu
+                    LEFT JOIN bobo.view_user_stations us USING (station_id)
+                WHERE
+                    us.user_id = ?
+                    AND us.station_active IS TRUE
+                    AND smu.province_id IS NOT NULL
+            )
+        };
+
+        push @binds, $user_id;
+    }
+
+    $sql .= qq{
+        ORDER BY 1 DESC
+    };
+
+    # return
+    return $self->pg->db->query($sql, @binds)->hashes;
+}
+
+
 sub get_header_by_date {
     my ( $self, $user_id, $dt, $net, $prov ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::Dbindicatori sub get_header_by_date");
-
+    
     # query
     my $sql = qq{
         WITH t AS(
@@ -67,12 +144,17 @@ sub get_header_by_date {
                 AND r.res_date = ?::date
     };
 
+    my @binds;
+    push @binds, $user_id, $dt;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.st_info_network_type_fk = $net }
+        $sql .= qq{ AND sm.st_info_network_type_fk = ? };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
-        $sql .= qq{ AND vsm.province_id = $prov }
+        $sql .= qq{ AND vsm.province_id = ? };
+        push @binds, $prov;
     }
 
     $sql .= qq{
@@ -110,7 +192,7 @@ sub get_header_by_date {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $dt)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_data_by_date {
@@ -135,12 +217,17 @@ sub get_data_by_date {
                 AND r.res_date = ?::date
     };
 
+    my @binds;
+    push @binds, $user_id, $dt;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.st_info_network_type_fk = $net }
+        $sql .= qq{ AND sm.st_info_network_type_fk = ? };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
-        $sql .= qq{ AND vsm.province_id = $prov }
+        $sql .= qq{ AND vsm.province_id = ? };
+        push @binds, $prov;
     }
 
     $sql .= qq{
@@ -169,12 +256,16 @@ sub get_data_by_date {
                 vus.user_id = ?
     };
 
+    push @binds, $dt, $user_id;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.st_info_network_type_fk = $net }
+        $sql .= qq{ AND sm.st_info_network_type_fk = ? };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
-        $sql .= qq{ AND vsm.province_id = $prov }
+        $sql .= qq{ AND vsm.province_id = ? };
+        push @binds, $prov;
     }
 
     $sql .= qq{
@@ -212,9 +303,11 @@ sub get_data_by_date {
         ORDER BY station_name, pos, stat_id;
     };
 
+    push @binds, $dt;
+
 
     # return
-    return $self->pg->db->query($sql, $user_id, $dt, $dt, $user_id, $dt)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_header_by_station {
@@ -370,7 +463,65 @@ sub get_data_by_station {
     return $self->pg->db->query($sql, $stid, $from, $to, $from, $to, $stid, $from, $to)->hashes;
 }
 
+sub insert_run{
+    my ( $self, $user_id, $dt, $prov ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbindicatori sub insert_run");
+
+    # query
+    my $sql = qq{
+        INSERT INTO clients_stats.runs (run_date, province_id, us_id) VALUES (?, ?, ?) 
+            ON CONFLICT (run_date, province_id)
+            DO UPDATE SET 
+                run_update_ts = CURRENT_TIMESTAMP,
+                us_id = EXCLUDED.us_id;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $dt, $prov, $user_id);
+}
+
+
+sub update_run{
+    my ( $self, $user_id, $dt, $prov ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbindicatori sub update_run");
+
+    # query
+    my $sql = qq{
+        UPDATE clients_stats.runs 
+        SET 
+            run_pdf = TRUE,
+            run_pdf_creator = ?,
+            run_pdf_last_mod = CURRENT_TIMESTAMP 
+        WHERE run_date = ?
+        AND province_id = ?;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id, $dt, $prov);
+}
+
 1;
+
+=head1 get_runs
+
+Funzione che recupera le esecuzioni disponibili degli indicatori per un determinato periodo temporale,
+con la possibilità di filtrare i dati estratti per provincia e utente.
+
+Argomenti:  * id dell'utente ('user_id');
+
+           * data d'inizio ('from');
+
+           * data di fine ('to');
+
+           * id della provincia, se presente ('prov');
+
+Return:     Risultato della query.
+
+=cut
 
 =head1 get_header_by_date
 

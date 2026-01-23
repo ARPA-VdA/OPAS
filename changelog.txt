@@ -1,5 +1,36 @@
 -- CHANGELOG
 
+-- 2025-12-31 - V2.0.4
+- Aggiornata sezione Statistiche > Indicatori per gestire viste diversificate, aggiunta tabella con runs 
+  > aggiunta tabella di supporto per salvare runs calcoli
+  > aggiornato server per salvataggio e recupero run
+  > aggiornato server per lancio multipli processi di calcolo statistiche 
+  > aggiornato script per salvataggio esito calcolo
+- Aggiunta funzionalità di esportazione file Excel e csv per la pagina Indicatori
+  > aggiunto nuovo plugin
+  > modificata interfaccia con aggiunta bottoni per download
+- Creata nuova sezione Dati > File Path 
+  > creata tabella di supporto
+  > creazione script per monitoraggio posizione file
+- Creato nuovo tab nella sezione System Admin per visualizzare log accessi al sistema
+- Aggiornata sezione media con recupero nome della stazione per la directory corrispondente
+  > aggiornato server con recupero array nomi stazioni e mappatura con id
+- Nella sezione Admin,  aggiunto  flag invio email nella creazione utente (solo per system admin) e aggiornamenti vari
+  > modificato server per gestione nuovo flag
+  > creato helper dedicato
+  > aggiornata interfaccia per visualizzazione id utente
+- Aggiornata pagina Ticket > Centro per tenere visualizzati i ticket ancora da chiudere
+  > modifica query estrazione dati
+- Creato nuovo trigger per controllo dati in ingresso al sistema
+- Creata nuova tipologia di stazione
+  > aggiornata tabella di lookup su database
+  > aggiunta icona per visualizzazione differenziata sulle mappe
+- Aggiornamenti del server per incrementare la sicurezza e prevenire SQL Injection
+- Miglioramenti grafici
+- Correzione bachi vari
+- Aggiornato file "UPGRADE.md" su Github
+
+
 -- 2025-09-30 - V2.0.3
 
 - Creata nuova sezione Stanziamenti per gestire gli stanziamenti degli elementi in maniera separata dall'anagrafica
@@ -62,7 +93,6 @@
 - Correzione bachi vari
 - Aggiornato Webservice: aggiunta cadenza acquisizione nelle chiamate metadata
 - Aggiornati file "README.md" e "INSTALL.md" su Github
-
 
 -- 2025-03-31 - V2.0.0
 

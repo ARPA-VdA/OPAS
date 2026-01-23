@@ -54,7 +54,6 @@ sub get_stations_by_province {
             sm.station_network_type_id, sm.station_name;
     };
 
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $user_id, $prov)->hashes;
@@ -104,6 +103,8 @@ sub get_reports_by_date_province {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbalims sub get_reports_by_date_province");
+
+    $prid = ($prid != -1 ? "^$prid\$": ".*");
 
     # query
     my $sql = qq{
@@ -184,24 +185,13 @@ sub get_reports_by_date_province {
             vus.user_id = ?
 
         AND r.rep_fulldate BETWEEN ?::timestamp AND ?::timestamp
-    };
-
-    # check province id
-    if ($prid != -1) {
-        $sql .= qq{ AND vsm.province_id = $prid }
-    }
-
-    # check analytic pack id
-    if ($pack != -1) {
-        $sql .= qq{ AND $pack = ANY(r.ana_ids) }
-    }
-
-    $sql .= qq{
+        AND vsm.province_id::text ~ ?
+        AND ( ? = -1 OR ? = ANY(r.ana_ids) )
         ORDER BY r.rep_fulldate DESC;
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes;
+    return $self->pg->db->query($sql, $user_id, $from, $to, $prid, $pack, $pack)->hashes;
 }
 
 sub get_reports_by_date_station {
@@ -287,18 +277,13 @@ sub get_reports_by_date_station {
         WHERE
             r.rep_fulldate BETWEEN ?::timestamp AND ?::timestamp
             AND r.station_id = ?
-    };
-
-    if ($pack != -1) {
-        $sql .= qq{ AND $pack = ANY(r.ana_ids) }
-    }
-
-    $sql .= qq{
-        ORDER BY r.rep_fulldate DESC;
+            AND ( ? = -1 OR ? = ANY(r.ana_ids) )
+        ORDER BY 
+            r.rep_fulldate DESC;
     };
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $stid)->hashes;
+    return $self->pg->db->query($sql, $from, $to, $stid, $pack, $pack)->hashes;
 }
 
 sub get_report_by_id {
@@ -644,17 +629,6 @@ sub get_stpr_by_alims_code {
     # query
     my $sql;
 
-    # active,
-    # id,
-    # pr_id,
-    # name,
-    # shortname,
-    # unit,
-    # unitconv,
-    # decimals,
-    # st_id,
-    # stationname,
-    # schema||'.data_'||tableid AS fulltable
     $sql = qq{
         SELECT
             param_id,
@@ -689,19 +663,6 @@ sub insert_report {
     my $tx;
     my $new_rpid;
 
-    # "analytics-alims" => [
-    #                      19,
-    #                      17
-    #                    ],
-    # "argument-alims" => 1,
-    # "datetime-alims" => "20/04/2022 16:08",
-    # "filter-volume-tot-alims" => "",
-    # "filters-alims" => "",
-    # "id-alims" => "",
-    # "instrument-alims" => 704,
-    # "number-alims" => "OPAS2022_xxxx",
-    # "prov-alims" => 4,
-    # "station-alims" => 1188
 
     eval {
         $tx =  $self->pg->db->begin;
@@ -760,16 +721,6 @@ sub insert_report {
         $self->app->helperDumper($filters[0]);
 
         for my $filter (@{$filters[0]}){
-
-            # $self->app->helperDumper( $filter );
-            # filterObj = {
-            #     name:
-            #     start:
-            #     end:
-            #     volume:
-            #     cancelled:
-            #     white:
-            # };
 
             $self->pg->db->insert('client_lig_alims.filters', {
                 rep_id                => $new_rpid,
@@ -858,6 +809,8 @@ sub insert_filter_value {
                         result_value = EXCLUDED.result_value;
                 };
 
+                # $self->app->log->debug("query: [$sql] $id, $start, $stpr->{'station_id'}, $stpr->{'stpr_table_id'}, $ldq, $value}");
+
                 $self->pg->db->query($sql, $id, $start, $stpr->{'station_id'}, $stpr->{'stpr_table_id'}, $ldq, $value);
             }
         };
@@ -910,6 +863,8 @@ sub insert_filter_value {
                         measure_code = EXCLUDED.measure_code;
                 };
 
+                # $self->app->log->debug("query: [$sql] $start, $stpr->{'stpr_table_id'}, $value, $code}");
+
                 $self->pg->db->query($sql, $start, $stpr->{'stpr_table_id'}, $value, $code);
             }
         };
@@ -938,19 +893,6 @@ sub update_report {
 
     my $tx;
 
-    # "analytics-alims" => [
-    #                      19,
-    #                      17
-    #                    ],
-    # "argument-alims" => 1,
-    # "datetime-alims" => "20/04/2022 16:08",
-    # "filter-volume-tot-alims" => "",
-    # "filters-alims" => "",
-    # "id-alims" => "",
-    # "instrument-alims" => 704,
-    # "number-alims" => "OPAS2022_xxxx",
-    # "prov-alims" => 4,
-    # "station-alims" => 1188
 
     eval {
         $tx =  $self->pg->db->begin;
@@ -1001,16 +943,6 @@ sub update_report {
         $self->app->helperDumper($filters[0]);
 
         for my $filter (@{$filters[0]}){
-
-            # $self->app->helperDumper( $filter );
-            # filterObj = {
-            #     name:
-            #     start:
-            #     end:
-            #     volume:
-            #     cancelled:
-            #     white:
-            # };
 
             $self->pg->db->insert('client_lig_alims.filters', {
                 rep_id                => $params->{'id-alims'},

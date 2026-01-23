@@ -42,8 +42,6 @@ sub get_widget_by_id {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbcommon sub get_widget_by_id");
-    $self->app->log->debug("WIDGET $wdgid");
-    $self->app->log->debug("USER $user_id");
 
     # query
     my $sql = qq{
@@ -267,6 +265,133 @@ sub get_last_reports {
     return $self->pg->db->query($sql, $user_id, $user_id)->hashes();
 }
 
+sub get_nets_stats {
+    my ( $self, $user_id ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbhome sub get_nets_stats");
+
+    # query
+    my $sql = qq{
+        SELECT row_to_json(t) AS stats FROM (
+            SELECT * FROM bobo_tools.f_get_net_stats(?::integer)
+        ) t;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id)->hash->{'stats'};
+}
+
+sub get_ga_stats {
+    my ( $self ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbhome sub get_ga_stats");
+
+    # query
+    my $sql = qq{
+        SELECT stat_date, stat_obj-> 'ga' AS stat_obj
+        FROM bobo_tools.homepage_stats
+        ORDER BY stat_date DESC
+        LIMIT 1;
+    };
+
+    # return
+    return $self->pg->db->query($sql)->hash;
+}
+
+sub get_mm_days_stats {
+    my ( $self, $user_id ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbhome sub get_mm_days_stats");
+
+    my ($year, $month, $day) = Today( );
+
+    # query
+    my $sql = qq{
+        WITH t AS(
+            SELECT
+                station_id,
+                tsrange(
+                    CASE
+                        WHEN stsi_startup_date < '$year-01-01'::timestamp THEN '$year-01-01'::date
+                        ELSE stsi_startup_date::date
+                    END,
+                    CASE
+                        -- WHEN stsi_dismiss_date > '$year-12-31 23:59:59'::timestamp THEN '$year-12-31'::date
+                        WHEN stsi_dismiss_date::date > CURRENT_DATE THEN CURRENT_DATE
+                        ELSE stsi_dismiss_date::date
+                    END,
+                    '[]'
+                ) as loc_range
+            FROM
+                metadata.stations_sites ss
+            WHERE
+                tsrange(ss.stsi_startup_date, ss.stsi_dismiss_date, '[)') && tsrange('$year-01-01'::timestamp, '$year-12-31 23:59:59'::timestamp, '[]')
+        ),
+        c AS(
+            SELECT
+                station_id,
+                SUM(
+                    DATE_PART('day', UPPER(loc_range) - LOWER(loc_range))
+                )+1 AS total_days
+            FROM t
+            GROUP BY station_id
+            ORDER BY station_id
+        )
+        SELECT
+            station_id,
+            s.station_name,
+            total_days::text ||'/'||(EXTRACT(DAY FROM '$year-12-31 23:59:59'::timestamp - '$year-01-01'::timestamp) + 1)::text AS num_days
+        FROM
+            c
+            LEFT JOIN metadata.stations s USING (station_id)
+            LEFT JOIN bobo.view_user_stations vus USING (station_id)
+        WHERE
+            vus.user_id = ?
+        ORDER BY
+            s.station_name;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id)->hashes;
+}
+
+sub get_current_sites_allocations {
+    my ( $self, $user_id ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbhome sub get_current_sites_allocations");
+
+    # query
+    my $sql = qq{
+        SELECT
+            station_id,
+            st.station_name,
+            site_id,
+            site_name,
+            TO_CHAR(stsi_startup_date, 'DD/MM/YYYY') AS stsi_startup_date,
+            CASE
+                WHEN stsi_dismiss_date = 'infinity' THEN 'infinito'
+                WHEN stsi_dismiss_date IS NULL THEN '--'
+                ELSE TO_CHAR(stsi_dismiss_date, 'DD/MM/YYYY')
+            END AS stsi_dismiss_date
+        FROM
+            metadata.stations_sites ss
+            LEFT JOIN metadata.stations st USING (station_id)
+            LEFT JOIN metadata.sites s USING (site_id)
+            LEFT JOIN bobo.view_user_stations vus USING (station_id)
+        WHERE
+            vus.user_id = ?
+            AND tsrange(ss.stsi_startup_date, ss.stsi_dismiss_date, '[)') @> (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Rome')
+        ORDER BY stsi_startup_date;
+    };
+
+    # return
+    return $self->pg->db->query($sql, $user_id)->hashes;
+}
+
 sub get_open_doors_bydates {
     my ( $self, $user_id, $from, $to ) = @_;
 
@@ -370,6 +495,7 @@ sub get_alarms_bydate {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbhome sub get_alarms_bydate");
+    my @binds;
 
     # query
     my $sql = qq{
@@ -417,16 +543,21 @@ sub get_alarms_bydate {
         AND sa.sa_fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    push @binds, $user_id, $from, $to;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.station_network_type_id = $net };
+        $sql .= qq{ AND sm.station_network_type_id = ? };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND sa.station_id = $stat };
+        $sql .= qq{ AND sa.station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -435,7 +566,7 @@ sub get_alarms_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_swam_messages {
@@ -545,12 +676,17 @@ sub get_swam_messages_bydate {
         AND sw_fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -564,7 +700,7 @@ sub get_swam_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_tecora_messages {
@@ -636,12 +772,17 @@ sub get_tecora_messages_bydate {
         AND fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -650,7 +791,7 @@ sub get_tecora_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_derenda_messages {
@@ -722,12 +863,17 @@ sub get_derenda_messages_bydate {
         AND fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -736,7 +882,7 @@ sub get_derenda_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_envea_messages {
@@ -791,12 +937,17 @@ sub get_envea_messages_bydate {
         AND fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -805,7 +956,7 @@ sub get_envea_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_metone_messages {
@@ -861,12 +1012,17 @@ sub get_metone_messages_bydate {
         AND fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -875,7 +1031,7 @@ sub get_metone_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_fidas_messages {
@@ -931,12 +1087,17 @@ sub get_fidas_messages_bydate {
         AND fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -945,7 +1106,7 @@ sub get_fidas_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_last_teledyne_messages {
@@ -1006,12 +1167,17 @@ sub get_teledyne_messages_bydate {
             AND tsrange(station_instr_startup_date, station_instr_dismiss_date, '[]') @> (w.fulldate AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Rome')
     };
 
+    my @binds;
+    push @binds, $user_id, $from, $to;
+
     if ($prov != -1) {
-        $sql .= qq{ AND smu.province_id = $prov };
+        $sql .= qq{ AND smu.province_id = ? };
+        push @binds, $prov;
     }
 
     if ($stat != -1) {
-        $sql .= qq{ AND station_id = $stat };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stat;
     }
 
     $sql .= qq{
@@ -1020,7 +1186,7 @@ sub get_teledyne_messages_bydate {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_links {
@@ -1168,6 +1334,50 @@ Return:     Risultato della query;
 =head1 get_last_reports
 
 Funzione che recupera le informazioni relative agli ultimi report tarature/manutenzioni
+per il widget presente in homepage dal database.
+
+Argomenti:  * id dell'utente ('user_id');
+
+Return:     Risultato della query;
+
+=cut
+
+=head1 get_nets_stats
+
+Funzione che recupera le informazioni relative alle statistiche relative alla rete e
+all'utilizzo del portale per il widget presente in homepage dal database.
+
+Argomenti:  * id dell'utente ('user_id');
+
+Return:     Risultato della query;
+
+=cut
+
+=head1 get_ga_stats
+
+Funzione che recupera le informazioni relative alle Google Analytics per il widget presente
+in homepage dal database.
+
+Argomenti:  /
+
+Return:     Risultato della query;
+
+=cut
+
+=head1 get_mm_days_stats
+
+Funzione che recupera le informazioni relative alle statistiche relative ai mezzi mobili
+per il widget presente in homepage dal database.
+
+Argomenti:  * id dell'utente ('user_id');
+
+Return:     Risultato della query;
+
+=cut
+
+=head1 get_current_sites_allocations
+
+Funzione che recupera le informazioni relative ai siti correnti ei mezzi mobili
 per il widget presente in homepage dal database.
 
 Argomenti:  * id dell'utente ('user_id');

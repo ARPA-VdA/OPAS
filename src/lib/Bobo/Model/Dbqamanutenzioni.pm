@@ -114,12 +114,17 @@ sub get_reports_by_date_net_province {
         AND m.ma_fulldate BETWEEN ?::timestamp AND ?::timestamp
     };
 
+    my @binds;
+    push @binds, $user_id, $user_id, $from, $to;
+
     if ($net != -1) {
-        $sql .= qq{ AND sm.st_info_network_type_fk = $net }
+        $sql .= qq{ AND sm.st_info_network_type_fk = ? };
+        push @binds, $net;
     }
 
     if ($prid != -1) {
-        $sql .= qq{ AND vsm.province_id = $prid }
+        $sql .= qq{ AND vsm.province_id = ? };
+        push @binds, $prid;
     }
 
     $sql .= qq{
@@ -127,7 +132,7 @@ sub get_reports_by_date_net_province {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_reports_by_date_station {
@@ -277,9 +282,6 @@ sub get_report_by_id {
         LIMIT 1;
     };
 
-    # TODO da aggiungere filtro per categoria
-    # $cat
-
     # return
     return $self->pg->db->query($sql, $rpid)->hash();
 }
@@ -328,9 +330,6 @@ sub get_operations_by_report {
         AND vm2.ma_op_id NOTNULL
         ORDER BY vm2.ma_op_id;
     };
-
-    # TODO da aggiungere filtro per categoria
-    # $cat
 
     # return
     return $self->pg->db->query($sql, $rpid)->hashes();

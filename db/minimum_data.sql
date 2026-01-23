@@ -311,9 +311,10 @@
         (68, 'Centro'                  , '/plan_centro'         , 'fa-solid fa-list-tree'                           ),
         (69, 'Notifiche'               , '/div_notifiche'       , 'fa-regular fa-message-lines'                     ),
         (70, 'System Admin'            , '/usr_sysadmin'        , 'fa-regular fa-user-astronaut'                    ),
-        (71, 'Strumenti'               , '/stnz_strumenti'      , 'fa-regular fa-shelves'                           );
+        (71, 'Strumenti'               , '/stnz_strumenti'      , 'fa-regular fa-shelves'                           ),
+        (72, 'File path'               , '/dat_filepath'        , 'fa-regular fa-list-tree'                         );
 
-    SELECT setval('bobo.pages_page_id_seq', 71, true);
+    SELECT setval('bobo.pages_page_id_seq', 72, true);
 
     -- ------------------------------------------------------------------------------------------------
     -- RELATION GROUP PAGES WITH GRANTS
@@ -388,7 +389,8 @@
         (3, 68, '111'),
         (3, 69, '111'),
         (3, 70, '111'),
-        (3, 71, '111')
+        (3, 71, '111'),
+        (3, 72, '111')
 
     ON CONFLICT ON CONSTRAINT bobo_group_pages_ukey DO NOTHING;
 
@@ -485,9 +487,10 @@
         (84, 1,   69, 'Notifiche'               , 'sidebar1.divulgazione.notifiche'    , 704),
         (85, 3,   70, 'System Admin'            , 'user.sysadmin'                      ,   2),
         (86, 1, null, 'Stanziamenti'            , 'sidebar1.stanziamenti'              , 425),
-        (87, 1,   71, 'Strumenti'               , 'sidebar1.stanziamenti.strumenti'    , 426);
+        (87, 1,   71, 'Strumenti'               , 'sidebar1.stanziamenti.strumenti'    , 426),
+        (88, 1,   72, 'File path'               , 'sidebar1.dat.filepath'              , 158); 
 
-    SELECT setval('bobo.menu_pages_mp_id_seq', 87, true);
+    SELECT setval('bobo.menu_pages_mp_id_seq', 88, true);
 
     INSERT INTO bobo.menu_css
         (menu_css_id, mp_id, menu_css_class, menu_css_expanded, menu_css_icon, menu_css_blank, menu_css_beta)
@@ -563,9 +566,10 @@
         (78, 82, NULL                               , true , NULL                                 , false, false),
         (80, 84, NULL                               , true , NULL                                 , false, false),
         (82, 86, 'has-arrow waves-effect waves-dark', false, 'fa-light fa-cart-flatbed-boxes'     , false, false),
-        (83, 87, NULL                               , false, NULL                                 , false, false);
+        (83, 87, NULL                               , false, NULL                                 , false, false),
+        (84, 88, NULL                               , true , NULL                                 , false, false);
 
-    SELECT setval('bobo.menu_css_menu_css_id_seq', 83, true);
+    SELECT setval('bobo.menu_css_menu_css_id_seq', 84, true);
 
     -- ----------------------------------------------------------------------------------------------
     -- FAQ

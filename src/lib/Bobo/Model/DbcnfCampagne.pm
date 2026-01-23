@@ -28,8 +28,6 @@ sub get_roaming_stations_by_nets {
     # log
     $self->app->log->debug("Bobo::Model::DbcnfCampagne sub get_roaming_stations_by_nets");
 
-    # wc_last_update updated by c:\Dev\opas_bobo\scripts\webcams\updated-dates.sh
-
     # query
     my $sql = qq{
         WITH t AS(
@@ -80,19 +78,25 @@ sub get_roaming_stations_by_nets {
             AND sm.station_roaming_type_id = 2 -- roaming
     };
 
-    if (scalar(@{$nets}) > 1) {
-        my $nets_string = join ',' , @{$nets};
-        $self->app->log->debug($nets_string);
+    # prepare binds (userid + optional filters)
+    my @binds = ($userid);
 
+    if (scalar(@{$nets}) > 1) {
+        my $nets_array = '{' . join(',', @{$nets}) . '}';
+        $self->app->log->debug($nets_array);
+
+        # use placeholder and PostgreSQL ANY with array literal
         $sql .= qq{
-            AND sm.station_network_type_id IN ( $nets_string )
+            AND sm.station_network_type_id = ANY((?)::int[])
         };
+        push @binds, $nets_array;
     }
     else {
-        if (@{$nets}[0] != -1) {
+        if ($nets->[0] != -1) {
             $sql .= qq{
-                AND sm.station_network_type_id = @{$nets}[0]
+                AND sm.station_network_type_id = ?
             };
+            push @binds, $nets->[0];
         }
     }
 
@@ -103,7 +107,7 @@ sub get_roaming_stations_by_nets {
     };
 
     # return
-    return $self->pg->db->query($sql, $userid)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_campaigns {
@@ -202,16 +206,21 @@ sub get_sites {
                 )
     };
 
+    my @binds = ($user_id);
+
     if ($net != -1) {
+        # bind net instead of interpolating
         $sql .= qq{
-            AND $net = ANY(network_types)
+            AND ? = ANY(network_types)
         };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
         $sql .= qq{
-            AND province_id = $prov
+            AND province_id = ?
         };
+        push @binds, $prov;
     }
 
     $sql .= qq{
@@ -222,7 +231,7 @@ sub get_sites {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_sites_by_date_station {
@@ -273,26 +282,32 @@ sub get_sites_by_date_station {
             AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(stsi_startup_date, stsi_dismiss_date, '[]')
     };
 
+    my @binds = ($user_id, $from, $to);
+
     if ($net != -1) {
-        $sql .= qq{ AND $net = ANY(s.network_types) };
+        $sql .= qq{ AND ? = ANY(s.network_types) };
+        push @binds, $net;
     }
 
     if ($prov != -1) {
         $sql .= qq{
-            AND province_id = $prov
+            AND province_id = ?
         };
+        push @binds, $prov;
     }
 
     if ($stid != -1) {
         $sql .= qq{
-            AND station_id = $stid
+            AND station_id = ?
         };
+        push @binds, $stid;
     }
 
     if ($camp != -1) {
         $sql .= qq{
-            AND camp_id = $camp
+            AND camp_id = ?
         };
+        push @binds, $camp;
     }
 
     $sql .= qq{
@@ -303,7 +318,7 @@ sub get_sites_by_date_station {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_site_by_id {
@@ -501,26 +516,6 @@ sub insert_new_site {
 
     eval {
         $tx = $self->pg->db->begin;
-
-        # {
-        #   "add-location" => "on",
-        #   "main-loc-campaign" => -1,
-        #   "main-loc-end-date" => "30/04/2022 13:50",
-        #   "main-loc-lab" => 1080,
-        #   "main-loc-notes" => "note location",
-        #   "main-loc-start-date" => "01/04/2022 13:50",
-        #   "note" => "note sito",
-        #   "site-altitude" => 111,
-        #   "site-district" => 505,
-        #   "site-id" => "",
-        #   "site-latitude" => "44.385271",
-        #   "site-locality" => "localit\x{e0}\x{e0}\x{e0}\x{e0}",
-        #   "site-longitude" => "11.805359",
-        #   "site-name" => "Prova nome",
-        #   "site-networks" => 3,
-        #   "site-prov" => 10,
-        #   "site-region" => 8
-        # }
 
         $self->app->log->debug("STEP 1 insert sito");
 
@@ -996,7 +991,6 @@ sub close_location_by_id {
     }, {stsi_id => $stsiid });
 
     # error check
-    # my $res = $self->pg->db->query($sql, $self->app->helperGetLocaleFullDate(), $stcyid);
     if (defined $res) {
         return 1;
     }

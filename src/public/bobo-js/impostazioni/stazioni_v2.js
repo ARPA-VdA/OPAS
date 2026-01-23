@@ -1316,10 +1316,18 @@ $(document).ready(function() {
                 html += '                        <td>'+formatFlagField(el.station_suspended)+'</td>';
                 html += '                    </tr>';
                 html += '                    <tr>';
-                html += '                        <th>Attiva dal</th>';
-                html += '                        <td>'+formatTextField(el.station_startup_date)+'</td>';
-                html += '                        <th>Dismessa il</th>';
-                html += '                        <td>'+formatTextField(el.station_dismiss_date)+'</td>';
+                html += '                        <th>Real-time attivo</th>';
+                html += '                        <td>'+formatFlagField(el.station_real_time)+'</td>';
+                html += '                        <th>';
+                html += '                            ID nazionale';
+                html += '                            <a class="mytooltip" href="javascript:void(0)">';
+                html += '                                <i class="fa-regular fa-circle-info text-info"></i>';
+                html += '                                <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">';
+                html += '                                    Id nazionale esposto dall\'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[national_code]</strong> e <strong>da non intendersi come codice europeo</strong> (presente nella sezione Infoaria > Dataset D)';
+                html += '                                </span></span></span>';
+                html += '                            </a>';
+                html += '                        </th>';
+                html += '                        <td>'+formatTextField(el.station_national_code)+'</td>';
                 html += '                    </tr>';
                 html += '                    <tr>';
                 html += '                        <th>';
@@ -1340,8 +1348,10 @@ $(document).ready(function() {
                 html += '                        <td>'+formatTextField(el.station_external_id)+'</td>';
                 html += '                    </tr>';
                 html += '                    <tr>';
-                html += '                        <th>Real-time attivo</th>';
-                html += '                        <td colspan="3">'+formatFlagField(el.station_real_time)+'</td>';
+                html += '                        <th>Attiva dal</th>';
+                html += '                        <td>'+formatTextField(el.station_startup_date)+'</td>';
+                html += '                        <th>Dismessa il</th>';
+                html += '                        <td>'+formatTextField(el.station_dismiss_date)+'</td>';
                 html += '                    </tr>';
                 html += '                    <tr>';
                 html += '                        <th>Note</th>';
@@ -1723,6 +1733,7 @@ $(document).ready(function() {
                 }
 
                 $("#station-visible-id").val(stid);
+                $("#station-national-code").val(el.station_national_code);
                 $("#station-control-id").val(el.station_remote_ctrl);
                 $("#station-extra-id").val(el.station_external_id);
                 $("#station-note").val(el.station_note);
@@ -1746,7 +1757,6 @@ $(document).ready(function() {
 
                 $("#station-network").val(el.station_network_type_id).trigger('change.select2');
                 // $("#station-metadata-note").val(el.station_metadata_note);
-                // $("#station-national-code").val(el.station_national_code);
 
 
                 // modify 'Nuovo' text in 'Modifica'

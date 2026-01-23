@@ -89,6 +89,9 @@ ALTER TABLE ONLY clients.tecora_warnings ADD CONSTRAINT clients_tecora_warnings_
 ALTER TABLE ONLY clients.teledyne_warnings ADD CONSTRAINT clients_teledyne_warnings_fkey FOREIGN KEY (station_id) REFERENCES metadata.stations(station_id) ON UPDATE CASCADE;
 ALTER TABLE ONLY clients.trigger_history ADD CONSTRAINT clients_trigger_history_fk1 FOREIGN KEY (us_id) REFERENCES bobo.users(us_id) ON UPDATE CASCADE;
 ALTER TABLE ONLY clients.trigger_history ADD CONSTRAINT clients_trigger_history_fk2 FOREIGN KEY (ann_id) REFERENCES bobo_tools.annotations(ann_id) ON UPDATE CASCADE;
+ALTER TABLE ONLY clients_stats.runs ADD CONSTRAINT clients_stats_runs_fkey FOREIGN KEY (province_id) REFERENCES main.provinces (province_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY clients_stats.runs ADD CONSTRAINT clients_stats_runs_fkey2 FOREIGN KEY (run_pdf_creator) REFERENCES bobo.users (us_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY clients_stats.runs ADD CONSTRAINT clients_stats_runs_fkey3 FOREIGN KEY (us_id) REFERENCES bobo.users (us_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE RESTRICT;
 ALTER TABLE ONLY clients_stats.limits ADD CONSTRAINT clients_stats_limits_fkey2 FOREIGN KEY (stat_id) REFERENCES clients_stats.statistics(stat_id) ON UPDATE CASCADE;
 ALTER TABLE ONLY clients_stats.limits ADD CONSTRAINT clients_stats_limits_fkey3 FOREIGN KEY (lt_id) REFERENCES clients_stats.limits_type(lt_id) ON UPDATE CASCADE;
 ALTER TABLE ONLY clients_stats.report_results ADD CONSTRAINT clients_stats_report_results_fk1 FOREIGN KEY (stpr_id) REFERENCES metadata.stations_parameters(stpr_id) ON UPDATE CASCADE;

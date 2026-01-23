@@ -29,11 +29,6 @@ sub get_categories_list {
     # log
     $self->app->log->debug("sub get_categories_list");
 
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
-
     # estraggo le categorie associate al gruppo dll'utente
     # oppure le categorie pubbliche il cui proprietario fa parte dello stesso portale dell'utente
     my $sql = qq{
@@ -82,11 +77,6 @@ sub get_category_byid {
 
     # log
     $self->app->log->debug("sub get_category_byid");
-
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
 
     # estraggo le categorie associate al gruppo dll'utente
     # oppure le categorie pubbliche il cui proprietario fa parte dello stesso portale dell'utente
@@ -207,6 +197,8 @@ sub get_pages_by_category {
         LEFT JOIN bobo_tools.view_visualizer_pages vp USING (category_id)
     };
 
+    my @binds;
+
     # check if the category is not provided
     if ($cat == -1) {
         $sql .= qq{
@@ -215,36 +207,40 @@ sub get_pages_by_category {
                 AND vc.category_owner_portal = (
                     SELECT portal_id
                     FROM bobo.users_metadata
-                    WHERE us_id = $user_id
+                    WHERE us_id = ?
                 )
             )
             OR (
-                ARRAY( SELECT gr_id FROM bobo.user_groups WHERE us_id = $user_id ) && ARRAY( SELECT admin_gr_id FROM bobo.portal_properties )
+                ARRAY( SELECT gr_id FROM bobo.user_groups WHERE us_id = ? ) && ARRAY( SELECT admin_gr_id FROM bobo.portal_properties )
                 AND vc.category_owner_portal = (
                     SELECT portal_id
                     FROM bobo.users_metadata
-                    WHERE us_id = $user_id
+                    WHERE us_id = ?
                 )
             )
             OR vc.groups_id && ARRAY(
                 SELECT gr_id
                 FROM bobo.user_groups
-                WHERE us_id = $user_id
+                WHERE us_id = ?
             )
-            OR vc.category_owner = $user_id
+            OR vc.category_owner = ?
         };
+
+        push @binds, $user_id, $user_id, $user_id, $user_id, $user_id;
     }
     else {
         $sql .= qq{
             WHERE
-                vc.category_id = $cat
+                vc.category_id = ?
         };
+
+        push @binds, $cat;
     }
 
     $sql .= qq{ORDER BY category_name, page_name;};
 
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 # JS TREE
@@ -253,11 +249,6 @@ sub get_groups {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_groups");
-
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
 
     # query
     my $sql = qq{
@@ -323,10 +314,6 @@ sub get_group_pages {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_group_macros");
-
-    # macro_id
-    # macro_category
-    # macro_object
 
     # check boolean value
     if (!defined $loaded) {
@@ -430,11 +417,6 @@ sub get_pages_list {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_pages_list");
-
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
 
     # query
     my $sql = qq{
@@ -577,10 +559,10 @@ sub get_info_params {
                 'FFFFFF'                                            AS color,
                 2                                                   AS line_width,
 
-                $conv               AS converted,
+                ?::boolean               AS converted,
                 -- 24/07/2024 10:04 update for conversion coefficient history management
                 -- CASE
-                --     WHEN $conv THEN
+                --     WHEN conv THEN
                 --                 CASE
                 --                     WHEN param_conv = 0 THEN 'y='||COALESCE(param_offset::text, '0')
                 --                     WHEN param_conv = 1 THEN 'y=x'||COALESCE('+'||param_offset::text, '')
@@ -612,8 +594,7 @@ sub get_info_params {
                 stpr_id = ?;
         };
 
-        my $res = $self->pg->db->query($sql, $stprid)->hash();
-        # my $res = $self->pg->db->query($sql, $dateFrom, $dateTo, $percent, $param->{'st_pr_id'})->hash();
+        my $res = $self->pg->db->query($sql, $conv, $stprid)->hash();
 
         # check result
         if (defined $res) {
@@ -631,7 +612,11 @@ sub get_all_stations_params_by_types {
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_all_stations_params_by_types");
 
-    my $stid_string = join ', ', @{$stid};
+    my @binds;
+    my $stid_array = '{' . join(',', @{$stid}) . '}';
+
+    # use placeholder and PostgreSQL ANY with array literal
+    push @binds, $stid_array;
 
     # query
     my $sql = qq{
@@ -643,13 +628,14 @@ sub get_all_stations_params_by_types {
             LEFT JOIN metadata.parameters p USING (param_id)
             LEFT JOIN metadata.parameters_info pm USING (param_id)
         WHERE
-            sp.station_id IN ( $stid_string )
+            sp.station_id = ANY((?)::int[])
     };
 
     if (scalar @{$types} > 0) {
-        my $types_string = join ',', @{$types};
+        my $types_array = '{' . join(',', @{$types}) . '}';
 
-        $sql .= qq{ AND pm.pm_info_type_fk IN ( $types_string ) };
+        $sql .= qq{ AND pm.pm_info_type_fk = ANY((?)::int[]) };
+        push @binds, $types_array;
     }
 
     if ($cat != -1) {
@@ -657,9 +643,11 @@ sub get_all_stations_params_by_types {
             AND instr_type_ids && ARRAY(
                 SELECT instr_type_id
                 FROM equipments.instruments_type
-                WHERE category_id = $cat
+                WHERE category_id = ?
             )
         };
+
+        push @binds, $cat;
     }
 
     $sql .= qq{
@@ -667,10 +655,8 @@ sub get_all_stations_params_by_types {
         ORDER BY 1,2;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_all_params_by_types {
@@ -679,7 +665,11 @@ sub get_all_params_by_types {
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_all_params_by_types");
 
-    my $types_string = join ',', @{$types};
+    my @binds;
+    my $types_array = '{' . join(',', @{$types}) . '}';
+
+    # use placeholder and PostgreSQL ANY with array literal
+    push @binds, $types_array;
 
     # query
     my $sql = qq{
@@ -690,7 +680,7 @@ sub get_all_params_by_types {
             metadata.parameters p
             LEFT JOIN metadata.parameters_info pm USING (param_id)
         WHERE
-            pm.pm_info_type_fk IN ( $types_string )
+            pm.pm_info_type_fk = ANY((?)::int[])
     };
 
     if ($cat != -1) {
@@ -698,19 +688,19 @@ sub get_all_params_by_types {
             AND instr_type_ids && ARRAY(
                 SELECT instr_type_id
                 FROM equipments.instruments_type
-                WHERE category_id = $cat
+                WHERE category_id = ?
             )
         };
+
+        push @binds, $cat;
     }
 
     $sql .= qq{
         ORDER BY 1,2;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_all_stations_params_by_province {
@@ -742,16 +732,23 @@ sub get_all_stations_params_by_province {
             us.user_id = ?
     };
 
+    my @binds;
+    push @binds, $user_id;
+
     if ($net != -1) {
         $sql .= qq{
-            AND sm.st_info_network_type_fk = $net
+            AND sm.st_info_network_type_fk = ?
         };
+
+        push @binds, $net;
     }
 
     if ($province_id != -1) {
         $sql .= qq{
-            AND smu.province_id = $province_id
+            AND smu.province_id = ?
         };
+
+        push @binds, $province_id;
     }
 
     $sql .= qq {
@@ -762,7 +759,7 @@ sub get_all_stations_params_by_province {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_all_stations_params {
@@ -771,7 +768,11 @@ sub get_all_stations_params {
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub get_all_stations_params");
 
-    my $stid_string = join ', ', @{$stid};
+    my @binds;
+    my $stid_array = '{' . join(',', @{$stid}) . '}';
+
+    # use placeholder and PostgreSQL ANY with array literal
+    push @binds, $stid_array;
 
     # query
     my $sql = qq{
@@ -790,7 +791,7 @@ sub get_all_stations_params {
             LEFT JOIN metadata.parameters p USING (param_id)
             LEFT JOIN metadata.stations s USING (station_id)
         WHERE
-            sp.station_id IN ( $stid_string )
+            sp.station_id = ANY((?)::int[])
             AND stpr_id IS NOT NULL
             AND s.station_active IS TRUE
         ORDER BY
@@ -798,7 +799,7 @@ sub get_all_stations_params {
     };
 
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_automatic_macros {
@@ -850,8 +851,6 @@ sub get_automatic_macros {
         $sql = qq{
             SELECT bobo_tools.f_visualizer_auto_generate_macro( ?::integer[], ?::integer[], ?::integer[], ?, ?) AS macros;
         };
-
-        # $self->app->log->debug($sql);
 
         # return
         return $self->pg->db->query($sql, \@stations, \@types, \@parameters, $params->{'auto-instruments'}, $self->app->helperGetBoolean($params, 'auto-conv'))->hash->{'macros'};
@@ -1057,8 +1056,6 @@ sub update_options {
     # log
     $self->app->log->debug("Bobo::Model::Dbvisualizer sub update_options");
 
-    # $self->app->helperDumper($macro_obj);
-
     # query and return
     return $self->pg->db->update('bobo_tools.visualizer_options', {
         option_object => $option_obj
@@ -1082,7 +1079,6 @@ sub update_category {
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbvisualizer STEP 1");
 
-        # $db->update('some_table', {foo => 'bar'}, {id => 23});
         $self->pg->db->update('bobo_tools.visualizer_categories', {
             cat_name   => $self->app->helperEscapeParam($params->{'new-cat-name'}),
             cat_public => $self->app->helperGetBoolean($params, 'new-cat-public')

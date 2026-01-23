@@ -40,11 +40,6 @@ sub user_login {
             AND user_password = crypt(?, user_password);
     };
 
-    # query
-    # my $sql = qq{
-    #     SELECT 'user_id' as user_id;
-    # };
-
     # return
     $self->pg->db->query($sql, $usermail, $userpass)->hash;
 }
@@ -213,7 +208,6 @@ sub recover_password {
     my $sql = qq{ SELECT bobo.f_recover_user_password(?) AS new_pwd; };
 
     my $new_pwd = $self->pg->db->query($sql, $user_email)->hash->{new_pwd};
-    # $self->app->log->debug("New password $new_pwd");
 
     # return
     return $new_pwd;
@@ -324,10 +318,6 @@ sub get_sidebar_usermenu {
         AND menu_page_level > 1
         ORDER BY menu_page_order;
     };
-
-    # my $sql = qq{
-    #     SELECT * FROM bobo.view_menu_pages WHERE menu_id = 1 AND page_level > 1 ORDER BY page_order;
-    # };
 
     # return
     $self->pg->db->query($sql, $user_id, $active_page, $active_page, $user_id)->hashes;
@@ -555,9 +545,6 @@ sub get_portal_page_options {
         SELECT '{}'::jsonb
         WHERE NOT EXISTS (SELECT 1 FROM t);
     };
-
-    # log
-    $self->app->log->debug("$sql");
 
     # return
     $self->pg->db->query($sql, $portal_id, $active_page)->hash->{'po_obj'};

@@ -8,6 +8,7 @@
     <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#maint-tab" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-toolbox"></i> <span class="hidden-xs-down">Manutenzione del portale</span></a> </li>
     <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#stat-tab" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-chart-pie"></i> <span class="hidden-xs-down">Statistiche reti</span></a> </li>
     <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#email-tab" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-envelope-dot"></i> <span class="hidden-xs-down">Email Gateway</span></a> </li>
+    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#access-log-tab" role="tab"><span class="hidden-sm-up"><i class="fa-solid fa-key"></i> <span class="hidden-xs-down">Log accessi</span></a> </li>
 </ul>
 
 <!-- Tab panes -->
@@ -148,11 +149,62 @@
                 </table>
             </div>
             <div class="col-xl-5 order-1 order-xl-2 m-b-25">
-                <div class="no-mail">
+                <div class="no-data-sel no-mail">
                     <i class="fa-solid fa-envelope-open-text text-info"></i>
                     <p>Clicca sull'email che vuoi visualizzare</p>
                 </div>
                 <div class="view-mail">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane p-20" id="access-log-tab" role="tabpanel">
+        <h4 class="tab-title text-success">Log accessi</h4>
+        <h6 class="tab-subtitle">Visualizza tutti i log di accesso sul sistema.</h6>
+        <hr class="m-t-10 m-b-10">
+        <div class="row">
+            <div class="col-xl-7 order-2 order-xl-1">
+                <div class="row m-b-10 show-space-between-med">
+                    <div class="input-group col-md-8">
+                        <input class="form-control input-daterange-datepicker" type="text" name="daterange" value="" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="mdi mdi-calendar-multiple"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <table id="access-log-table" class="display responsive table table-hover table-striped table-compressed-middle tbl-va-center resp-plus tbl-arrgd" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Utente</th>
+                            <th>Stato</th>
+                            <th>Data accesso</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th></th>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Utente</th>
+                            <th>Stato</th>
+                            <th>Data accesso</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="col-xl-5 order-1 order-xl-2 m-b-25">
+                <div class="no-data-sel no-access-log">
+                    <i class="fa-solid fa-key text-info"></i>
+                    <p>Clicca sull'accesso che vuoi visualizzare</p>
+                </div>
+                <div class="view-access-log">
                 </div>
             </div>
         </div>

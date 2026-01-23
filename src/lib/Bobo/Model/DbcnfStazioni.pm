@@ -612,6 +612,7 @@ sub update_station {
             st_info_lat_wgs84       => $self->app->helperEscapeParam($params->{'station-wgs84-lat'}),
             st_info_lon_wgs84       => $self->app->helperEscapeParam($params->{'station-wgs84-lon'}),
             st_info_network_type_fk => $params->{'station-network'},
+            st_info_national_code   => $self->app->helperEscapeParam($params->{'station-national-code'}),
 
             st_info_shortname       => $self->app->helperEscapeParam($params->{'station-shortname'}), # NOT NULL
             st_info_longname        => $self->app->helperEscapeParam($params->{'station-longname'}),

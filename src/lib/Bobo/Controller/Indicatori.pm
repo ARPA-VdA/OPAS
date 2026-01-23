@@ -12,6 +12,8 @@ use Mojo::IOLoop;
 use Mojo::JSON qw(decode_json encode_json);
 use Encode qw/encode_utf8 decode_utf8/;
 
+use DateTime;
+
 use Data::Dumper;
 
 sub indicatori {
@@ -33,48 +35,36 @@ sub indicatori {
     my $provinces = $self->dbcommon->get_provinces( $user_id );
     $self->stash(provinces => $provinces);
 
+    $self->helperGetPortalPageOptions();
+
     # Render template "statistiche/indicatori.html.ep" with message
     $self->render('statistiche/indicatori');
 }
 
-sub get_pdf_files {
+sub get_runs {
     my $self = shift;
 
     # log
-    $self->app->log->debug("Bobo::Controller::Indicatori sub get_pdf_files");
+    $self->app->log->debug("Bobo::Controller::Indicatori sub get_runs");
 
-    # ricerca tutti .pdf file nella directory
-    my $path = $self->app->home->rel_file("public/downloads/statistiche/indicatori"); # /var/www/bobo/public/downloads/statistiche/indicatori
-    $self->app->log->debug("Application path: $path");
+    my $from = $self->param('from'); # post
+    my $to = $self->param('to'); # post
+    my $prov = $self->param('prov'); # post
 
-    my @files = File::Find::Rule->file->name('*.pdf')->in($path);
-    # $self->helperDumper(@files);
+    my $user_id = $self->session('it.ecometer.bobo');
+
+    my $runs = $self->dbindicatori->get_runs($user_id, $from, $to, $prov );
 
     my $json;
-
-    if (@files) {
-        # result
-        my @filestats;
-
-        foreach my $file (@files) {
-            my $mtime = (stat($file))[9];
-            my $obj = {
-                name => $file,
-                mtime => $mtime
-            };
-
-            push @filestats, $obj;
-        }
-
+    if (defined $runs) {
         $json = {
-            res => 'OK',
-            files => [@filestats]
+            res => "OK",
+            runs => $runs
         };
     }
     else {
         $json = {
-            res => 'OK',
-            files => []
+            res => "ERR"
         };
     }
 
@@ -163,9 +153,6 @@ sub calc_stats {
             # percorso script
             my $format_cmd = $cmd.' '.$jobid;
 
-            # run local script
-            # my $cmd = '/usr/bin/Rscript /data/bin/arpa_lig/stats/stats.R \''.$dt.'\' '.$prov;
-
             # execute
             say "Running system: $format_cmd";
             return system($format_cmd);
@@ -183,50 +170,95 @@ sub calc_stats {
     return $promise;
 };
 
-async put_stats_calculation => sub {
+sub put_stats_calculation {
     my $self = shift;
 
     # log
     $self->app->log->debug("Bobo::Controller::Indicatori sub put_stats_calculation");
 
-    my $dt = $self->param('dt'); # post
-    my $net = $self->param('net'); # post
+    my $type = $self->param('type'); # post
+    my $from = $self->param('from'); # post
+    my $to   = $self->param('to'); # post
     my $prov = $self->param('prov'); # post
     my $json;
 
-    $self->app->log->debug("Date: ". $dt);
+    $self->app->log->debug("Type: ". $type);
+    $self->app->log->debug("From: ". $from);
+    if($type eq 'range'){
+        $self->app->log->debug("To: ". $to);
+    }
     $self->app->log->debug("Prov: ". $prov);
 
-    my $obj = {
-        dt => $dt,
-        prov => $prov
-    };
-
-    if ($self->dbutilities->get_pending_jobs_by_params(1, $obj) >= 1) {
-        $self->app->log->debug("Process already running");
-        $self->render(json => -1);
+    my @dates;
+    if($type eq 'daily'){
+        @dates = ($from);
     }
-    else {
-        my $cmd = $self->dbutilities->get_job_command(1);
-        my $jobid = $self->dbutilities->insert_new_job($self->session('it.ecometer.bobo'), 1, $obj);
-        my $promise = calc_stats($cmd, $jobid);
+    else{
+        my $dt_from = DateTime->new(
+            year   => substr($from, 0, 4),
+            month  => substr($from, 5, 2),
+            day    => substr($from, 8, 2)
+        );
 
-        # my $guid = $self->session('guid');
-        # my $ws = $self->stash->{websockets}{$guid};
+        my $dt_to = DateTime->new(
+            year   => substr($to, 0, 4),
+            month  => substr($to, 5, 2),
+            day    => substr($to, 8, 2)
+        );
 
-        $promise->then(sub {
-            my @results = @_;
-            $self->app->log->debug('Into resolved promise!');
-
-        })->catch(sub {
-            my $err = @_;
-            $self->app->log->debug('Into rejected promise!');
-
-        });
-
-        $self->app->log->debug("Render back");
-        $self->render(json => 1);
+        while ($dt_from <= $dt_to) {
+            push @dates, $dt_from->strftime('%Y-%m-%d');
+            $dt_from->add(days => 1);
+        }
     }
+
+    my @promises; 
+
+    for my $dt (@dates) {
+
+        my $obj = {
+            dt => $dt,
+            prov => $prov
+        };
+
+        if ($self->dbutilities->get_pending_jobs_by_params(1, $obj) >= 1) {
+            $self->app->log->debug("Process already running");
+        }
+        else {
+            my $cmd = $self->dbutilities->get_job_command(1);
+            my $jobid = $self->dbutilities->insert_new_job($self->session('it.ecometer.bobo'), 1, $obj);
+            $self->dbindicatori->insert_run($self->session('it.ecometer.bobo'), $dt, $prov);
+            my $promise = calc_stats($cmd, $jobid);
+
+            $promise->then(sub {
+                my @results = @_;
+                $self->app->log->debug('Into single resolved promise! Date: '. $dt);
+
+            })->catch(sub {
+                my $err = @_;
+                $self->app->log->debug('Into single rejected promise!');
+            });
+
+            push @promises, $promise;
+        }
+    }
+
+    $self->app->log->debug("Waiting for promises end...");
+
+    # Continua l'esecuzione in background SENZA aspettare
+    unless (@promises) {
+        $self->app->log->debug("Nessuna operazione avviata");
+        return;
+    }
+
+    # Esegui le promise in background (non aspettare)
+    Mojo::Promise->all(@promises)->then(sub {
+        $self->app->log->debug("Tutte le promise risolte in background");
+    })->catch(sub {
+        $self->app->log->warning("Alcune promise hanno fallito in background");
+    });
+
+    $self->render(json => 1);
 };
 
 sub put_pdf {
@@ -239,14 +271,14 @@ sub put_pdf {
     my $net = $self->param('net'); # post
     my $prov = $self->param('prov'); # post
 
+    my $user_id = $self->session('it.ecometer.bobo');
+
     my $json;
 
     $self->app->log->debug("PDF della rete: $net");
 
     # system
     eval{
-        # $self->app->log->debug("[SSH] Lancio script creazione pdf via ssh");
-
         $self->app->log->debug("Lancio script creazione pdf");
 
         # percorso script
@@ -291,7 +323,8 @@ sub put_pdf {
         if (-e $full_pdf_filename) {
             $self->app->log->debug("Pdf file FOUND!");
 
-            # https://github.com/koorchik/Mojolicious-Plugin-RenderFile
+            $self->dbindicatori->update_run($user_id, $dt, $prov);
+
             # Provide any file name
             $json = {
                 res => 'OK'
@@ -323,13 +356,17 @@ Return:     /
 
 =cut
 
-=head1 get_pdf_files
+=head1 get_runs
 
-Funzione per recuperare tutti i files pdf disponibili sul portale.
+Funzione per recuperare le esecuzioni disponibili degli indicatori per un determinato periodo temporale.
 
-Argomenti:  /
+Argomenti:  * data d'inizio ('from');
 
-Return:     json contenente la risposta "OK" e, se presenti, i files pdf, altrimenti un array vuoto.
+            * data fine ('to');
+
+            * id della provincia, se presente ('prov');
+
+Return:     json contenente la risposta "OK" e le esecuzioni disponibili, oppure il messaggio "ERR".
 
 =cut
 

@@ -304,7 +304,6 @@ sub get_analyser_groups_no_options {
             )
         ) t
     };
-    # @TODO da cambiare
 
     # return
     return $self->pg->db->query($sql, $user_id, $user_id, $user_id, $user_id, $user_id)->hash()->{'json_tree'};
@@ -401,7 +400,6 @@ sub get_group_stations {
             ORDER BY (t.stations->>'st_pos')::integer
         ) d;
     };
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $grid, $user_id, $nodeid)->hash()->{'json_tree'};
@@ -469,7 +467,6 @@ sub get_group_stations_no_options {
             ORDER BY (t.stations->>'st_pos')::integer
         ) d;
     };
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $grid, $user_id, $nodeid)->hash()->{'json_tree'};
@@ -498,17 +495,17 @@ sub get_subgroup_by_id {
         WHERE tree_id = ?;
     };
 
-    $self->app->log->debug($sql);
-
     # return
     return $self->pg->db->query($sql, $subgroup_id, $subgroup_id)->hash();
 }
 
 sub get_stations_by_nets {
-    my ( $self, $user_id, $province_id, $nets ) = @_;
+    my ( $self, $user_id, $prid, $nets ) = @_;
 
     # log
     $self->app->log->debug("Bobo::Model::Dbanalyser sub get_stations_by_nets");
+
+    $prid = ($prid != -1 ? "^$prid\$": ".*");
 
     # query
     my $sql = qq{
@@ -548,21 +545,21 @@ sub get_stations_by_nets {
         WHERE
             us.user_id = ?
             AND station_network_type_id IS NOT NULL
+            AND smu.province_id::text ~ ?
     };
 
-    if ($province_id != -1) {
-        $sql .= qq{
-            AND smu.province_id = $province_id
-        };
-    }
+    # prepare binds (user_id, prid) and optionally nets array literal
+    my @binds = ($user_id, $prid);
 
     if (scalar(@{$nets}) > 0) {
-        my $nets_string = join ',' , @{$nets};
-        $self->app->log->debug($nets_string);
+        my $nets_array = '{' . join(',', @{$nets}) . '}';
+        $self->app->log->debug($nets_array);
 
+        # use PostgreSQL ANY with a parameterized array literal to avoid interpolation
         $sql .= qq{
-            AND sm.station_network_type_id IN ( $nets_string )
+            AND sm.station_network_type_id = ANY((?)::int[])
         };
+        push @binds, $nets_array;
     }
 
     $sql .= qq{
@@ -572,7 +569,7 @@ sub get_stations_by_nets {
     # $self->app->log->debug($sql);
 
     # return
-    return $self->pg->db->query($sql, $user_id)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_station_params {
@@ -650,26 +647,6 @@ sub get_station_params {
             )
     };
 
-    # 1   Meteo
-    # 2   Chimici
-    # 3   Polveri
-    # 4   Metalli
-    # 5   IPA
-    # 6   Ioni
-    # 7   ECOC
-    # 8   BC
-    # 9   Levoglucosano
-    # 10  Deposizioni metalli
-    # 11  OPC
-    # 12  Taratura
-    # 13  Diagnostici
-    # 14  Allarmi
-    # 15  Stato
-    # 16  Falda
-    # 17  Aria
-    # 18  Limiti
-    # 19  Gravimetrici
-    # 20  Metalli in continuo
 
     # if exist diagnostics
     my $sql2 = qq{ SELECT COUNT(*) AS num FROM metadata.view_stations_parameters WHERE station_id = ? AND parameter_type_id = 13 };
@@ -1029,27 +1006,6 @@ sub get_allocation_params {
             )
     };
 
-    # 1   Meteo
-    # 2   Chimici
-    # 3   Polveri
-    # 4   Metalli
-    # 5   IPA
-    # 6   Ioni
-    # 7   ECOC
-    # 8   BC
-    # 9   Levoglucosano
-    # 10  Deposizioni metalli
-    # 11  OPC
-    # 12  Taratura
-    # 13  Diagnostici
-    # 14  Allarmi
-    # 15  Stato
-    # 16  Falda
-    # 17  Aria
-    # 18  Limiti
-    # 19  Gravimetrici
-    # 20  Metalli in continuo
-
     # if exist diagnostics
     my $sql2 = qq{ SELECT COUNT(*) AS num FROM metadata.view_sites_parameters WHERE station_id = ? AND parameter_type_id = 13 };
     my $num = $self->pg->db->query($sql2, $stid)->hash()->{'num'};
@@ -1274,11 +1230,6 @@ sub get_categories_list {
     # log
     $self->app->log->debug("sub get_categories_list");
 
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
-
     # estraggo le categorie associate al gruppo dll'utente
     # oppure le categorie pubbliche il cui proprietario fa parte dello stesso portale dell'utente
     my $sql = qq{
@@ -1318,11 +1269,6 @@ sub get_category_byid {
     # log
     $self->app->log->debug("sub get_category_byid");
 
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
-
     # estraggo le categorie associate al gruppo dll'utente
     # oppure le categorie pubbliche il cui proprietario fa parte dello stesso portale dell'utente
     my $sql = qq{
@@ -1349,11 +1295,6 @@ sub get_groups {
 
     # log
     $self->app->log->debug("sub get_groups");
-
-    # cat_id
-    # cat_name
-    # cat_public
-    # cat_owner
 
     # query
     my $sql = qq{
@@ -1416,10 +1357,6 @@ sub get_group_macros {
     # log
     $self->app->log->debug("sub get_group_macros");
 
-    # macro_id
-    # macro_category
-    # macro_object
-
     my $flag_loaded = 'true';
     if ($options->{general}{paramsEnabled}) {
         $flag_loaded = 'false';
@@ -1466,10 +1403,6 @@ sub get_macro_params {
 
     # log
     $self->app->log->debug("sub get_macro_params");
-
-    # macro_id
-    # macro_category
-    # macro_object
 
     # query
     my $sql = qq{
@@ -1549,11 +1482,11 @@ sub get_info_param {
             'FFFFFF'            AS color,
             2                   AS line_width,
 
-            $conv               AS converted,
+            ?::boolean          AS converted,
 
             -- 24/07/2024 10:04 update for conversion coefficient history management
             -- CASE
-            --     WHEN $conv THEN
+            --     WHEN conv THEN
             --                 CASE
             --                     WHEN parameter_conv = 0 THEN 'y='||COALESCE(parameter_offset::text, '0')
             --                     WHEN parameter_conv = 1 THEN 'y=x'||COALESCE('+'||parameter_offset::text, '')
@@ -1589,7 +1522,7 @@ sub get_info_param {
     };
 
     # return
-    return $self->pg->db->query( $sql, $stprid )->hash();
+    return $self->pg->db->query( $sql, $conv, $stprid )->hash();
 }
 
 sub insert_options {
@@ -1669,26 +1602,6 @@ sub insert_macro {
     # log
     $self->app->log->debug("Bobo::Model::Dbanalyser sub insert_macro");
 
-    # macro_id
-    # macro_category
-    # macro_object{
-    #     macro: {
-    #         name
-    #         description
-    #         po_id
-    #         chart_y_min
-    #         chart_y_max
-    #         legendx_angle
-    #         int_time
-    #         percent_data
-    #         aggregation
-    #     },
-    #     params:[
-    #     ]
-    # }
-    # macro_last_update
-    $self->app->helperDumper($macro_obj);
-
     # query and return
     return $self->pg->db->insert('bobo_tools.analyser_macros', {
         macro_category => $macro_cat == -1 ? 1 : $macro_cat,
@@ -1710,10 +1623,6 @@ sub insert_macro_duplication {
         # ##################################################################
         # 1 - insert della nuova macro
         # ##################################################################
-        # return $self->pg->db->insert('bobo_tools.analyser_macros' , {
-        #     macro_category  => $macro_cat == -1 ? 1 : $macro_cat,
-        #     macro_object    => $macro_obj
-        # }, {returning => 'macro_id'} )->hash->{'macro_id'};
 
         # query
         my $sql = qq{
@@ -1754,18 +1663,6 @@ sub insert_new_subgroup {
     my $tx;
     my $new_soubgroup_id;
 
-    # {
-    #   'subgroup-id' => '5',
-    #   'subgroup-groups' => [
-    #                          '8',
-    #                          '3',
-    #                          '12'
-    #                        ],
-    #   'subgroup-stat[]' => '1136',
-    #   'subgroup-fill' => '1',
-    #   'subgroup-name' => 'AppaTN'
-    # };
-
     eval {
         $tx =  $self->pg->db->begin;
 
@@ -1783,21 +1680,16 @@ sub insert_new_subgroup {
             push @stations, $params->{'subgroup-stat[]'};
         }
 
-        # preparo stringa nel formato (1200,1), (3110,2), (1170,3), ...
-        my $inner_sql;
-        my $count = 0;
-        for my $stid (@stations) {
-            if ($count == 0) {
-                $inner_sql .= qq{ ( $stid, $count )};
-            }
-            else {
-                $inner_sql .= qq{, ( $stid, $count )};
-            }
+        # prepare parallel arrays for station ids and positions
+        my @positions = ();
+        if (@stations) {
+            @positions = (0 .. $#stations);
+        }
 
-            $count++;
-        };
+        my $stations_array  = (@stations) ? '{' . join(',', @stations) . '}'  : '{}';
+        my $positions_array = (@positions) ? '{' . join(',', @positions) . '}' : '{}';
 
-        # query
+        # query - use unnest on the two arrays to avoid interpolating VALUES
         my $sql = qq {
             INSERT INTO bobo_tools.analyser_trees (tree_name, tree_object, tree_public, tree_owner)
             (
@@ -1806,7 +1698,7 @@ sub insert_new_subgroup {
                         st.station_id   ,
                         st.station_name ,
                         t.station_pos
-                    FROM  ( VALUES $inner_sql ) t(station_id, station_pos)
+                    FROM  ( SELECT * FROM unnest((?)::int[], (?)::int[]) AS t(station_id, station_pos) ) t
                         LEFT JOIN metadata.view_stations_info st USING (station_id)
                     ORDER BY t.station_pos
                 )
@@ -1833,6 +1725,8 @@ sub insert_new_subgroup {
 
         $new_soubgroup_id = $self->pg->db->query(
             $sql,
+            $stations_array ,
+            $positions_array,
             $params->{'subgroup-name'},
             $self->app->helperGetBoolean($params, 'subgroup-public'),
             $user_id
@@ -1991,19 +1885,14 @@ sub update_subgroup {
             push @stations, $params->{'subgroup-stat[]'};
         }
 
-        # preparo stringa nel formato (1200,1), (3110,2), (1170,3), ...
-        my $inner_sql;
-        my $count = 0;
-        for my $stid (@stations) {
-            if ($count == 0) {
-                $inner_sql .= qq{ ( $stid, $count )};
-            }
-            else {
-                $inner_sql .= qq{, ( $stid, $count )};
-            }
+        # prepare parallel arrays for station ids and positions
+        my @positions = ();
+        if (@stations) {
+            @positions = (0 .. $#stations);
+        }
 
-            $count++;
-        };
+        my $stations_array  = (@stations) ? '{' . join(',', @stations) . '}'  : '{}';
+        my $positions_array = (@positions) ? '{' . join(',', @positions) . '}' : '{}';
 
         # query
         my $sql = qq {
@@ -2014,7 +1903,7 @@ sub update_subgroup {
                         st.station_id   ,
                         st.station_name ,
                         t.station_pos
-                    FROM  ( VALUES $inner_sql ) t(station_id, station_pos)
+                    FROM  ( SELECT * FROM unnest((?)::int[], (?)::int[]) AS t(station_id, station_pos) ) t
                         LEFT JOIN metadata.view_stations_info st USING (station_id)
                     ORDER BY t.station_pos
                 )
@@ -2040,6 +1929,8 @@ sub update_subgroup {
         };
 
         $self->pg->db->query($sql,
+            $stations_array,        # unnest 1
+            $positions_array,       # unnest 2
             $params->{'subgroup-name'},
             $self->app->helperGetBoolean($params, 'subgroup-public'),
             $params->{'subgroup-id'}
@@ -2112,7 +2003,6 @@ sub delete_category {
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbanalyser STEP 2");
 
-        # $db->update('some_table', {foo => 'bar'}, {id => 23});
         $sql = qq{
             DELETE FROM bobo_tools.analyser_category_groups WHERE cat_id = ?
         };
@@ -2123,7 +2013,6 @@ sub delete_category {
         # 3- eliminazione categoria
         # ##################################################################
         $self->app->log->debug("Bobo::Model::Dbanalyser STEP 3");
-        # $db->update('some_table', {foo => 'bar'}, {id => 23});
         $sql = qq{
             DELETE FROM bobo_tools.analyser_categories WHERE cat_id = ?
         };

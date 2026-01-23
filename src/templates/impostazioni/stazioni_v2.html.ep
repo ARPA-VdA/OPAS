@@ -281,11 +281,24 @@
                                 </div>
                                 <div class="form-group row">
                                     <label for="station-visible-id" class="col-md-2 col-form-label">ID stazione</label>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <input class="form-control clear-input" disabled type="text" value="" id="station-visible-id" name="station-visible-id" placeholder="ID stazione...">
                                     </div>
+                                    <label for="station-national-code" class="col-md-2 col-form-label">ID nazionale
+                                        <a class="mytooltip" href="javascript:void(0)">
+                                            <i class="fa-regular fa-circle-info text-info"></i>
+                                            <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
+                                                Id nazionale esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[national_code]</strong> e <strong>da non intendersi come codice europeo</strong> (presente nella sezione Infoaria > Dataset D)
+                                            </span></span></span>
+                                        </a>
+                                    </label>
+                                    <div class="col-md-4">
+                                        <input class="form-control clear-input" type="text" value="" id="station-national-code" name="station-national-code" placeholder="ID nazionale...">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
                                     <label for="station-control-id" class="col-md-2 col-form-label">ID telecontrollo</label>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <input class="form-control clear-input" type="text" value="" id="station-control-id" name="station-control-id" placeholder="ID telecontrollo...">
                                     </div>
                                     <label for="station-extra-id" class="col-md-2 col-form-label font-italic">
@@ -293,11 +306,11 @@
                                         <a class="mytooltip" href="javascript:void(0)">
                                             <i class="fa-regular fa-circle-info text-info"></i>
                                             <span class="tooltip-content5"><span class="tooltip-text3"><span class="tooltip-inner2">
-                                                Id stazione esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[station_external_id]</strong> e usato per la mappatura con i sistemi interni di ciascuna ARPA
+                                                Id stazione esposto dall'API <strong class="text-highlighter"> <i class="fa-kit fa-swagger"></i>[external_id]</strong> e usato per la mappatura con i sistemi interni di ciascuna ARPA
                                             </span></span></span>
                                         </a>
                                     </label>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <input class="form-control clear-input" type="text" value="" id="station-extra-id" name="station-extra-id" placeholder="ID esterno stazione...">
                                     </div>
                                 </div>

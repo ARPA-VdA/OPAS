@@ -4,7 +4,7 @@ document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCod
 document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f495', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
 document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f0d1', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-truck"></i>
 document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f6e2', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-ghost"></i>
-
+document.fonts.load('normal 900 32px/1 "Font Awesome 7 Pro"', String.fromCharCode(parseInt('f472', 16))).then(console.log('loaded...')); // <i class="fa-solid fa-dolly"></i>
 // "\uf34e" mdi-map-marker
 // "\uf390" mdi-navigation
 // "\uf045" mdi-arrow-down

@@ -1,0 +1,35 @@
+/* Import CSV data file
+*/
+LOAD CSV
+    FROM
+        ALL FILENAMES MATCHING ~<import.+\.csv>
+        IN DIRECTORY {{CSV_DIR}} WITH ENCODING 'iso-8859-1'
+        HAVING FIELDS (
+            data_path,
+            data_type,
+            file_name,
+            file_date,
+            file_location,
+            file_header
+        )
+    INTO
+        postgresql://{{PGUSER}}:{{PGPASSWORD}}@{{PGHOST}}:{{PGPORT}}/{{PGDATABASE}}
+        TARGET TABLE
+            {{TABLE_NAME}}
+        TARGET COLUMNS
+            (
+                data_path,
+                data_type,
+                file_name,
+                file_date,
+                file_location,
+                file_header
+            )
+    WITH
+        skip header = 1,
+        on error resume next,
+        fields terminated by ','
+
+    BEFORE LOAD DO
+        $$ DELETE FROM {{TABLE_NAME}} WHERE file_location = 'import'; $$
+;

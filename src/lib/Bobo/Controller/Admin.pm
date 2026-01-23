@@ -371,16 +371,16 @@ sub put_user {
     # get params from ajax
     my $user_id =  $params->{'new-user-id'};
 
-    # if arg_id defined -> edit report
+    # if arg_id defined -> edit user
     if (defined $user_id && $user_id ne "") {
         $self->app->log->debug("Bobo::Controller::Admin edit of user");
 
         # 1- modifica utente
         # 2- modifica metadata (comp_id) dell'utente
         # 3- eliminazione associazioni utente-gruppi e inserimento nuove associazioni
-        $res = $self->dbadmin->update_user($params);
+        $res = $self->dbadmin->update_user($us_admin, $params);
     }
-    else { # else -> insert new report
+    else { # else -> insert new user
         $self->app->log->debug("Bobo::Controller::Admin insert of new user");
 
         # check se esiste già un utente con quella mail
@@ -412,7 +412,7 @@ sub put_user {
                     my $email_subject = '[NO REPLY] Benvenuto nel portale '.$user->{'portal_name'};
                     my $email_body ='<p>Gentile Utente,<br>';
                     $email_body .= 'A seguito della richiesta di creazione di un nuovo account, Le abbiamo inviato le credenziali di accesso.</p>';
-                    $email_body .= '<p>Al primo login Le verrà richiesto di modificare la password.</p>';
+                    $email_body .= '<p>Al primo login Le verr&agrave; richiesto di modificare la password.</p>';
                     $email_body .= '<p>Username: <strong>'.$params->{"new-user-email"}. '</strong></p>';
                     $email_body .= '<p>Password: <strong>'.$new_pwd.'</strong></p>';
 
@@ -426,7 +426,9 @@ sub put_user {
 
                     my $email_logo = $self->config->{logo_mail};
 
-                    $res = $self->helperSendEmailHTML($email_title, $email_subject , $email_body, $email_logo, @email_recipients);
+                    my $send_email = $self->app->helperGetBoolean($params, 'user-email-active');
+
+                    $res = $self->helperNewUserEmailHTML($email_title, $email_subject , $email_body, $email_logo, $send_email, @email_recipients);
                 }
             }
             else {

@@ -152,16 +152,21 @@ sub recover_password {
         my $email_logo = $self->config->{logo_mail};
 
         # sending email with the new password
-        if ($self->helperSendEmailHTML($email_title, $email_subject , $email_body, $email_logo, @email_recipients)) {
-            $self->flash(recover_msg => "A breve riceverai una mail con la nuova password. Se non dovessi riceverla, contatta software\@ecometer.it");
-            $self->redirect_to( '/login' ) and return 1;
-        }
+        $self->helperSendEmailHTML($email_title, $email_subject , $email_body, $email_logo, @email_recipients);
 
+        # if ($self->helperSendEmailHTML($email_title, $email_subject , $email_body, $email_logo, @email_recipients)) {
+        #     # $self->flash(recover_msg => "A breve riceverai una mail con la nuova password. Se non dovessi riceverla, contatta software\@ecometer.it");
+        #     $self->flash(recover_msg => "Grazie per aver inserito il tuo indirizzo: se corrisponde a un account attivo, riceverai un'email con le informazioni necessarie per reimpostare la password. L'email potrebbe richiedere un paio di minuti per arrivare: controlla anche la posta indesiderata.");
+        #     $self->redirect_to( '/login' ) and return 1;
+        # }
     }
 
-    # in case of any error, return 0 and error_msg
-    $self->flash(error_msg => "Si è verificato un errore durante l'inoltro della richiesta.");
-    $self->redirect_to('/login') and return 0;
+    $self->flash(recover_msg => "Grazie per aver inserito il tuo indirizzo: se corrisponde a un account attivo, riceverai un'email con le informazioni necessarie per reimpostare la password. L'email potrebbe richiedere un paio di minuti per arrivare: controlla anche la posta indesiderata.");
+    $self->redirect_to('/login') and return 1;
+
+    # # in case of any error, return 0 and error_msg
+    # $self->flash(error_msg => "Si è verificato un errore durante l'inoltro della richiesta.");
+    # $self->redirect_to('/login') and return 0;
 }
 
 sub edit_password {

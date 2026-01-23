@@ -119,7 +119,10 @@ $(document).ready(function() {
                             }
                             htmlItems += '            <a class="nav-file-system" href="#" data-path="'+el.rel_path+'" data-dir="down">';
                             htmlItems += '                <i class="fas fa-folder main-icon"></i>';
-                            htmlItems += '                <h6>'+el.basename+'</h6>';
+                            if(el.station)
+                                htmlItems += '                <h6>'+el.basename+' - '+el.station+'</h6>';
+                            else
+                                htmlItems += '                <h6>' + el.basename + '</h6>';
                             htmlItems += '            </a>';
                             htmlItems += '        </div>';
                             htmlItems += '    </div>';

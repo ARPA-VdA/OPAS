@@ -1279,6 +1279,19 @@ query <- paste0("
 )
 PG.ExecuteQuery(dbh, query)
 
+
+# update runtable for web page
+query <- paste0("
+    UPDATE clients_stats.runs SET
+        run_result = TRUE
+    WHERE
+        run_date = '", date_ref, "'::date
+    AND
+        province_id = ", province, ""
+)
+PG.ExecuteQuery(dbh, query)
+
+
 #------------------------------------------------------------------------------
 # disconnect from database server
 PG.Disconnect(dbh)

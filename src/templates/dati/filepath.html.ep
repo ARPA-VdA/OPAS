@@ -1,0 +1,63 @@
+% layout 'default';
+% title 'Dati - FilePath';
+
+<script src="<%=url_for(helperGetFileVersion('/bobo-js/dati/filepath.js'))%>" type="text/javascript"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <h4 class="card-title">Posizionamento dei file tra le cartelle</h4>
+                        <h6 class="card-subtitle">Visualizza la posizione/percorso in cui si trovano i file dei dati della tua rete</h6>
+                    </div>
+                </div>
+
+                <div class="row m-b-10">
+                    <div class="col-lg-6">
+                        <select class="custom-select col-12" id="networks" name="networks">
+                            <option value="-1">Seleziona rete...</option>
+                            % foreach my $net (@{$networks}){
+                                <option value="<%= $net->{'st_network_id'} %>"><%= $net->{'st_network_desc'} %></option>
+                            % }
+                        </select>
+                    </div>
+                    <!-- <div class="col-lg-6 el-txt">
+                        <h5 class="text-info m-t-10"><i class="fa-solid fa-magnifying-glass-location"></i> <strong>Seleziona una rete</strong> per vedere dove sono i file</h5>
+                    </div> -->
+                    <div class="col-lg-6">
+                        <button type="button" class="btn btn-success btn-rounded pull-right" id="refresh"><i class="fa-solid fa-arrows-rotate"></i> Aggiorna tabella</button>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-info m-b-10 p-t-0">Rete di appartenenza: <strong id="change-net"></strong></h4>
+                    <table id="filepath-table" class="table table-hover table-striped" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Data</th>
+                                <th>Stazione</th>
+                                <th>Posizione</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Data</th>
+                                <th>Stazione</th>
+                                <th>Posizione</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

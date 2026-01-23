@@ -615,7 +615,7 @@
 
         <footer class="footer">
             © Copyright <%= $tm->strftime("%Y"); %> <%= $user->{'portal_footer_text'} %> - developed by <a href="http://www.ecometer.it/" target="_blank" title="www.ecometer.it">Ecometer S.n.c</a>
-            <span class="pull-right release-txt font-bold text-info" data-toggle="modal" data-target=".modal-result"><i class="fa-solid fa-star-of-life"></i> v.2.0.3</span>
+            <span class="pull-right release-txt font-bold text-info" data-toggle="modal" data-target="#modal-change-log"><i class="fa-solid fa-star-of-life"></i> v.2.0.4</span>
         </footer>
         <!-- ============================================================== -->
         <!-- End footer -->
@@ -629,7 +629,7 @@
     <!-- ============================================================== -->
 
     <!-- MODALS -->
-    <div class="modal fade modal-result" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade modal-result" id="modal-change-log" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -637,6 +637,20 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <div class="modal-body release-sw">
+                    <h5>Revisione <strong>v.2.0.4</strong> <span>31 dic 2025</span></h5>
+                    <ul>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuovi contenuti in <a target="_blank" href="/usr_sysadmin">Utente > SysAdmin</a> per visualizzare i log di accesso al sistema;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuova sezione <a target="_blank" href="/dat_filepath">Dati > File Path</a> che permette di monitorare il percorso dei file .dat da periferia al centro;</li>
+                        <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> in <a target="_blank" href="/stat_indicatori">Statistiche > Indicatori giornalieri</a> nuova funzionalità per esportare le statistiche in formato CSV ed Excel;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> in <a target="_blank" href="/stat_indicatori">Statistiche > Indicatori giornalieri</a> gestite visualizzazioni diversificate a seconda del portale;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> nella sezione <a target="_blank" href="/plan_centro">Tickets > Centro</a> modifiche per tenere visualizzati i ticket ancora da chiudere;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> in <a target="_blank" href="/media">Media</a> visualizzazione delle directory con il nome delle stazioni;</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> creata nuova tipologia di stazione "Mini cabina";</li>
+                        <li><strong class="text-esmerald"><i class="fa-solid fa-clock-rotate-left"></i> Aggiornamento: </strong> creato nuovo trigger per il controllo dei dati in ingresso del Database;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> modifiche al server per aumentare sicurezza contro SQL injection;</li>
+                        <li><strong class="text-purple"><i class="fa-solid fa-pizza-slice"></i> Ottimizzazione: </strong> miglioramenti all'interfaccia grafica;</li>
+                        <li><strong class="text-primary"><i class="fa-solid fa-virus"></i> Bug fixing: </strong> corretti bachi vari;</li>
+                    </ul>
                     <h5>Revisione <strong>v.2.0.3</strong> <span>30 sett 2025</span></h5>
                     <ul>
                         <li><strong class="text-info"><i class="fa-solid fa-puzzle-piece"></i> Aggiunta: </strong> nuovi contenuti in <a target="_blank" href="/usr_sysadmin">Utente > SysAdmin</a> per avere facile accesso a statistiche ed elementi del sistema;</li>

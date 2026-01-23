@@ -180,6 +180,11 @@ th.col-centered{
     border-radius: 10px;
     padding: 3px 7px;
 }
+.badge-square{
+    border-radius: 3px;
+    font-size: 0.82rem;
+    padding: 3px 5px;
+}
 .badge-type{
     background-color: #e8ebef!important;
     color: #333!important;
@@ -1078,7 +1083,7 @@ form .error{
     border-color: #2293b5;
 }
 .btn-info:hover, .badge-info:hover {
-    background-color: #1a7692;
+    background-color: #1a7692!important;
     border-color: #1a7692;
 }
 .btn-info.disabled, .btn-info:disabled {
@@ -1087,6 +1092,17 @@ form .error{
     font-style: italic;
     cursor: default;
 }
+
+.btn-aqua, .badge-aqua, .label-aqua, .bg-aqua, .timeline-badge.aqua {
+    background-color: #13b5be!important;
+    border-color: #13b5be;
+    color: #FFF;
+}
+.btn-aqua:hover, .badge-aqua:hover {
+    background-color: #0a9da4!important;
+    border-color: #0a9da4;
+}
+
 .btn-outline-info{
     color: #2293b5;
     border-color: #2293b5;
@@ -7138,6 +7154,12 @@ div.jsoneditor-value.jsoneditor-number {
 div.jsoneditor-value.jsoneditor-boolean {
     color: #48d4ff;
 }
+a.jsoneditor-url{
+    color: #ff7520!important;
+}
+a.jsoneditor-url:hover{
+    color: #ffa864!important;
+}
 
 /* --- statistiche bollettini --- */
 
@@ -8330,15 +8352,15 @@ table.table tr td.toolbar-icons a{
 .font-bigger{
     font-size: 1.2rem;
 }
-.no-mail{
+.no-data-sel{
     background-color: #f1f7f9;
     padding: 35px 20px;
     text-align: center;
 }
-.no-mail i{
+.no-data-sel i{
     font-size: 2.5rem;
 }
-.no-mail p{
+.no-data-sel p{
     font-size: 1.2rem;
     letter-spacing: 2.2px;
     margin: 3px 0px 0px 0px;

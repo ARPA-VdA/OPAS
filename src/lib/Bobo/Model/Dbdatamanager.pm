@@ -9,10 +9,13 @@ use Mojo::Base -base;
 # https://irclog.perlgeek.de/mojo/2015-12-12/text
 
 use Encode qw(encode_utf8);
+use Scalar::Util qw(looks_like_number);
 use utf8;
 
 has 'pg';
 has 'app';
+
+my %allowed_treat = map { $_ => 1 } qw(avg sum max min cum sldavg);
 
 # !! MAPPER
 sub get_data_station {
@@ -415,7 +418,7 @@ sub get_highcharts_data_by_dates {
                 $table = 'metadata.stations_parameters';
             }
             else{
-                $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+                $table = 'metadata.f_get_view_sites_parameters(?::bigint)';
             }
 
             $formule =~ s/y=//;
@@ -425,9 +428,9 @@ sub get_highcharts_data_by_dates {
             my $max  = $formule;
 
             if ($param->{'converted'}) {
-                $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-                $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-                $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+                $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ?::integer , tbl.measure_date_time ) )::numeric/g;
+                $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( ?::integer , tbl.measure_date_time ) )::numeric/g;
+                $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( ?::integer , tbl.measure_date_time ) )::numeric/g;
             }
             else {
                 $mean =~ s/x/tbl.measure_value/g;
@@ -450,25 +453,25 @@ sub get_highcharts_data_by_dates {
                         ARRAY[
                             EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                             CASE
-                                WHEN tbl.measure_perc >= ? THEN ROUND( $mean, $decimals )
+                                WHEN tbl.measure_perc >= ? THEN ROUND( $mean, ? )
                                 ELSE NULL
                             END
                         ] AS measure_value,
                         ARRAY[
                             EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                             CASE
-                                WHEN tbl.measure_perc >= ? THEN ROUND( $min, $decimals )
+                                WHEN tbl.measure_perc >= ? THEN ROUND( $min, ? )
                                 ELSE NULL
                             END
                         ] AS measure_min,
                         ARRAY[
                             EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                             CASE
-                                WHEN tbl.measure_perc >= ? THEN ROUND( $max, $decimals )
+                                WHEN tbl.measure_perc >= ? THEN ROUND( $max, ? )
                                 ELSE NULL
                             END
                         ] AS measure_max
-                    FROM clients.f_data_extraction(?, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl
+                    FROM clients.f_data_extraction(?, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::metadata.e_treatments, ?::text) tbl
             };
 
             if ($hide_nulls eq 'true') {
@@ -515,10 +518,40 @@ sub get_highcharts_data_by_dates {
                     LEFT JOIN metadata.stations s USING (station_id)
             };
 
-            # $self->app->log->debug($sql, $percent, $from, $to, $aggregation, $validity_code, $param->{'st_pr_id'});
+            # Build binds in the exact order of placeholders:
+            # d: percent, decimals, percent, decimals, percent, decimals,
+            #    If converted: mean/min/max include placeholders for prid -> they must be provided in place of '?' that appear inside mean/min/max.
+            #    clients.f_data_extraction: stprid, from, to, aggregation, treatment, validity_code
+            # a: stprid
+            # if stprid < 0 then metadata.f_get_view_sites_parameters: stprid
+            my @binds;
 
-            $res = $self->pg->db->query($sql, $percent, $percent, $percent, $stprid, $from, $to, $aggregation, $validity_code, $stprid )->hash();
-            # my $res = $self->pg->db->query($sql, $from, $to, $percent, $param->{'st_pr_id'})->hash();
+            # If converted, the mean/min/max expressions contain three '?'
+            if ($param->{'converted'}) {
+                # we used the same prid for each occurrence
+                push @binds, ($percent, $prid, $decimals); #mean
+                push @binds, ($percent, $prid, $decimals); #min
+                push @binds, ($percent, $prid, $decimals); #max
+            }
+            else{
+                push @binds, ($percent, $decimals); #mean
+                push @binds, ($percent, $decimals); #min
+                push @binds, ($percent, $decimals); #max 
+            }
+
+            # clients.f_data_extraction binds
+            push @binds, $stprid, $from, $to, $aggregation, $treatment, $validity_code;
+
+            # a AS stpr_id
+            push @binds, $stprid;
+
+            # metadata.f_get_view_sites_parameters binds
+            if( $stprid < 0){
+                push @binds, $stprid;
+            }
+
+            # execute query
+            $res = $self->pg->db->query($sql, @binds)->hash();
         }
 
         if (defined $res){
@@ -561,7 +594,7 @@ sub get_highcharts_moving_average {
         $table = 'metadata.stations_parameters';
     }
     else{
-        $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+        $table = 'metadata.f_get_view_sites_parameters(?::bigint)';
     }
 
     $formule =~ s/y=//;
@@ -572,9 +605,9 @@ sub get_highcharts_moving_average {
     my $max  = $formule;
 
     if ($param->{'converted'}) {
-        $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-        $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-        $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+        $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
+        $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
+        $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
     }
     else {
         $mean =~ s/x/tbl.measure_value/g;
@@ -590,25 +623,25 @@ sub get_highcharts_moving_average {
                 ARRAY[
                     EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                     CASE
-                        WHEN tbl.measure_perc >= ? THEN ROUND( $mean , $decimals )
+                        WHEN tbl.measure_perc >= ? THEN ROUND( $mean , ? )
                         ELSE NULL
                     END
                 ] AS measure_value,
                 ARRAY[
                     EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                     CASE
-                        WHEN tbl.measure_perc >= ? THEN ROUND( $min , $decimals )
+                        WHEN tbl.measure_perc >= ? THEN ROUND( $min , ? )
                         ELSE NULL
                     END
                 ] AS measure_min,
                 ARRAY[
                     EXTRACT(EPOCH FROM tbl.measure_date_time)*1000,
                     CASE
-                        WHEN tbl.measure_perc >= ? THEN ROUND( $max , $decimals )
+                        WHEN tbl.measure_perc >= ? THEN ROUND( $max , ? )
                         ELSE NULL
                     END
                 ] AS measure_max
-            FROM clients.f_sldavg_data_extraction(?::bigint, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::text, $window ::integer) tbl
+            FROM clients.f_sldavg_data_extraction(?::bigint, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::text, ?::integer) tbl
     };
 
     if ($hide_nulls eq 'true') {
@@ -655,10 +688,40 @@ sub get_highcharts_moving_average {
             LEFT JOIN metadata.stations s USING (station_id)
     };
 
-    # $self->app->log->debug($sql, $percent, $from, $to, $aggregation, $validity_code, $param->{'st_pr_id'});
+    # Build binds in the exact order of placeholders:
+    # d: percent, decimals, percent, decimals, percent, decimals,
+    #    If converted: mean/min/max include placeholders for prid -> they must be provided in place of '?' that appear inside mean/min/max.
+    #    clients.f_sldavg_data_extraction: stprid, from, to, aggregation, validity_code, window
+    # a: stprid
+    # if stprid < 0 then metadata.f_get_view_sites_parameters: stprid
+    my @binds;
 
-    # return
-    return $self->pg->db->query($sql, $percent, $percent, $percent, $param->{'st_pr_id'}, $from, $to, $aggregation, $validity_code, $param->{'st_pr_id'} )->hash();
+    # If converted, the mean/min/max expressions contain three '?'
+    if ($param->{'converted'}) {
+        # we used the same prid for each occurrence
+        push @binds, ($percent, $prid, $decimals); #mean
+        push @binds, ($percent, $prid, $decimals); #min
+        push @binds, ($percent, $prid, $decimals); #max
+    }
+    else{
+        push @binds, ($percent, $decimals); #mean
+        push @binds, ($percent, $decimals); #min
+        push @binds, ($percent, $decimals); #max 
+    }
+
+    # clients.f_sldavg_data_extraction binds
+    push @binds, $stprid, $from, $to, $aggregation, $validity_code, $window;
+
+    # a AS stpr_id
+    push @binds, $stprid;
+
+    # metadata.f_get_view_sites_parameters binds
+    if( $stprid < 0){
+        push @binds, $stprid;
+    }
+
+    # execute query and return 
+    return $self->pg->db->query($sql, @binds)->hash();
 }
 
 sub get_highcharts_representative_data_by_dates {
@@ -713,7 +776,7 @@ sub get_highcharts_representative_data_by_dates {
             $table = 'metadata.stations_parameters';
         }
         else{
-            $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+            $table = 'metadata.f_get_view_sites_parameters(?::bigint)';
         }
 
         $formule =~ s/y=//;
@@ -722,13 +785,11 @@ sub get_highcharts_representative_data_by_dates {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
         }
-
-        $self->app->log->debug("$mean");
 
         my $sql = qq{
             WITH t AS(
@@ -743,7 +804,7 @@ sub get_highcharts_representative_data_by_dates {
                 SELECT
                     ARRAY[
                         measure_category,
-                        ROUND( AVG(measure_value) , $decimals )::text
+                        ROUND( AVG(measure_value) , ? )::text
                     ] AS measure_value
                 FROM t
                 GROUP BY measure_group, measure_category
@@ -777,11 +838,31 @@ sub get_highcharts_representative_data_by_dates {
                 LEFT JOIN metadata.stations s USING (station_id)
         };
 
+        my @binds;
+
+        # If converted, the mean/min/max expressions contain three '?'
+        if ($param->{'converted'}) {
+            # we used the same prid for each occurrence
+            push @binds, $prid; #mean
+        }
+
+        # clients.f_data_extraction binds
+        push @binds, $stprid, $from, $to, $validity_code;
+
+        # d AS decimals
+        push @binds, $decimals;
+
+        # a AS stpr_id
+        push @binds, $stprid;
+
+        # metadata.f_get_view_sites_parameters binds
+        if( $stprid < 0){
+            push @binds, $stprid;
+        }
+
+        # execute query and return 
+        $res = $self->pg->db->query($sql, @binds)->hash();
         # $self->app->log->debug($sql, $param->{'st_pr_id'}, $from, $to, $validity_code);
-
-        $res = $self->pg->db->query($sql, $param->{'st_pr_id'}, $from, $to, $validity_code, $param->{'st_pr_id'} )->hash();
-        # my $res = $self->pg->db->query($sql, $from, $to, $percent, $param->{'st_pr_id'})->hash();
-
 
         if (defined $res){
             push @data, $res;
@@ -847,7 +928,7 @@ sub get_highcharts_data_per_year {
             $table = 'metadata.stations_parameters';
         }
         else{
-            $table = 'metadata.f_get_view_sites_parameters('.$stprid.'::bigint)';
+            $table = 'metadata.f_get_view_sites_parameters(?::bigint)';
         }
 
         $formule =~ s/y=//;
@@ -856,7 +937,7 @@ sub get_highcharts_data_per_year {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -882,14 +963,14 @@ sub get_highcharts_data_per_year {
                     ARRAY[
                         EXTRACT(EPOCH FROM m.measure_date_time)*1000,
                         CASE
-                            WHEN tbl.measure_perc >= ? THEN ROUND( $mean , $decimals )
+                            WHEN tbl.measure_perc >= ? THEN ROUND( $mean , ? )
                             ELSE NULL
                         END
                     ] AS measure_value
 
                 FROM
                     m
-                    LEFT JOIN clients.f_data_extraction(?::bigint, '$year-01-01 00:00:00'::timestamp, '$year-12-31 23:59:59'::timestamp, ?::metadata.e_aggregations, '$treatment'::metadata.e_treatments, ?::text) tbl ON( TO_CHAR(m.measure_date_time, 'DD-MM HH24:MI') = TO_CHAR(tbl.measure_date_time, 'DD-MM HH24:MI') )
+                    LEFT JOIN clients.f_data_extraction(?::bigint, '$year-01-01 00:00:00'::timestamp, '$year-12-31 23:59:59'::timestamp, ?::metadata.e_aggregations, ?::metadata.e_treatments, ?::text) tbl ON( TO_CHAR(m.measure_date_time, 'DD-MM HH24:MI') = TO_CHAR(tbl.measure_date_time, 'DD-MM HH24:MI') )
                 ORDER BY m.measure_date_time
             ),
             a AS (
@@ -921,10 +1002,30 @@ sub get_highcharts_data_per_year {
                 LEFT JOIN metadata.stations s USING (station_id)
         };
 
-        # $self->app->log->debug($sql, $percent, $from, $to, $aggregation, $validity_code, $param->{'st_pr_id'});
+        my @binds;
 
-        $res = $self->pg->db->query($sql, $percent, $param->{'st_pr_id'}, $aggregation, $validity_code, $param->{'st_pr_id'} )->hash();
-        # my $res = $self->pg->db->query($sql, $from, $to, $percent, $param->{'st_pr_id'})->hash();
+        # If converted, the mean/min/max expressions contain three '?'
+        if ($param->{'converted'}) {
+            # we used the same prid for each occurrence
+            push @binds, ($percent, $prid, $decimals); #mean
+        }
+        else{
+            push @binds, ($percent, $decimals); #mean
+        }
+
+        # clients.f_data_extraction binds
+        push @binds, $stprid, $aggregation, $treatment, $validity_code;
+
+        # a AS stpr_id
+        push @binds, $stprid;
+
+        # metadata.f_get_view_sites_parameters binds
+        if( $stprid < 0){
+            push @binds, $stprid;
+        }
+
+        # execute query and return 
+        $res = $self->pg->db->query($sql, @binds)->hash();
 
         if (defined $res){
             push @data, $res;
@@ -981,9 +1082,9 @@ sub get_highcharts_query {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1122,11 +1223,17 @@ sub get_windrose_data_bydates {
                     WHEN t1.measure_value NOTNULL AND t2.measure_value IS NULL THEN 0.0::numeric
                     ELSE round(cast( t2.measure_value  as numeric), 1)
                 END AS wind_dir
-            FROM clients.f_data_extraction( ($stprid1)::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t1
-            LEFT JOIN clients.f_data_extraction( ($stprid2)::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, '$validity_code'::text) t2 USING (measure_date_time)
+            FROM clients.f_data_extraction( ?::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, ?::text) t1
+            LEFT JOIN clients.f_data_extraction( ?::bigint, ?::timestamp, ?::timestamp, 'hh'::metadata.e_aggregations, 'avg'::metadata.e_treatments, ?::text) t2 USING (measure_date_time)
             ORDER BY measure_date_time
         )
     };
+
+    my @binds;
+
+    # clients.f_data_extraction binds
+    push @binds, ($stprid1, $from, $to, $validity_code); #t1
+    push @binds, ($stprid2, $from, $to, $validity_code); #t2
 
     my @sectors = (
         {from => 337.5, to => 22.5  },
@@ -1165,28 +1272,38 @@ sub get_windrose_data_bydates {
 
             if ($cnt == 0) {
                 $sql .= qq{
-                    COUNT(CASE WHEN wind_vel >= $vel_from and wind_vel <= $vel_to
-                    AND (wind_dir >= $dir_from $cond wind_dir < $dir_to) THEN 1 END) AS $name ,};
-                }
+                    COUNT(CASE WHEN wind_vel >= ? and wind_vel <= ?
+                    AND (wind_dir >= ? $cond wind_dir < ? ) THEN 1 END) AS $name ,};
+                
+                # wind scale variables
+                push @binds, $vel_from, $vel_to;
+                push @binds, $dir_from, $dir_to;
+            }
             else {
                 $sql .= qq{
-                    COUNT(CASE WHEN wind_vel > $vel_from and wind_vel <= $vel_to
-                    AND (wind_dir >= $dir_from $cond wind_dir < $dir_to) THEN 1 END) AS $name ,};
+                    COUNT(CASE WHEN wind_vel > ? and wind_vel <= ?
+                    AND (wind_dir >= ? $cond wind_dir < ? ) THEN 1 END) AS $name ,};
+                
+                # wind scale variables
+                push @binds, $vel_from, $vel_to;
+                push @binds, $dir_from, $dir_to;
             }
 
             $cnt++;
         }
 
         $sql .= qq{
-            COUNT(CASE WHEN (wind_dir >= $dir_from $cond wind_dir < $dir_to) AND wind_vel >= 0 THEN 1 END) AS totale
+            COUNT(CASE WHEN (wind_dir >= ? $cond wind_dir < ? ) AND wind_vel >= 0 THEN 1 END) AS totale
             FROM tmp_first
         };
+
+        push @binds, $dir_from, $dir_to;
     }
 
     # $self->app->log->debug($sql);
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $from, $to)->hashes();
+    return $self->pg->db->query( $sql, @binds )->hashes();
 }
 
 sub get_windrose_query {
@@ -1311,21 +1428,39 @@ sub get_datatable_data_by_dates {
     # log
     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_datatable_data_by_dates");
 
+    return undef
+        unless 
+            $from =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/ &&
+            $to =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/;
+
     my $aggregation  = $macro->{macro}{aggregation};
     my $percent_data = $macro->{macro}{percent_data};
     my $validity_code = $macro->{macro}{validity_code};
 
-    my $min_agg;
+    # my $min_agg;
+    # my $sql = qq{
+    #     SELECT DISTINCT ON(app_aggregation_cadence_id)
+    #         app_aggregation_label
+    #     FROM metadata.view_app_aggregations
+    #     ORDER BY app_aggregation_cadence_id
+    #     LIMIT 1;
+    # };
+    # $min_agg = $self->pg->db->query($sql)->hash->{'app_aggregation_label'};
+
     my $sql = qq{
         SELECT DISTINCT ON(app_aggregation_cadence_id)
             app_aggregation_label
         FROM metadata.view_app_aggregations
-        ORDER BY app_aggregation_cadence_id
-        LIMIT 1;
+        ORDER BY app_aggregation_cadence_id;
     };
+    my $aggs = $self->pg->db->query($sql)->hashes;
 
-    # return
-    $min_agg = $self->pg->db->query($sql)->hash->{'app_aggregation_label'};
+    # build a hash of allowed aggregations returned by the DB and extract the minimal aggregation
+    my %allowed_agg = map { $_->{app_aggregation_label} => 1 } @{$aggs};
+    # first element corresponds to the minimal aggregation (query ordered by cadence)
+    my $min_agg = $aggs->[0]{app_aggregation_label};
+
+    $aggregation = $allowed_agg{$aggregation} ? $aggregation : $min_agg;
 
     my $ext_fields   = 'fulldate::timestamp';
     my $ext_conditions = '';
@@ -1348,6 +1483,15 @@ sub get_datatable_data_by_dates {
             $validity = qq{ ''$validity_code''::text};
         }
 
+        # sanity checks
+        return 
+            unless looks_like_number($prid) &&
+                looks_like_number($stprid) &&
+                looks_like_number($percent_data) &&
+                looks_like_number($decimals);
+        
+        $treatment  = $allowed_treat{$treatment} ? $treatment : 'avg';
+
         $formule =~ s/y=//;
         my $mean = $formule;
         my $min  = $formule;
@@ -1357,9 +1501,9 @@ sub get_datatable_data_by_dates {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1434,7 +1578,7 @@ sub get_datatable_data_by_dates {
         }
 
         if ($treatment eq 'sldavg') {
-            if (defined $param->{'window'} && $param->{'window'} ne '') {
+            if (defined $param->{'window'} && $param->{'window'} ne '' && looks_like_number($param->{'window'})) {
                 $window = $param->{'window'};
             }
 
@@ -1512,14 +1656,27 @@ sub get_datatable_representative_data_by_dates {
         $format = 'TMMonth';
     }
 
+    # sanity check
+    return undef
+        unless 
+            $from =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/ &&
+            $to =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/;
+
     for my $param (@{$macro->{params}}) {
         my $stprid = $param->{'st_pr_id'};
         my $decimals = $param->{'decimals'};
         my $formule = $param->{'formule'};
         my $is_limit = $param->{'is_limit'};
         my $prid    = $param->{'param_id'};
-
+        
         my $window = 8;
+
+        # sanity checks
+        return 
+            unless looks_like_number($prid) &&
+                looks_like_number($stprid) &&
+                looks_like_number($percent_data) &&
+                looks_like_number($decimals);
 
         my $validity = qq{''< 2147483647''::text};
         if (defined $validity_code) {
@@ -1531,7 +1688,7 @@ sub get_datatable_representative_data_by_dates {
         # $mean =~ s/x/tbl.measure_value/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1626,9 +1783,9 @@ sub get_datatable_query {
         # $max  =~ s/x/tbl.measure_max/g;
 
         if ($param->{'converted'}) {
-            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
-            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+            $mean =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $min  =~ s/x/( tbl.measure_min * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
+            $max  =~ s/x/( tbl.measure_max * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) )::numeric/g;
         }
         else {
             $mean =~ s/x/tbl.measure_value/g;
@@ -1752,7 +1909,7 @@ sub get_csv_header {
             $table = 'metadata.stations_parameters';
         }
         else{
-            $table = 'metadata.f_get_view_sites_parameters('. $param->{'st_pr_id'} .'::bigint)';
+            $table = 'metadata.f_get_view_sites_parameters(?::bigint)';
         }
 
         my $sql = qq {
@@ -1781,7 +1938,16 @@ sub get_csv_header {
                 sp.stpr_id = ?
         };
 
-        my $res = $self->pg->db->query($sql, $param->{'st_pr_id'} )->hash();
+        my @binds;
+
+        # table
+        if( $param->{'st_pr_id'} < 0){
+            push @binds, $param->{'st_pr_id'};
+        }
+        # filter 
+        push @binds, $param->{'st_pr_id'};
+
+        my $res = $self->pg->db->query($sql, @binds )->hash();
 
         if (defined $res){
             push @data, $res;
@@ -1831,7 +1997,7 @@ sub get_csv_data_by_dates {
             # $formule =~ s/x/tbl.measure_value/g;
 
             if ($param->{'converted'}) {
-                $formule =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) )::numeric/g;
+                $formule =~ s/x/( tbl.measure_value * metadata.f_get_conversion_by_date_prid( ?::integer, tbl.measure_date_time ) )::numeric/g;
             }
             else {
                 $formule =~ s/x/tbl.measure_value/g;
@@ -1862,17 +2028,28 @@ sub get_csv_data_by_dates {
                     SELECT
                         TO_CHAR(measure_date_time, 'YYYY-MM-DD HH24.MI.SS') AS measure_date_time,
                         CASE
-                            WHEN measure_perc >= $percent_data THEN COALESCE( REPLACE (( ROUND( $formule , $decimals ) )::text, '.', ','), '')
+                            WHEN measure_perc >= ? THEN COALESCE( REPLACE (( ROUND( $formule , ? ) )::text, '.', ','), '')
                             ELSE ''
                         END AS measure_value
                     FROM
-                        clients.f_data_extraction( ($stprid)::bigint, '$from'::timestamp, '$to'::timestamp, '$aggregation'::metadata.e_aggregations, '$treatment'::metadata.e_treatments, $validity) tbl
+                        clients.f_data_extraction( ?::bigint, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, ?::metadata.e_treatments, ?) tbl
                     ORDER BY
                         tbl.measure_date_time
                 );
             };
 
-            $self->pg->db->query($temp_table);
+            my @binds;
+            if ($param->{'converted'}) {
+                push @binds, ($percent_data, $prid, $decimals);
+            }
+            else{
+                push @binds, ($percent_data, $decimals);
+            }
+
+            # clients.f_data_extraction binds
+            push @binds, $stprid, $from, $to, $aggregation, $treatment, $validity;
+
+            $self->pg->db->query($temp_table, @binds);
 
             $count++;
         }
@@ -1916,12 +2093,19 @@ sub get_data_station_table {
     $self->app->log->debug("Date FROM $date_from");
     $self->app->log->debug("Date TO $date_to");
 
+    # sanity check
+    return undef
+        unless 
+            $date_from =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/ &&
+            $date_to =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/;
+
     my $ext_fields   = 'fulldate::timestamp';
     my $inner_fields = 'fulldate text';
     my $inner_query  = '';
     my $ext_conditions = '';
     my $count = 0;
 
+    # aggregation and params from query no need to sanitize
     for my $param (@{$params}) {
         my $stprid = $param->{'station_param_id'};
         my $decimals = $param->{'parameter_decimals'};
@@ -1934,7 +2118,7 @@ sub get_data_station_table {
         if ( $converted ) {
             # UPDATE 19/06/2024 10:56
             # $formule = qq{ tbl.measure_value* $conv };
-            $formule = qq{ tbl.measure_value * metadata.f_get_conversion_by_date_prid( $prid, tbl.measure_date_time ) };
+            $formule = qq{ tbl.measure_value * metadata.f_get_conversion_by_date_prid( ($prid)::integer, tbl.measure_date_time ) };
         }
 
         if ($count != 0) {
@@ -1970,7 +2154,7 @@ sub get_data_station_table {
                             END
                     END
                 ]
-            FROM clients.f_data_extraction( $stprid, ''$date_from''::timestamp, ''$date_to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, ''< 2147483647''::text) tbl
+            FROM clients.f_data_extraction( ($stprid)::bigint, ''$date_from''::timestamp, ''$date_to''::timestamp, ''$aggregation''::metadata.e_aggregations, ''$treatment''::metadata.e_treatments, ''< 2147483647''::text) tbl
         };
 
         if ($hide_nulls eq 'true') {
@@ -2030,6 +2214,12 @@ sub get_val_codes_by_date_id {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_val_codes_by_date_id");
+
+    $self->app->log->debug($table);
+
+    # sanity check
+    return undef
+        unless $table =~ /^client_[a-z]+\.[a-z]{2}(_[a-z0-9]+)+$/;
 
     # query
     my $sql = qq{
@@ -2133,6 +2323,10 @@ sub get_history_by_date_id {
     # log
     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_history_by_date_id");
 
+    # sanity check
+    return undef
+        unless $table =~ /^client_[a-z]+\.[a-z]{2}(_[a-z0-9]+)+$/;
+
     # query
     my $sql = qq{
         SELECT
@@ -2216,7 +2410,7 @@ sub get_chart_data_neighborhood {
                         ARRAY_AGG(ARRAY[ EXTRACT(EPOCH FROM tbl.measure_date_time)*1000, ROUND(( $formule_min)::numeric, parameter_decimals)] ORDER BY  tbl.measure_date_time) AS minvalue,
                         ARRAY_AGG(ARRAY[ EXTRACT(EPOCH FROM tbl.measure_date_time)*1000, ROUND(( $formule_max)::numeric, parameter_decimals)] ORDER BY  tbl.measure_date_time) AS maxvalue
                     FROM
-                        clients.f_data_extraction(stpr_id, '$date'::timestamp - interval '1 day', '$date'::timestamp + interval '1 day', '$aggr'::metadata.e_aggregations, COALESCE(parameter_object->'general'->>'treatment', 'avg')::metadata.e_treatments, '< 2147483647'::text) tbl
+                        clients.f_data_extraction(stpr_id, ?::timestamp - interval '1 day', ?::timestamp + interval '1 day', ?::metadata.e_aggregations, COALESCE(parameter_object->'general'->>'treatment', 'avg')::metadata.e_treatments, '< 2147483647'::text) tbl
                     GROUP BY tbl.measure_id
                 ) row
             ) AS station_data
@@ -2228,7 +2422,7 @@ sub get_chart_data_neighborhood {
 
     # return
     # return $self->pg->db->query($sql, $date_from, $date_to, $station_id)->hashes();
-    return $self->pg->db->query($sql, $stprid)->hash();
+    return $self->pg->db->query($sql, $date, $date, $aggr, $stprid)->hash();
 }
 
 sub get_table_data_neighborhood {
@@ -2237,6 +2431,12 @@ sub get_table_data_neighborhood {
     # log
     $self->app->log->debug("Bobo::Model::Dbdatamanager sub get_table_data_neighborhood");
 
+    # sanity checks
+    return 
+        unless looks_like_number($stprid) &&
+            $date =~ /(\d{4})\-(\d\d)\-(\d\d)\s(\d\d):(\d\d)(:(\d\d))?/;
+
+    # aggregation and param from db no need to sanitize
     my $decimals = $param->{'parameter_decimals'};
     my $treatment = $param->{'parameter_treatment'};
     my $conv = $param->{'parameter_conv'};
@@ -2356,13 +2556,14 @@ sub update_data_validation_by_calendar {
             ann_id  => $ann_id,
             options => $options
         });
-
-        my $filter = $params->{'filter'};
+        
+        
+        my $filter = sanitize_pg_text($params->{'filter'});
         if ($filter ne '') {
             $filter = 'AND measure_value '.$filter;
         }
 
-        my $filter_code = $params->{'filter_code'};
+        my $filter_code = sanitize_pg_text($params->{'filter_code'});
         if ($filter_code ne '') {
             if ($filter_code =~ m/⊃/) {
                 $self->app->log->debug('CONTIENE');
@@ -2470,12 +2671,14 @@ sub update_data_value_by_calendar {
             options => $options
         });
 
-        my $filter = $params->{'filter'};
+        my $filter = sanitize_pg_text($params->{'filter'});
+        # my $filter = $params->{'filter'};
         if ($filter ne '') {
             $filter = 'AND measure_value '.$filter;
         }
 
-        my $filter_code = $params->{'filter_code'};
+        my $filter_code = sanitize_pg_text($params->{'filter_code'});
+        # my $filter_code = $params->{'filter_code'};
         if ($filter_code ne '') {
             if ($filter_code =~ m/⊃/) {
 
@@ -2488,7 +2691,8 @@ sub update_data_value_by_calendar {
             }
         }
 
-        my $operation = $params->{'operation'};
+        my $operation = sanitize_pg_text($params->{'operation'});
+        # my $operation = $params->{'operation'};
         if ($operation =~ m/=/) {
             $self->app->log->debug('SOSTITUZIONE');
 
@@ -2572,21 +2776,31 @@ sub update_data {
                 my $dirty  = $cell->{'dirty'};
                 # my $conv   = $cell->{'conv'};
 
+                # sanity check
+                return
+                    unless $table =~ /^client_[a-z]+\.[a-z]{2}(_[a-z0-9]+)+$/;
+
+                my @binds;
+
                 # dirty a TRUE solo se modificato il valore della cella
                 if ($dirty == 1) {
                     # $code =~ s/post_validity_code/EXCLUDED.post_validity_code/;
                     my $decimals = $cell->{'decimals'};
+                    my $value_format = $value;
+
+                    push @binds, $date, $id;
 
                     if ($converted) {
-                        $value = qq{ROUND( ($value / metadata.f_get_conversion_by_date_stprid( $stprid, ('$date')::timestamp ) )::numeric, $decimals )};
-                    }
+                        $value_format = qq{ROUND( (? / metadata.f_get_conversion_by_date_stprid( ?, ?::timestamp ) )::numeric, ? )};
 
+                        push @binds, $value, $stprid, $date, $decimals;
+                    }
 
                     $sql = qq{
                         INSERT INTO $table AS t
                             (measure_date_time, measure_id, measure_value, post_validity_code)
                         VALUES
-                            (?, ?, $value, 1)
+                            (?, ?, $value_format, 1)
                         ON CONFLICT (measure_date_time, measure_id)
                         DO UPDATE SET
                             measure_value = EXCLUDED.measure_value,
@@ -2596,7 +2810,7 @@ sub update_data {
                 else {
 
                     # if (defined $code && $code ne '') {
-                    $code= qq{(post_validity_code::integer ||| ($code)::integer)};
+                    my $code_format= qq{(post_validity_code::integer ||| ?::integer)};
                     # }
                     # else {
                     #     $code= qq{post_validity_code};
@@ -2604,14 +2818,18 @@ sub update_data {
 
                     $sql = qq{
                         UPDATE $table
-                        SET post_validity_code = $code
+                        SET post_validity_code = $code_format
                         WHERE measure_date_time = ?
                         AND measure_id = ?;
                     };
+
+                    push @binds, $code;
+                    push @binds, $date, $id;
                 }
 
+
                 $self->app->log->debug("$sql");
-                $self->pg->db->query($sql, $date, $id);
+                $self->pg->db->query($sql, @binds);
             }
         }
 
@@ -2666,6 +2884,7 @@ sub update_check_data {
         for my $cell (@{$cells}) {
             # STEP 1: CONTROLLO GRANTS
             my $grant = $cell->{'grant'};
+            # $self->app->log->debug($cell->{'stprid'});
 
             if ($grant == 1) { #update solo se ho il permesso
                 $self->app->log->debug("update_check_data");
@@ -2676,6 +2895,10 @@ sub update_check_data {
                 my $stprid = $cell->{'stprid'};
                 my $id = $cell->{'tableid'};
                 my $code = $cell->{'final_code'};
+
+                # sanity check
+                return
+                    unless $table =~ /^client_[a-z]+\.[a-z]{2}(_[a-z0-9]+)+$/;
 
                 # final_validity_code must be equal to 0 OR to 1
                 # otherwise don't update it
@@ -2698,8 +2921,8 @@ sub update_check_data {
                     AND stpr_id = ?;
                 };
 
-                # $self->app->log->debug("$sql");
-                # $self->app->log->debug("{ $from, $to, $stprid }");
+                $self->app->log->debug("$sql");
+                $self->app->log->debug("{ $from, $to, $stprid }");
                 $self->pg->db->query($sql, $from, $to, $stprid);
             }
         }
@@ -2751,9 +2974,12 @@ sub reset_cells_code {
             my $grant = $cell->{'grant'};
 
             if ($grant == 1) { # update solo se ho il permesso
-                $self->app->log->debug("reset_cells_code");
 
                 my $table = $cell->{'table'};
+
+                # sanity check
+                return
+                    unless $table =~ /^client_[a-z]+\.[a-z]{2}(_[a-z0-9]+)+$/;
 
                 my $date = $cell->{'date'};
                 my $id = $cell->{'tableid'};
@@ -3367,6 +3593,7 @@ sub get_public_data_station {
     };
 
     my $res = $self->pg->db->query($sql, $station_id)->hash;
+    # $res = undef; # ATTENZIONE: DA TOGLIERE QUANDO ATTIVEREMO RECUPERO DATI PER SITO
 
     if (defined $res) { # mm located in a site
         my $station_override = $res->{'station_override_id'};
@@ -3563,6 +3790,7 @@ sub get_ordered_params_by_station {
     };
 
     my $res = $self->pg->db->query($sql, $station_id)->hash;
+    # $res = undef; # ATTENZIONE: DA TOGLIERE QUANDO ATTIVEREMO RECUPERO DATI PER SITO
 
     if (defined $res) { # mm located in a site
         my $station_override = $res->{'station_override_id'};
@@ -3811,8 +4039,8 @@ sub get_station_wind_rose_data {
                     WHEN t1.measure_value NOTNULL AND t2.measure_value IS NULL THEN 0.0::numeric
                     ELSE round(cast( t2.measure_value  as numeric), 1)
                 END AS wind_dir
-            FROM clients.f_data_extraction( $stprid1, ?::timestamp, ?::timestamp, '$aggr'::metadata.e_aggregations, 'avg'::metadata.e_treatments) t1
-            LEFT JOIN clients.f_data_extraction( $stprid2, ?::timestamp, ?::timestamp, '$aggr'::metadata.e_aggregations, 'avg'::metadata.e_treatments) t2 USING (measure_date_time)
+            FROM clients.f_data_extraction( ?, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, 'avg'::metadata.e_treatments) t1
+            LEFT JOIN clients.f_data_extraction( ?, ?::timestamp, ?::timestamp, ?::metadata.e_aggregations, 'avg'::metadata.e_treatments) t2 USING (measure_date_time)
             ORDER BY measure_date_time
         )
     };
@@ -3934,8 +4162,29 @@ sub get_station_wind_rose_data {
 
     # $self->app->log->debug($sql);
     # return
-    return $self->pg->db->query($sql, $from, $to, $from, $to)->hashes();
+    return $self->pg->db->query($sql, $stprid1, $from, $to, $aggr, $stprid2, $from, $to, $aggr)->hashes();
 }
+
+sub sanitize_pg_text {
+    my ($input) = @_;
+    my $maxlen = 255;
+
+    # Blocco pattern sospetti tipici SQL
+    # Evita commenti, terminatori, operatori logici SQL
+    return undef if $input =~ /(--|;|\/\*|\*\/|\b(OR|AND|NOT|UNION|SELECT|INSERT|DELETE|UPDATE|DROP)\b)/i;
+
+    # return undef unless $input =~ /^([A-Za-z0-9 _\-\.\,\@\(\)\#]{1,$maxlen})$/;
+    # $input = $1; # "untainted" in taint mode
+
+    # Escape degli apostrofi (PostgreSQL richiede '' per rappresentare ')
+    $input =~ s/'/''/g;
+
+    # (opzionale) rimuovi newline
+    $input =~ s/[\r\n]+/ /g;
+
+    return $input;
+}
+
 
 1;
 

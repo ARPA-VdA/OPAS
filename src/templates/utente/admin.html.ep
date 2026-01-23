@@ -135,6 +135,7 @@
                                     <thead>
                                         <tr>
                                             <th></th>
+                                            <th>ID</th>
                                             <th>Nome</th>
                                             <th>Cognome</th>
                                             <th>Email</th>
@@ -149,6 +150,7 @@
                                     <tfoot>
                                         <tr>
                                             <th></th>
+                                            <th>ID</th>
                                             <th>Nome</th>
                                             <th>Cognome</th>
                                             <th>Email</th>
@@ -230,13 +232,19 @@
                                     % if( $user->{user_sys_admin} == 1 ){
                                     <div class="form-group row">
                                         <label for="new-user-portal" class="col-2 col-form-label">Portale di riferimento</label>
-                                        <div class="col-10">
+                                        <div class="col-4">
                                             <select class="custom-select col-12" id="new-user-portal" name="new-user-portal">
                                                 <option value="-1">Seleziona...</option>
                                                 % foreach my $portal (@{$portals}){
                                                     <option value="<%= $portal->{'portal_id'} %>"><%= $portal->{'portal_name'} %></option>
                                                 % }
                                             </select>
+                                        </div>
+                                        <div class="col-sm-4 offset-md-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input checked type="checkbox" class="custom-control-input" id="user-email-active" name="user-email-active">
+                                                <label class="custom-control-label" for="user-email-active">Invia email</label>
+                                            </div>
                                         </div>
                                         <!-- <div class="col-2">
                                             <a id="selected-azienda-detail" href="#info-portale" role="button" data-toggle="modal" class="info-box"><i class="icon-info"></i> Info portale</a>

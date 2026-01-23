@@ -6,69 +6,76 @@ $(document).ready(function() {
     // GLOBAL VARIABLES
     var tblPdf;
 
-    // @TODO da togliere in futuro
-    $('#networks, #networks2, #networks3').val(-1);
-
-    $('#networks, #networks2, #networks3').select2();
-    $('#provinces, #provinces2, #provinces3').select2();
+    $('#networks, #networks2').select2();
+    $('#provinces, #provinces2, #provinces3, #filter-run-provinces').select2();
 
     // FIRST TAB
     /////////////////////////////////////////////////////////////////////////
 {
     // Daterange pickers initialization
-    $('#pdf-daily-date').bootstrapMaterialDatePicker({
-        maxDate: moment().add(-1, 'day').format("DD/MM/YYYY"),
-        format: 'DD/MM/YYYY',
-        lang : 'it',
-        cancelText : 'Annulla',
-        time: false
-    });
-    // set default date
-    $('#pdf-daily-date').bootstrapMaterialDatePicker('setDate', moment().add(-1, 'day').format("DD/MM/YYYY"));
+    if(pdfDateType == 'daily'){
+        $('#pdf-daily-date').bootstrapMaterialDatePicker({
+            maxDate: moment().add(-1, 'day').format("DD/MM/YYYY"),
+            format: 'DD/MM/YYYY',
+            lang : 'it',
+            cancelText : 'Annulla',
+            time: false
+        });
+        // set default date
+        $('#pdf-daily-date').bootstrapMaterialDatePicker('setDate', moment().add(-1, 'day').format("DD/MM/YYYY"));
+    }
+    else{
+        // variable for loadDataByStation function
+        var datePdfTo = moment().subtract(1, 'day').format('YYYY-MM-DD');
+        var datePdfFrom = datePdfTo;
 
-    // datatable initialization
-    tblPdf = $('#pdf-download-table').DataTable({
-        "dom": '<"row"<"col-6" B><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
-        // 'copy', 'csv', 'excel', 'pdf', 'print'
-        "buttons": [
-            'csv',
-            'pdf',
-            {
-                "extend": 'print',
-                "text"  : 'STAMPA'
-            }
-        ],
-        responsive: {
-            details: {
-                type: 'column',
-                target: -1
-            }
-        },
-        "columnDefs": [
-            {
-                className: 'dtr-control',
-                orderable: false,
-                targets:   -1
-            }
-        ],
-        "order": [[ 0, "desc" ]]
-    });
+        // variable for datepicker plugin (different format)
+        var startPdf = moment(datePdfFrom).format("DD/MM/YYYY");
+        var endPdf = moment(datePdfTo).format("DD/MM/YYYY");
+
+        // Daterange picker
+        $('#pdf-range-date').daterangepicker({
+            startDate: startPdf,
+            endDate: endPdf,
+            maxDate: moment().format("DD/MM/YYYY"),
+            buttonClasses: ['btn', 'btn-sm'],
+            applyClass: 'btn-danger',
+            cancelClass: 'btn-inverse',
+            ranges: {
+                'Ieri': [moment().subtract(1, 'day'), moment().subtract(1, 'day')],
+                'Ultimi 3 giorni': [moment().add(-1, 'day').subtract(2, 'days'), moment().add(-1, 'day')],
+                'Ultimi 7 giorni': [moment().add(-1, 'day').subtract(6, 'days'), moment().add(-1, 'day')],
+                'Ultimo mese': [moment().add(-1, 'day').subtract(1, 'month'), moment().add(-1, 'day')]
+            },
+            alwaysShowCalendars: true,
+            locale: dateRangePickerSettings.locale
+        }, function(start, end, label) {
+
+            //on change event, get reports within new daterange
+            console.log(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), label);
+
+            datePdfFrom = start.format('YYYY-MM-DD');
+            datePdfTo = end.format('YYYY-MM-DD');
+        });
+    }
 
     /**
      * Action for the statistic calculation button
      */
     $('#stats-calc').on('click', function(e){
         e.preventDefault();
-
+        let from;
+        let to;
         // get selected date
-        var dt   = $('#pdf-daily-date').val();
-        // get selected network
-        var net  = $('#networks3').val();
-        // check network and return if equal to -1
-        if(net == -1){
-            swal("Attenzione!", "Selezionare una rete di appartenenza", "error");
-            return false;
+        if(pdfDateType == 'daily'){
+            from = $('#pdf-daily-date').val();
+            from = moment(from, 'DD-MM-YYYY').format('YYYY-MM-DD');
         }
+        else{
+            from = datePdfFrom;
+            to = datePdfTo;
+        }
+
         // get selected province
         var prov = $('#provinces3').val();
         // check province and return if equal to -1
@@ -83,8 +90,9 @@ $(document).ready(function() {
             type: "post",
             dataType: "json",
             data: {
-                dt  : moment(dt, 'DD-MM-YYYY').format('YYYY-MM-DD'),
-                net : net,
+                type: pdfDateType,
+                from: from,
+                to: to,
                 prov: prov
             },
         })
@@ -96,6 +104,8 @@ $(document).ready(function() {
             if(result == 1){
                 swal("Richiesta inoltrata", "Al termine del processo riceverai una notifica", "info");
                 startNotifier();
+
+                loadRunsList();
             }
             else if(result == -1)
                 swal({
@@ -124,12 +134,12 @@ $(document).ready(function() {
         // get selected date
         var dt   = $('#pdf-daily-date').val();
         // get selected network
-        var net  = $('#networks3').val();
+        // var net  = $('#networks3').val();
         // check network and return if equal to -1
-        if(net == -1){
-            swal("Attenzione!", "Selezionare una rete di appartenenza", "error");
-            return false;
-        }
+        // if(net == -1){
+        //     swal("Attenzione!", "Selezionare una rete di appartenenza", "error");
+        //     return false;
+        // }
         // get selected province
         var prov = $('#provinces3').val();
         // check province and return if equal to -1
@@ -147,7 +157,7 @@ $(document).ready(function() {
             dataType: "json",
             data: {
                 dt  : moment(dt, 'DD-MM-YYYY').format('YYYY-MM-DD'),
-                net : net,
+                // net : net,
                 prov: prov
             },
         })
@@ -158,7 +168,7 @@ $(document).ready(function() {
             // else error
             if(result.res == 'OK'){
                 swal("Successo!", "Il PDF è stato creato correttamente", "success");
-                loadPdfList();
+                loadRunsList();
             }
             else{
                 // error message
@@ -175,8 +185,110 @@ $(document).ready(function() {
         });
     });
 
+    // variable for loadDataByStation function
+    var dateRunTo = moment().subtract(1, 'day').format('YYYY-MM-DD 23:59:59');
+    var dateRunFrom = moment(dateRunTo).subtract(1, 'month').format('YYYY-MM-DD');
+
+    // variable for datepicker plugin (different format)
+    var startRun = moment(dateRunFrom).format("DD/MM/YYYY");
+    var endRun = moment(dateRunTo).format("DD/MM/YYYY");
+
+    // Daterange picker
+    $('#filter-run-dates').daterangepicker({
+        startDate: startRun,
+        endDate: endRun,
+        maxDate: moment().format("DD/MM/YYYY"),
+        buttonClasses: ['btn', 'btn-sm'],
+        applyClass: 'btn-danger',
+        cancelClass: 'btn-inverse',
+        ranges: {
+            'Ultimi 7 giorni': [moment().add(-1, 'day').subtract(6, 'days'), moment().add(-1, 'day')],
+            'Ultimo mese': [moment().add(-1, 'day').subtract(1, 'month'), moment().add(-1, 'day')],
+            'Ultimi 2 mesi': [moment().add(-1, 'day').subtract(2, 'months'), moment().add(-1, 'day')],
+            'Ultimi 6 mesi': [moment().add(-1, 'day').subtract(6, 'months'), moment().add(-1, 'day')],
+            'Ultimo anno': [moment().add(-1, 'day').subtract(1, 'year'), moment().add(-1, 'day')],
+        },
+        alwaysShowCalendars: true,
+        locale: dateRangePickerSettings.locale
+    }, function(start, end, label) {
+
+        //on change event, get reports within new daterange
+        console.log(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), label);
+
+        dateRunFrom = start.format('YYYY-MM-DD');
+        dateRunTo = end.format('YYYY-MM-DD 23:59:59');
+        // refresh list of runs
+        loadRunsList();
+    });
+
+    /**
+     * filters change event
+     */
+    $('#filter-run-provinces').on('change', function(){
+        // refresh list of runs
+        loadRunsList();
+    });
+
+    /**
+     * click event on refresh button
+     */
+    $('#refresh').on('click', function(){
+        // refresh list of runs
+        loadRunsList();
+    });
+
+    // Custom type added that manages Moment and '--'
+    $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
+        // If it is '-', return a very large value
+        if (d.trim() === '--') {
+            return -Infinity;
+        }
+
+        // Parsing with moment
+        var m = moment(d, 'DD/MM/YYYY HH:mm', true); // true = strict parsing
+        if (m.isValid()) {
+            return m.valueOf(); // timestamp
+        }
+
+        return -Infinity; // fallback if parsing fails
+    };
+
+    // datatable initialization
+    tblPdf = $('#pdf-download-table').DataTable({
+        "dom": '<"row"<"col-6"l><"col-6 text-right"fr>>t<"row m-t-10"<"col-lg-6 col-sm-6"i><"col-lg-6 col-sm-6 text-right"p>>',
+        pageLength: 50,
+        lengthMenu: [[25, 50, 75, 100, -1], [25, 50, 75, 100, "Tutti"]],
+        // 'copy', 'csv', 'excel', 'pdf', 'print'
+        "buttons": [],
+        responsive: {
+            details: {
+                type: 'column',
+                target: -1
+            }
+        },
+        "columnDefs": [
+            {
+                className: 'dtr-control',
+                orderable: false,
+                targets:   -1
+            },
+            { "type": "custom-date", "targets": [6] }
+
+        ],
+        "order": [[ 0, "desc" ]]
+    });
+
+    // from server     
+    if(pdfFlag == 0){
+        tblPdf.columns([5,6,7,8]).visible(false);
+    }
+    else{
+        tblPdf.order([6, 'desc']).draw();
+    }
+
     // first load of pdf list
-    loadPdfList();
+    // loadPdfList();
+    loadRunsList();
 }
     // SECOND TAB
     /////////////////////////////////////////////////////////////////////////
@@ -206,6 +318,83 @@ $(document).ready(function() {
 
         $('#tab-prov .subtitle-tabbing strong').text(net+' - '+prov);
     });
+
+        /**
+     * Export excel: click event
+     */
+    $('.exp-excel-table1').on('click', function(e){
+        e.preventDefault();
+
+        const net = ( $('#networks').val() == -1 ? 'tutte le reti' : $('#networks option:selected').text() );
+        const prov = ( $('#provinces').val() == -1 ? 'tutte le province' : $('#provinces option:selected').text() );
+        const title = net+'-'+prov;
+
+        $('#tab-prov .subtitle-tabbing strong').text(net+' - '+prov);
+
+        const table = document.getElementById("dynamic-daily-table");
+        const wb = XLSX.utils.table_to_book(table, { 
+            sheet: "Sheet1",
+            raw: true 
+        });
+        const ws = wb.Sheets["Sheet1"];
+
+        // force the first column (a) as text
+        for (const cellAddress in ws) {
+            // skip SheetJS meta-properties like !ref, !cols etc.
+            if (!/^[A-Z]+[0-9]+$/i.test(cellAddress)) continue;
+
+            // if the cell is in column A
+            if (cellAddress.startsWith("A")) {
+                const cell = ws[cellAddress];
+                if (cell && cell.v != null) {
+                    cell.t = "s";       // <--- set type as text
+                    cell.w = cell.v;    // <--- tells Excel to display as-is
+                }
+            }
+        }
+        XLSX.writeFile(wb, title+'.xlsx');
+    });
+
+    /**
+     * Export csv: click event
+     */
+    $('.exp-csv-table1').on('click', function(e){
+        e.preventDefault();
+
+        const net = ( $('#networks').val() == -1 ? 'tutte le reti' : $('#networks option:selected').text() );
+        const prov = ( $('#provinces').val() == -1 ? 'tutte le province' : $('#provinces option:selected').text() );
+        const title = net+'-'+prov;
+
+        const table = document.getElementById("dynamic-daily-table");
+        const wb = XLSX.utils.table_to_book(table, { 
+            sheet: "Sheet1",
+            raw: true 
+        });
+        const ws = wb.Sheets["Sheet1"];
+
+        // force the first column (a) as text
+        for (const cellAddress in ws) {
+            // skip SheetJS meta-properties like !ref, !cols etc.
+            if (!/^[A-Z]+[0-9]+$/i.test(cellAddress)) continue;
+
+            // if the cell is in column A
+            if (cellAddress.startsWith("A")) {
+                const cell = ws[cellAddress];
+                if (cell && cell.v != null) {
+                    cell.t = "s";       // <--- set type as text
+                    cell.w = cell.v;    // <--- tells Excel to display as-is
+                }
+            }
+        }
+        const csvContent = "\ufeff" + XLSX.utils.sheet_to_csv(wb.Sheets["Sheet1"], { FS: ";" });
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        // download csv and remove fake link
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = title+".csv";
+        link.click();
+        link.remove();
+    });
 }
     // THIRD TAB
     /////////////////////////////////////////////////////////////////////////
@@ -220,7 +409,7 @@ $(document).ready(function() {
     var end = moment(dateTo).format("DD/MM/YYYY");
 
     // Daterange picker
-    $('.input-daterange-datepicker').daterangepicker({
+    $('#dates2').daterangepicker({
         startDate: start,
         endDate: end,
         maxDate: end,
@@ -283,6 +472,78 @@ $(document).ready(function() {
 
     // trigger change event in order to fill station filter for the first time
     $('#provinces2').trigger('change');
+
+    /**
+     * Export excel: click event
+     */
+    $('.exp-excel-table2').on('click', function(e){
+        e.preventDefault();
+
+        let station = $( "#stations option:selected" ).text();
+
+        const table = document.getElementById("dynamic-staz-table");
+        const wb = XLSX.utils.table_to_book(table, { 
+            sheet: "Sheet1",
+            raw: true 
+        });
+        const ws = wb.Sheets["Sheet1"];
+
+        // force the first column (a) as text
+        for (const cellAddress in ws) {
+            // skip SheetJS meta-properties like !ref, !cols etc.
+            if (!/^[A-Z]+[0-9]+$/i.test(cellAddress)) continue;
+
+            // if the cell is in column A
+            if (cellAddress.startsWith("A")) {
+                const cell = ws[cellAddress];
+                if (cell && cell.v != null) {
+                    cell.t = "s";       // <--- set type as text
+                    cell.w = cell.v;    // <--- tells Excel to display as-is
+                }
+            }
+        }
+        XLSX.writeFile(wb, station+'.xlsx');
+    });
+
+    /**
+     * Export csv: click event
+     */
+    $('.exp-csv-table2').on('click', function(e){
+        e.preventDefault();
+
+        let station = $( "#stations option:selected" ).text();
+
+        const table = document.getElementById("dynamic-staz-table");
+        const wb = XLSX.utils.table_to_book(table, { 
+            sheet: "Sheet1",
+            raw: true 
+        });
+        const ws = wb.Sheets["Sheet1"];
+
+        // force the first column (a) as text
+        for (const cellAddress in ws) {
+            // skip SheetJS meta-properties like !ref, !cols etc.
+            if (!/^[A-Z]+[0-9]+$/i.test(cellAddress)) continue;
+
+            // if the cell is in column A
+            if (cellAddress.startsWith("A")) {
+                const cell = ws[cellAddress];
+                if (cell && cell.v != null) {
+                    cell.t = "s";       // <--- set type as text
+                    cell.w = cell.v;    // <--- tells Excel to display as-is
+                }
+            }
+        }
+        const csvContent = "\ufeff" + XLSX.utils.sheet_to_csv(wb.Sheets["Sheet1"], { FS: ";" });
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        // download csv and remove fake link
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = station+".csv";
+        link.click();
+        link.remove();
+    });
+
 }
 
     // UTILITIES
@@ -383,7 +644,9 @@ $(document).ready(function() {
      * Function that retrieves the pdf list of the calculated statistics.
      * No args needed
      */
-    function loadPdfList(){
+    function loadRunsList(){
+
+        const prov = parseInt($('#filter-run-provinces').val());
 
         // if defined clear table
         if(tblPdf)
@@ -391,35 +654,54 @@ $(document).ready(function() {
         // show preloader, waiting for the end of the process
         $(".inner-preloader").show();
         var jqxhr = $.ajax({
-            url: '/stat_indicatori_get_pdf_files',
+            url: '/stat_indicatori_get_runs',
             type: "post",
             dataType: "json",
+            data: {
+                from: dateRunFrom,
+                to:   dateRunTo,
+                prov: prov
+            }
         })
         .done(function(result) {
-            var files = result.files;
+            var runs = result.runs;
             console.dir(result);
             // variable for dinamically building the html
             var html= '';
             // check if at least one element exists
-            if( files.length > 0 ){
+            if( runs.length > 0 ){
+
+                $.fn.dataTable.moment(['DD/MM/YYYY HH:mm', 'DD/MM/YYYY']);
                 // loop through all elements
                 // for each file, build a html row to be added to the datable
-                $.each(files, function(index, file) {
-                    var filename = file.name;
-                    // .*\/\d{4}\/\d{2}\/(.*\.pdf)
-                    // .*\/\d{4}\/\d{2}\/.*(\d{4}-\d{2}-\d{2})\.pdf
-                    var fileUrl  = filename.match(/(downloads.*\.pdf)/)[1];
-                    var fileName = filename.match(/.*\/\d{4}\/\d{2}\/(.*\.pdf)/)[1];
-                    var fileDate = filename.match(/.*\/\d{4}\/\d{2}\/.*(\d{4}-\d{2}-\d{2})\.pdf/)[1];
+                $.each(runs, function(index, run) {
+
                     var fileVersion = Math.random().toString(36).replace('0.', '');
 
-                    var lastModified = moment.unix(file.mtime).format('DD-MM-YYYY HH:mm');
+                    // <th>Inserimento richiesta</th>
+                    // <th>Data indicatori</th>
+                    // <th>Prov.</th>
+                    // <th>Operatore</th>
+                    // <th>Eseguito</th>
+                    // <th>Nome report</th>
+                    // <th>Ultima modifica PDF</th>
+                    // <th>Download</th>
+                    // <th></th>
 
                     html += '<tr>';
-                    html += '   <td>'+getFormattedDateDT(fileDate, 'basic')+'</td>';
-                    html += '   <td>'+lastModified+'</td>';
-                    html += '   <td>'+fileName+'</td>';
-                    html += '   <td><a href="/'+fileUrl+'?v='+fileVersion+'" target="_blank" class="text-danger"><strong><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</strong></a></td>';
+                    html += '   <td>'+run.run_insert_format+'</td>';
+                    html += '   <td>'+run.run_date_format+'</td>';
+                    html += '   <td>'+run.province_code+'</td>';
+                    html += '   <td>'+run.us_fullname+'</td>';
+                    html += '   <td>'+run.run_result_format+'</td>';
+                    html += '   <td>'+run.run_pdf_name+'</td>';
+                    html += '   <td>'+run.run_pdf_last_modified+'</td>';
+                    html += '   <td>'+run.run_pdf_creator_fullname+'</td>';
+                    html += '   <td>';
+                    if(run.run_pdf){
+                        html += '   <a href="'+run.run_pdf_path+'?v='+fileVersion+'" target="_blank" class="text-danger"><strong><i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF</strong></a>';
+                    }
+                    html += '   </td>';
                     html += '   <td></td>';
                     html += '</tr>';
                 });
@@ -501,10 +783,6 @@ $(document).ready(function() {
             if(result.res == 'OK'){
 
                 var header = result.header;
-
-                // labels_obj: "[{\"statistic\" : \"media oraria\", \"metrics\" : [\"conc max (µg/m³)\",\"n° sup da inizio anno\",\"n° sup allarme\"]}, {\"statistic\" : \"media 24 ore\", \"metrics\" : [\"conc (µg/m³)\",\"n° sup da inizio anno\"]}, {\"statistic\" : \"media annuale\", \"metrics\" : [\"conc (µg/m³)\"]}, {\"statistic\" : \"\", \"metrics\" : [\"conc (µg/m³)\"]}]"
-                // pollutant_id: 1
-                // pollutant_notation: "SO2"
 
                 // check header lenth
                 // if equal to 0 then no statistics found -> warning message
@@ -748,10 +1026,6 @@ $(document).ready(function() {
 
                 var header = result.header;
 
-                // labels_obj: "[{\"statistic\" : \"media oraria\", \"metrics\" : [\"conc max (µg/m³)\",\"n° sup da inizio anno\",\"n° sup allarme\"]}, {\"statistic\" : \"media 24 ore\", \"metrics\" : [\"conc (µg/m³)\",\"n° sup da inizio anno\"]}, {\"statistic\" : \"media annuale\", \"metrics\" : [\"conc (µg/m³)\"]}, {\"statistic\" : \"\", \"metrics\" : [\"conc (µg/m³)\"]}]"
-                // pollutant_id: 1
-                // pollutant_notation: "SO2"
-
                 // check header lenth
                 // if equal to 0 then no statistics found -> warning message
                 if(header.length != 0){
@@ -827,7 +1101,7 @@ $(document).ready(function() {
                                 htmlBody += '</tr>';
 
                             htmlBody += '<tr>';
-                            htmlBody += '<th>'+moment(el.res_date).format('DD-MM-YYYY')+'</th>';
+                            htmlBody += '<th>'+moment(el.res_date).format('DD/MM/YYYY')+'</th>';
 
                             old.date = el.res_date;
                             old.pollutant = null;

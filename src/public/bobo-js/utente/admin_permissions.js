@@ -287,10 +287,10 @@ $(document).ready(function() {
         "columnDefs": [
             { "orderable": false, "targets": 0 },
             { "width": "80px", "targets": 0 },
-            { "visible": system_admin, "targets": 4 }
+            { "visible": system_admin, "targets": 5 }
             // { "type": "datetime", "targets": 1 }
         ],
-        "order": [[ 1, "asc" ]]
+        "order": [[ 3, "asc" ], [ 2, "asc" ]]
     });
 
     table.columns.adjust();
@@ -459,6 +459,7 @@ $(document).ready(function() {
         $('.customtab a[href="#new"] span:nth-child(2)').text("Modifica");
         $('#new h4').text("Modifica utente");
         $('#user-active').removeAttr("disabled");
+        $('#user-email-active').hide();
 
         // get ID stored inside the row
         var userid = parseInt($(this).parent().parent().data("id"));
@@ -1487,6 +1488,8 @@ $(document).ready(function() {
         // reset active checkbox
         $('#user-active').prop("checked", true);
         $('#user-active').attr("disabled", true);
+        $('#user-email-active').show();
+        $('#user-email-active').prop("checked", true);
 
         $('#new-user-portal').val(-1);
         $('#new-user-comp').val(1);
@@ -1663,6 +1666,7 @@ $(document).ready(function() {
                         html += '        <a href="javascript:void(0)" class="reset_user" data-toggle="tooltip" data-original-title="Reset password"> <i class="text-danger fal fa-key"></i> </a>';
                     }
                     html += '    </td>';
+                    html += '    <td>'+value.user_id+'</td>';
                     html += '    <td>'+value.user_name+'</td>';
                     html += '    <td>'+value.user_surname+'</td>';
                     html += '    <td>'+value.user_email+'</td>';

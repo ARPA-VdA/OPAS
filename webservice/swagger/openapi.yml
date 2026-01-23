@@ -8,18 +8,12 @@ info:
     name: GNU LICENSE
     url: https://www.gnu.org/licenses/gpl-3.0.en.html
 servers:
-  # description: ""
   - url: https://opas.isprambiente.it/api/v1/
-  #   # description: ""
   # - url: https://opas.isprambiente.it/api/v2/
 tags:
-  # description: ""
   - name: Info
-    # description: ""
   - name: Authorization
-    # description: ""
   - name: Metadata
-    # description: ""
   - name: Data
 paths:
   # Info
@@ -244,29 +238,7 @@ paths:
   /stations/{region_istat_code}:
     get:
       summary: "Get station information of a given Italy's region name"
-      description: |
-        Here there is the legend to choose the requested ISTAT code:
-
-        ___01___  _Piemonte_<br>
-        ___02___  _Valle d'Aosta_<br>
-        ___03___  _Lombardia_<br>
-        ___04___  _Trentino Alto Adige_<br>
-        ___05___  _Veneto_<br>
-        ___06___  _Friuli-Venezia Giulia_<br>
-        ___07___  _Liguria_<br>
-        ___08___  _Emilia Romagna_<br>
-        ___09___  _Toscana_<br>
-        ___10___  _Umbria_<br>
-        ___11___  _Marche_<br>
-        ___12___  _Lazio_<br>
-        ___13___  _Abruzzo_<br>
-        ___14___  _Molise_<br>
-        ___15___  _Campania_<br>
-        ___16___  _Puglia_<br>
-        ___17___  _Basilicata_<br>
-        ___18___  _Calabria_<br>
-        ___19___  _Sicilia_<br>
-        ___20___  _Sardegna_
+      description: ""
       security:
         - BearerAuth: []
       parameters:
@@ -349,6 +321,32 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Parameter"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /parameters-type:
+    get:
+      summary: "Get parameter typologies"
+      security:
+        - BearerAuth: []
+      tags:
+        - Metadata
+      x-mojo-to:
+        controller: metadata
+        action: parametersType
+      responses:
+        200:
+          description: "OK - JSON object with requested parameter metadata"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parameters_type:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ParameterType"
         400:
           description: "BAD_REQUEST"
         401:
@@ -528,7 +526,7 @@ paths:
   /series:
     get:
       summary: "Get all data series"
-      description: __ALERT !!!__<br><br>This API call return a VERY LARGE JSON object -> DO NOT TRY IT to avoid blocking the page.<br>Instead, call it from command-line interface using curl<br><br>`curl -X 'GET' 'https://opas.isprambiente.it/api/series' --Header "Authorization:` `Bearer [YOUR_TOKEN]"`
+      description: __ALERT !!!__<br><br>This API call return a VERY LARGE JSON object -> DO NOT TRY IT to avoid blocking the page.<br>Instead, call it from command-line interface using curl<br><br>`curl -X 'GET' 'https://opas.isprambiente.it/api/v1/series' --Header "Authorization:` `Bearer [YOUR_TOKEN]"`
       security:
         - BearerAuth: []
       tags:
@@ -555,29 +553,7 @@ paths:
   /series/{region_istat_code}:
     get:
       summary: "Get all data series of stations located in a given Italy's region"
-      description: |
-        Here there is the legend to choose the requested ISTAT code:
-
-        ___01___  _Piemonte_<br>
-        ___02___  _Valle d'Aosta_<br>
-        ___03___  _Lombardia_<br>
-        ___04___  _Trentino Alto Adige_<br>
-        ___05___  _Veneto_<br>
-        ___06___  _Friuli-Venezia Giulia_<br>
-        ___07___  _Liguria_<br>
-        ___08___  _Emilia Romagna_<br>
-        ___09___  _Toscana_<br>
-        ___10___  _Umbria_<br>
-        ___11___  _Marche_<br>
-        ___12___  _Lazio_<br>
-        ___13___  _Abruzzo_<br>
-        ___14___  _Molise_<br>
-        ___15___  _Campania_<br>
-        ___16___  _Puglia_<br>
-        ___17___  _Basilicata_<br>
-        ___18___  _Calabria_<br>
-        ___19___  _Sicilia_<br>
-        ___20___  _Sardegna_
+      description: ""
       security:
         - BearerAuth: []
       parameters:
@@ -677,6 +653,43 @@ paths:
           description: "BAD_REQUEST"
         401:
           description: "UNAUTHORIZED"
+  /series-data-dd/{series_id}/{days}:
+    get:
+      summary: "Get data series by given ID and number of days"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: days
+          description: "Number of hours for which data is requested"
+          schema:
+            type: integer
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: series
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeries"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
   /series-data/{series_id}/{start_date_time}/{end_date_time}:
     get:
       summary: "Get data series by given ID and time period"
@@ -687,6 +700,240 @@ paths:
         - in: path
           name: series_id
           description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: start_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Start date of the period expressed in Unix epoch time (es. 1711584000 -> 28/03/2024)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+        - in: path
+          name: end_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-29T12:00:00)<br>
+            __OR__<br>
+            End date of the period expressed in Unix epoch time (es. 1711670400 -> 29/03/2024)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesFrame
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeries"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data-dd/{series_id}/{start_date_time}/{end_date_time}:
+    get:
+      summary: "Get daily data series by given ID and time period"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: start_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2025-03-06)<br>
+            __OR__<br>
+            Start date of the period expressed in Unix epoch time (es. 1711584000 -> 06/03/2025)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}$
+          required: true
+        - in: path
+          name: end_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2025-03-07)<br>
+            __OR__<br>
+            End date of the period expressed in Unix epoch time (es. 1711670400 -> 07/03/2025)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesFrame
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeries"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data-synchro/{series_id}/{last_ie_date_time}:
+    get:
+      summary: "Get last inserted or edited data series by given ID and date time expressed in UTC"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: series_id
+          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: last_ie_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Date time, expressed in UTC, of last inserted/edited data expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesSynchroFrame
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DataSeriesSynchro"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data-synchro-all/{station_id}/{last_ie_date_time}:
+    get:
+      summary: "Get last inserted or edited data series of a station by given ID and date time expressed in UTC"
+      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: last_ie_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Date time, expressed in UTC, of last inserted/edited data expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesSynchroFrameStation
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  station:
+                    $ref: "#/components/schemas/DataSeriesSynchroAll"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /series-data-synchro-all/{region_istat_code}/{last_ie_date_time}:
+    get:
+      summary: "Get last inserted or edited data series of stations located in a given Italy's region by given ID and date time expressed in UTC"
+      description: |
+        __ALERT !!!__<br><br>This API call return a VERY LARGE JSON object -> DO NOT TRY IT to avoid blocking the page.<br>Instead, call it from command-line interface using curl<br><br>`curl -X 'GET' 'https://opas.isprambiente.it/api/v1/series-data-synchro-all/[REGION_ISTAT_CODE]/[LAST_IE_DATE_TIME]' --Header "Authorization:` `Bearer [YOUR_TOKEN]"`
+
+        [Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.
+
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: region_istat_code
+          schema:
+            $ref: "#/components/schemas/Region"
+          required: true
+        - in: path
+          name: last_ie_date_time
+          description: |
+            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
+            __OR__<br>
+            Date time, expressed in UTC, of last inserted/edited data expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
+          schema:
+            type: string
+            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
+          required: true
+      tags:
+        - Data
+      x-mojo-to:
+        controller: data
+        action: seriesSynchroFrameRegion
+      responses:
+        200:
+          description: "OK - JSON object containing data and series information"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DataSeriesSynchroAll"
+        400:
+          description: "BAD_REQUEST"
+        401:
+          description: "UNAUTHORIZED"
+  /stations-log/{station_id}/{start_date_time}/{end_date_time}:
+    get:
+      summary: "Get station's activities by given ID and time period"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: station_id
+          description: "Station unique ID; corresponds to the field ___id___ of the previous call ___/stations___"
           schema:
             type: integer
           required: true
@@ -714,59 +961,19 @@ paths:
         - Data
       x-mojo-to:
         controller: data
-        action: seriesFrame
+        action: stationLog
       responses:
         200:
-          description: "OK - JSON object containing data and series information"
+          description: "OK - JSON object containing data and activities information"
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  data:
-                    $ref: "#/components/schemas/DataSeries"
-        400:
-          description: "BAD_REQUEST"
-        401:
-          description: "UNAUTHORIZED"
-  /series-data-synchro/{series_id}/{last_ie_date_time}:
-    get:
-      summary: "Get last inserted or edited data series by given ID and date time"
-      description: '[Epoch Converter](https://www.epochconverter.com/) -> Useful website to convert "Human" dates to Unix epoch time.'
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: path
-          name: series_id
-          description: "Series unique ID; corresponds to the field ___series_id___ of the previous call ___/series___"
-          schema:
-            type: integer
-          required: true
-        - in: path
-          name: last_ie_date_time
-          description: |
-            ISO 8601 DateTime format (es. 2024-03-28T12:00:00)<br>
-            __OR__<br>
-            Date time of last inserted/edited data expressed in Unix epoch time (es. 1711584000 -> 28/03/2024 12:00:00 AM)
-          schema:
-            type: string
-            pattern: ^[0-9]{8,10}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$
-          required: true
-      tags:
-        - Data
-      x-mojo-to:
-        controller: data
-        action: seriesSynchroFrame
-      responses:
-        200:
-          description: "OK - JSON object containing data and series information"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/DataSeriesSynchro"
+                  stations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Log"
         400:
           description: "BAD_REQUEST"
         401:
@@ -910,8 +1117,15 @@ components:
         id:
           description: "Station ID"
           type: integer
+        eu_code:
+          description: "Station European code"
+          type: string
         name:
           description: "Station name"
+          type: string
+        area_classification:
+          description: |
+            Station Classification area
           type: string
         active:
           description: "Station status"
@@ -920,7 +1134,7 @@ components:
           description: "Station notes"
           type: string
         external_id:
-          description: "Station external ID"
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
           type: string
         startup_date:
           description: "Station startup date"
@@ -931,8 +1145,26 @@ components:
           type: string
           format: date-time
         media_path:
-          description: "Station media path"
+          description: "Path through the files"
           type: string
+
+        municipality_istat_code:
+          description: "Municipality ISTAT code"
+          type: string
+        municipality_name:
+          description: "Municipality name"
+          type: string
+        province_istat_code:
+          description: "Province ISTAT code"
+          type: string
+        province_name:
+          description: "Province name"
+          type: string
+        province_code:
+          description: "Province code"
+          type: string
+
+
         region_istat_code:
           description: "Region ISTAT code"
           type: string
@@ -970,31 +1202,38 @@ components:
           description: "Station national code"
           type: string
         network_type_desc:
-          description: "Station network description"
+          description: |
+            Station network descriptions
           type: string
         network_type_name:
-          description: "Station network name"
+          description: |
+            Station network names
           type: string
         roaming_type_desc:
-          description: "Station roaming type"
+          description: |
+            Station roaming types
           type: string
         typology_desc:
-          description: "Station typology"
+          description: |
+            Station typologies
           type: string
         measure_type_desc:
-          description: "Station measure type"
+          description: |
+            Station measure typologies
           type: string
         cadence_type_desc:
-          description: "Station cadence"
+          description: |
+            Station measure cadences
           type: string
         cadence_type_min:
-          description: "Station cadence minutes"
+          description: |
+            Station cadence minutes
           type: integer
         metadata_note:
           description: "Station metadata notes"
           type: string
         export_id:
-          description: "Station export ID"
+          description: "ID used for the export of CSV files, or any personalized extension"
           type: string
         ws_name:
           description: "Station name for web service"
@@ -1035,11 +1274,16 @@ components:
         note:
           description: "Parameter note"
           type: string
+        type_id:
+          description: "Parameter typology ID"
+          type: integer
         type_desc:
-          description: "Parameter typology"
+          description: |
+            Parameter typologies
           type: string
         treatment:
-          description: "Parameter treatment"
+          description: |
+            Parameter treatments
           type: string
         aggr_hh_enabled:
           description: "Parameter hourly aggregation status"
@@ -1068,6 +1312,16 @@ components:
         info_note:
           description: "Parameter information notes"
           type: string
+    ParameterType:
+      description: "Parameter typologies"
+      type: object
+      properties:
+        type_id:
+          description: "Parameter type ID"
+          type: integer
+        type_name:
+          description: "Parameter type name"
+          type: string
     ConversionFactor:
       description: "Detail of the parameter's conversion factor"
       type: object
@@ -1086,51 +1340,30 @@ components:
           description: "End date of the factor's validity period"
           type: string
           format: date
-    StationDetail:
-      description: "Detail of the station"
-      type: object
-      properties:
-        id:
-          description: "Station ID"
-          type: integer
-        name:
-          description: "Station name"
-          type: string
-        external_id:
-          description: "Station external ID"
-          type: string
-        export_id:
-          description: "Station export ID"
-          type: string
-        parameters:
-          description: "Array of the parameters analyzed on the station"
-          type: array
-          items:
-            $ref: "#/components/schemas/StationParamDetail"
     StationParamDetail:
       description: "Detail of the parameter on the station"
       type: object
       properties:
         series_id:
-          description: "Data series ID"
+          description: "Unique ID in all the system, automatically assigned when added the data series, not editable"
           type: integer
         series_name:
           description: "Data series name"
           type: string
         database_id:
-          description: "Parameter ID of the station's datatable"
+          description: "Data series ID assigned in the datalogger, unique for the station"
           type: integer
         id:
-          description: "Parameter ID"
+          description: "Parameter ID that the data series references to"
           type: integer
         external_id:
-          description: "Parameter external ID"
+          description: "Parameter ID exposed by the API and used for mapping the station with each ARPA's internal systems"
           type: string
         export_id1:
-          description: "First parameter export ID"
+          description: "First parameter ID used for the export of CSV files, or any personalized extension"
           type: string
         export_id2:
-          description: "Second parameter export ID"
+          description: "Second parameter ID used for the export of CSV files, or any personalized extension"
           type: string
         name:
           description: "Parameter name"
@@ -1158,6 +1391,27 @@ components:
         note:
           description: "Parameter note"
           type: string
+    StationDetail:
+      description: "Detail of the station"
+      type: object
+      properties:
+        id:
+          description: "Station ID"
+          type: integer
+        name:
+          description: "Station name"
+          type: string
+        external_id:
+          description: "Station ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        export_id:
+          description: "Station ID used for the export of CSV files, or any personalized extension"
+          type: string
+        parameters:
+          description: "Array of the parameters analyzed on the station"
+          type: array
+          items:
+            $ref: "#/components/schemas/StationParamDetail"
     Site:
       description: "Site information"
       type: object
@@ -1169,7 +1423,8 @@ components:
           description: "Site name"
           type: string
         network_names:
-          description: "Site's networks"
+          description: |
+            Site's networks
           type: array
           items:
             type: string
@@ -1211,7 +1466,7 @@ components:
           description: "Station override ID"
           type: integer
         station_external_id:
-          description: "Station external ID"
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
           type: string
         site_id:
           description: "Site ID"
@@ -1220,7 +1475,8 @@ components:
           description: "Site name"
           type: string
         network_names:
-          description: "Site's networks"
+          description: |
+            Site's networks
           type: array
           items:
             type: string
@@ -1261,7 +1517,7 @@ components:
       type: object
       properties:
         series_id:
-          description: "Data series ID"
+          description: "Unique ID in all the system, automatically assigned when added the data series, not editable"
           type: integer
         series_name:
           description: "Data series name"
@@ -1273,7 +1529,7 @@ components:
           description: "Station ID"
           type: integer
         station_external_id:
-          description: "Station external ID"
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
           type: string
         station_name:
           description: "Station name"
@@ -1285,7 +1541,7 @@ components:
           description: "Parameter ID"
           type: integer
         parameter_external_id:
-          description: "Parameter external ID"
+          description: "Parameter ID exposed by the API and used for mapping the station with each ARPA's internal systems"
           type: string
         parameter_name:
           description: "Parameter name"
@@ -1329,78 +1585,6 @@ components:
         region_name:
           description: "Region name"
           type: string
-    DataSeries:
-      description: "Data series object"
-      type: object
-      properties:
-        station_id:
-          description: "Station ID"
-          type: integer
-        station_name:
-          description: "Station name"
-          type: string
-        station_external_id:
-          description: "Station external ID"
-          type: string
-        parameter_id:
-          description: "Parameter ID"
-          type: integer
-        parameter_external_id:
-          description: "Parameter external ID"
-          type: string
-        parameter_name:
-          description: "Parameter name"
-          type: string
-        parameter_unit:
-          description: "Parameter unit"
-          type: string
-        series_id:
-          description: "Data series ID"
-          type: integer
-        series_name:
-          description: "Data series name"
-          type: string
-        series_data:
-          description: "Array of data"
-          type: array
-          items:
-            $ref: "#/components/schemas/Data"
-    DataSeriesSynchro:
-      description: "Data series object"
-      type: object
-      properties:
-        station_id:
-          description: "Station ID"
-          type: integer
-        station_name:
-          description: "Station name"
-          type: string
-        station_external_id:
-          description: "Station external ID"
-          type: string
-        parameter_id:
-          description: "Parameter ID"
-          type: integer
-        parameter_external_id:
-          description: "Parameter external ID"
-          type: string
-        parameter_name:
-          description: "Parameter name"
-          type: string
-        parameter_unit:
-          description: "Parameter unit"
-          type: string
-        series_id:
-          description: "Data series ID"
-          type: integer
-        series_name:
-          description: "Data series name"
-          type: string
-        series_data:
-          description: "Array of data"
-          type: array
-          items:
-            $ref: "#/components/schemas/DataSynchro"
     Data:
       description: "Data object"
       type: object
@@ -1413,7 +1597,7 @@ components:
           description: "Measure ID"
           type: integer
         measure_value:
-          description: "Measure value"
+          description: "Raw measure value, without any conversion"
           type: number
         measure_perc:
           description: "Measure percentage of data"
@@ -1434,19 +1618,27 @@ components:
           description: "Measure standard deviation"
           type: number
         measure_code:
-          description: "Measure code"
+          description: |
+            Validity code for station
           type: number
         station_code:
-          description: "Station code"
+          description: |
+            Validity code for station
           type: number
         auto_validity_code:
-          description: "Validity code assigned by automatic systems"
+          description: |
+            Validity code assigned by automatic systems
           type: number
         post_validity_code:
-          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          description: |
+            Validity code assigned by an operator for validation/invalidation of data; the datalogger's codes
+            (tag OPAS-DL), in addition to those of automatic validation (-1 and -2 codes), are mapped on this column.
           type: number
         final_validity_code:
-          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          description: |
+            Final code assigned by an operator for daily, monthly, yearly validation.
+
+            Each code description is setted in the portal by the network administrator.
           type: number
         extract_code:
           description: "Measure extract code"
@@ -1458,6 +1650,108 @@ components:
         measure_update_obj:
           description: "Measure last update time"
           type: object
+    DataSeries:
+      description: "Data series object"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_external_id:
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        series_id:
+          description: "Unique ID in all the system, automatically assigned when added the data series, not editable"
+          type: integer
+        series_external_id:
+          description: "External id"
+          type: string
+        series_export_id1:
+          description: "First export id"
+          type: string
+        series_export_id2:
+          description: "Second export id"
+          type: string
+        series_ws_id:
+          description: "Series ws id"
+          type: string
+        series_name:
+          description: "Data series name"
+          type: string
+        series_data:
+          description: "Array of data"
+          type: array
+          items:
+            $ref: "#/components/schemas/Data"
+    DataSeriesSynchro:
+      description: "Data series object"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_external_id:
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        series_id:
+          description: "Unique ID in all the system, automatically assigned when added the data series, not editable"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        series_data:
+          description: "Array of data"
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSynchro"
+    DataSeriesSynchroAll:
+      description: "Data series object"
+      type: object
+      properties:
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        station_external_id:
+          description: "ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameters:
+          description: "Array of the parameters analyzed on the station"
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSynchroAllParamDetail"
     DataSynchro:
       description: "Data object"
       type: object
@@ -1491,19 +1785,26 @@ components:
           description: "Measure standard deviation"
           type: number
         measure_code:
-          description: "Measure code"
+          description: |
+            Validity code for station
           type: number
         station_code:
-          description: "Station code"
+          description: |
+            Validity code for station
           type: number
         auto_validity_code:
-          description: "Validity code assigned by automatic systems"
+          description: |
+            Validity code assigned by automatic systems
           type: number
         post_validity_code:
-          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          description: |
+            Validity code assigned by an operator for validation/invalidation of data; the datalogger's codes
+            (tag OPAS-DL), in addition to those of automatic validation (-1 and -2 codes), are mapped on this column.
           type: number
         final_validity_code:
-          description: "Final code assigned by an operator for daily, monthly, yearly validation"
+          description: |
+            Final code assigned by an operator for daily, monthly, yearly validation.
+            Each code description is setted in the portal by the network administrator.
           type: number
         extract_code:
           description: "Measure extract code"
@@ -1519,6 +1820,102 @@ components:
         measure_update_obj:
           description: "Measure last update time"
           type: object
+    DataSynchroAllParamDetail:
+      description: "Detail of the parameter on the station"
+      type: object
+      properties:
+        parameter_id:
+          description: "Parameter ID"
+          type: integer
+        parameter_external_id:
+          description: "Parameter ID exposed by the API and used for mapping the station with each ARPA's internal systems"
+          type: string
+        parameter_name:
+          description: "Parameter name"
+          type: string
+        parameter_unit:
+          description: "Parameter unit"
+          type: string
+        series_id:
+          description: "Unique ID in all the system, automatically assigned when added the data series, not editable"
+          type: integer
+        series_name:
+          description: "Data series name"
+          type: string
+        series_data:
+          description: "Array of data"
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSynchro"
+    Log:
+      description: "Detail of the log"
+      type: object
+      properties:
+        log_id:
+          description: "Log ID"
+          type: integer
+        log_date:
+          description: "Log date time"
+          type: string
+          format: date-time
+        log_daily:
+          description: "Log daily"
+          type: boolean
+        station_id:
+          description: "Station ID"
+          type: integer
+        station_name:
+          description: "Station name"
+          type: string
+        lt_id:
+          description: "Log typology ID (see next field)"
+          type: integer
+        lt_name:
+          description: "Log typologies"
+          type: string
+        log_creator_fullname:
+          description: "Log's creator fullname"
+          type: string
+        log_title:
+          description: "Log title"
+          type: string
+        log_link:
+          description: "Log's detail link to the OPAS portal"
+          type: string
+        log_obj:
+          description: "Log object with event description"
+          type: object
+          properties:
+            desc:
+              description: "XX"
+              type: string
+              example: "<ul><li>11 settembre 2024 h. 12:00 <strong>SO2</strong></li><li>11 settembre 2024 h. 13:00 <strong>NO</strong></li></ul>"
+            title:
+              description: "XX"
+              type: string
+              example: "<strong>N° 2</strong> tarature automatiche - <strong>ultime 24 ore</strong> (GMT+1)"
+        log_note:
+          description: "Log notes"
+          type: string
+        log_note_creator_fullname:
+          description: "Log creator's fullname"
+          type: string
+        log_note_insert_ts:
+          description: "Log note insert timestamp"
+          type: string
+          format: date-time
+        log_note_update_ts:
+          description: "Log note update timestamp"
+          type: string
+          format: date-time
+        log_insert_ts:
+          description: "Log insert timestamp"
+          type: string
+          format: date-time
+        log_update_ts:
+          description: "Log update timestamp"
+          type: string
+          format: date-time
 
   securitySchemes:
     BearerAuth:

@@ -59,8 +59,6 @@ sub get_miscellanies {
         ORDER BY miscellany_name DESC;
     };
 
-    # $self->app->log->debug($sql, $user_id, $from, $to);
-
     # return
     return $self->pg->db->query($sql, $user_id)->hashes();
 }
@@ -106,8 +104,11 @@ sub get_miscellanies_by_date_station {
         AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(station_mi_startup_date, station_mi_dismiss_date, '[]')
     };
 
+    my @binds = ($user_id, $from, $to);
+
     if ($stid != -1) {
-        $sql .= qq{ AND station_id = $stid };
+        $sql .= qq{ AND station_id = ? };
+        push @binds, $stid;
     }
 
     $sql .= qq{
@@ -115,7 +116,7 @@ sub get_miscellanies_by_date_station {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_miscellanies_for_location {
@@ -155,8 +156,6 @@ sub get_miscellanies_for_location {
         FROM t
         ORDER BY 2;
     };
-
-    # $self->app->log->debug($sql, $user_id, $from, $to);
 
     # return
     return $self->pg->db->query($sql, $user_id)->hashes();
@@ -247,26 +246,6 @@ sub insert_new_miscellany {
     eval {
         $tx =  $self->pg->db->begin;
 
-        # {
-        #   "add-location" => "on",
-        #   "equipment-arpa-id" => "test arpa",
-        #   "equipment-owner" => "test proprietario",
-        #   "equipment-date-dismiss" => "",
-        #   "equipment-active" => "on",
-        #   "equipment-id" => "",
-        #   "equipment-name" => "Test 001",
-        #   "equipment-networks" => [
-        #                             3,
-        #                             1
-        #                           ],
-        #   "equipment-note" => "Test note"
-        #   "loc-end-date" => "31/12/2022 09:53",
-        #   "loc-notes" => "test note location",
-        #   "loc-prov" => -1,
-        #   "loc-start-date" => "01/12/2021 09:53",
-        #   "loc-stat" => 1004,
-        # }
-
         # ARRAY networks
         my @networks;
         if (ref($params->{'equipment-networks'}) eq 'ARRAY') {
@@ -346,17 +325,6 @@ sub insert_new_location {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfDotazioni insert_new_location");
 
-    # {
-    #   "place-loc-end-date" => "16/09/2021 10:59",
-    #   "place-loc-id" => 1,
-    #   "place-loc-notes" => "prova location Modifica",
-    #   "place-loc-prov" => -1,
-    #   "place-loc-start-date" => "01/09/2021 09:11",
-    #   "place-loc-stat" => 1004,
-    #   "place-networks" => "[1]",
-    #   "place-loc-equipment" => 2
-    # }
-
     my $id;
     eval{
         $id = $self->pg->db->insert('metadata.stations_miscellanies', {
@@ -387,26 +355,6 @@ sub update_miscellany_by_id {
 
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfDotazioni update_miscellany_by_id");
-
-    # {
-    #   "add-location" => "on",
-    #   "equipment-arpa-id" => "test arpa",
-    #   "equipment-owner" => "test proprietario",
-    #   "equipment-date-dismiss" => "",
-    #   "equipment-active" => "on",
-    #   "equipment-id" => "",
-    #   "equipment-name" => "Test 001",
-    #   "equipment-networks" => [
-    #                             3,
-    #                             1
-    #                           ],
-    #   "equipments-note" => "Test note"
-    #   "loc-end-date" => "31/12/2022 09:53",
-    #   "loc-notes" => "test note location",
-    #   "loc-prov" => -1,
-    #   "loc-start-date" => "01/12/2021 09:53",
-    #   "loc-stat" => 1004,
-    # }
 
     # ARRAY networks
     my @networks;
@@ -447,17 +395,6 @@ sub update_location_by_id {
 
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfDotazioni update_location_by_id");
-
-    # {
-    #   "place-loc-end-date" => "16/09/2021 10:59",
-    #   "place-loc-id" => 1,
-    #   "place-loc-notes" => "prova location Modifica",
-    #   "place-loc-prov" => -1,
-    #   "place-loc-start-date" => "01/09/2021 09:11",
-    #   "place-loc-stat" => 1004,
-    #   "place-networks" => "[1]",
-    #   "place-loc-equipment" => 2
-    # }
 
     my $res;
 
@@ -576,7 +513,6 @@ sub close_location_by_id {
     }, { stmi_id => $stmiid });
 
     # error check
-    # my $res = $self->pg->db->query($sql, $self->app->helperGetLocaleFullDate(), $stcyid);
     if (defined $res) {
         return 1;
     }
@@ -621,11 +557,6 @@ sub check_location {
     $self->app->log->debug("stmiid: $stmiid");
 
     # per controllo associazione con report tarature e planning query:
-    # station_id
-    # cy_id
-    # stcy_startup_date
-    # stcy_dismiss_date
-
     # query
     my $sql = qq{
         WITH t1 AS (

@@ -162,6 +162,8 @@ sub get_tickets {
     $prov = ($prov != -1 ? "^$prov\$": ".*");
     $stid = ($stid  != -1 ? "^$stid\$" : ".*");
 
+    my @binds;
+
     # query
     my $sql = qq{
         WITH s AS (
@@ -295,8 +297,11 @@ sub get_tickets {
             AND t.station_id::text ~ ?
     };
 
+    push @binds, $from, $to, $from, $to, $user_id, $prov, $stid;
+
     if ($comp != -1) {
-        $sql .= qq{ AND ( tk_opening_comp_fk = $comp OR tk_recipient_comp_fk = $comp ) };
+        $sql .= qq{ AND ( tk_opening_comp_fk = ? OR tk_recipient_comp_fk = ? ) };
+        push @binds, $comp, $comp;
     }
 
     # forzo ordinamento, tipologia 4 expiry date a infinity quindi sempre in fondo
@@ -309,7 +314,7 @@ sub get_tickets {
     };
 
     # return
-    return $self->pg->db->query($sql, $from, $to, $from, $to, $user_id, $prov, $stid)->hashes;
+    return $self->pg->db->query($sql, @binds)->hashes;
 }
 
 sub get_calendar_tickets {
@@ -602,28 +607,9 @@ sub insert_ticket {
         # ##################################################################
         $self->app->log->debug("Bobo::Model::DbplanPeriferia STEP 1");
 
-        # {
-        #   "newtic-assigned" => 7,
-        #   "newtic-body" => "Prova prova prova",
-        #   "newtic-category" => 3,
-        #   "newtic-expdate" => "04/06/2021 15:21",
-        #   "newtic-id" => "",
-        #   "newtic-insdate" => "04/06/2021 15:21",
-        #   "newtic-equipment" => -1,
-        #   "newtic-objtype" => "",
-        #   "newtic-prov" => 33,
-        #   "newtic-repeat" => 0,
-        #   "newtic-station" => 1136,
-        #   "newtic-title" => "Titolo",
-        #   "newtic-type" => 3
-        # }
-
         my $instr_id = undef;
         my $cy_id = undef;
         my $mi_id = undef;
-
-        # my $old = 'cat';
-        # my $new = $old =~ s/cat/dog/r;
 
         if ($params->{'newtic-objtype'} eq 'instr') {
             $instr_id = $params->{'newtic-equipment'} =~ s/instr-//r;
@@ -780,15 +766,6 @@ sub update_ticket {
 
     # log
     $self->app->log->debug("Bobo::Model::DbplanPeriferia sub update_ticket");
-
-    # {
-    #   "newtic-body" => "Prova prova prova",
-    #   "newtic-category" => 3,
-    #   "newtic-expdate" => "04/06/2021 15:21",
-    #   "newtic-id" => "",
-    #   "newtic-title" => "Titolo",
-    #   "newtic-type" => 3
-    # }
 
     my $tx;
 

@@ -50,6 +50,35 @@ sub get_system_emails {
     $self->pg->db->query($sql, $from, $to)->hashes;
 }
 
+sub get_system_access_logs {
+    my ( $self, $from, $to ) = @_;
+
+    # log
+    $self->app->log->debug("Bobo::Model::Dbsysadmin sub get_system_access_logs");
+
+    # query
+    my $sql = qq{
+        SELECT 
+            a.log_id, a.log_headers, a.log_email,
+            CASE 
+                WHEN a.log_result = 'success' THEN '<span class="badge badge-success"><i class="fa-light fa-lock-keyhole-open"></i> Successo</span>'
+                WHEN a.log_result = 'error' THEN '<span class="badge badge-danger"><i class="fa-light fa-lock-keyhole"></i> Errore</span>'
+                ELSE '<span class="badge badge-danger"><i class="fa-light fa-lock-keyhole"></i> Errore</span>'
+            END AS formatted_result,
+            COALESCE(u.us_name, '') || ' ' || COALESCE(u.us_surname, '') AS user_fullname,
+            a.log_insert_time, COALESCE(TO_CHAR(a.log_insert_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Rome', 'DD/MM/YYYY HH24:MI'), '--') AS formatted_insert_time
+        FROM 
+            audit.access_log a
+            LEFT JOIN bobo.users u ON a.log_email = u.us_email
+        WHERE
+            a.log_insert_time BETWEEN ?::timestamp AND ?::timestamp
+        ORDER BY a.log_id DESC;
+    };
+
+    # return
+    $self->pg->db->query($sql, $from, $to)->hashes;
+}
+
 sub get_system_stations_by_net {
     my ( $self ) = @_;
 
@@ -96,6 +125,21 @@ Argomenti:
 
 Return:     
 Risultato della query (lista di email di sistema).
+
+=cut
+
+=head1 get_system_access_logs
+
+Funzione che recupera i log di accesso al sistema (access_log) in un intervallo di tempo specificato.
+I record includono informazioni sugli header della richiesta, l'email dell'utente,
+il risultato dell'accesso e la data/ora di inserimento formattata per l'interfaccia.
+
+Argomenti:  
+* from: data/ora di inizio intervallo ('from') (es. '2025-02-01 00:00')
+* to:   data/ora di fine intervallo ('to')   (es. '2025-02-28 23:59')
+
+Return:     
+Risultato della query (lista/hashrefs con i log di accesso, già formattati per la UI).
 
 =cut
 

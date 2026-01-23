@@ -89,7 +89,7 @@ sub get_all_parameters {
         ORDER BY parameter_id;
     };
 
-    $self->app->log->debug($sql);
+    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql)->hashes();
@@ -101,13 +101,8 @@ sub get_parameters_by_types {
     # log
     $self->app->log->debug("Bobo::Model::DbangParametri sub get_parameters_by_types");
 
-    # regex
-    # $param_id =~ s/\[//g;
-    # $param_id =~ s/\]//g;
-    # $param_id =~ s/"//g;
-
-    my $types_string = join ',' , @{$types};
-
+    # concatenate types ids for the query
+    my $types_string = '{' . join(',', @{$types}) . '}';
     $self->app->log->debug("parameter type ids: $types_string");
 
     # query
@@ -128,14 +123,12 @@ sub get_parameters_by_types {
             COALESCE(parameter_type_desc, '--') AS parameter_type_desc
         FROM
             metadata.view_parameters_info
-        WHERE parameter_type_id IN ( $types_string )
+        WHERE parameter_type_id = ANY((?)::int[])
         ORDER BY parameter_id;
     };
 
-    $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, $types_string)->hashes();
 }
 
 sub get_parameter_instr_by_id {

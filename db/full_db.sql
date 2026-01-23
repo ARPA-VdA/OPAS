@@ -3407,6 +3407,7 @@
         st_network_logo     text DEFAULT NULL,
         st_network_name     text DEFAULT NULL,
         st_network_basepath text,
+        st_network_datapath text,
         st_network_obj      jsonb DEFAULT '{}',
 
         CONSTRAINT metadata_stations_network_type_pkey PRIMARY KEY (st_network_id)
@@ -3429,6 +3430,7 @@
     COMMENT ON COLUMN metadata.stations_network_type.st_network_logo     IS 'Station network type logo';
     COMMENT ON COLUMN metadata.stations_network_type.st_network_logo     IS 'Station network type name';
     COMMENT ON COLUMN metadata.stations_network_type.st_network_basepath IS 'Network basepath for media';
+    COMMENT ON COLUMN metadata.stations_network_type.st_network_datapath IS 'Station network data path for FTP files';
     COMMENT ON COLUMN metadata.stations_network_type.st_network_obj      IS 'Station network object';
 
     -- custom station id sequence starting from 1000
@@ -5480,7 +5482,8 @@
     -- Funzione che restituisce un oggetto contenente i parametri CC e i relativi id recuperati dai moduli della stazione indicati nel file di configurazione
     -- DROP FUNCTION IF EXISTS metadata.f_get_cc_from_station_config(jsonb);
     CREATE OR REPLACE FUNCTION metadata.f_get_cc_from_station_config(
-        mo jsonb)
+        mo jsonb
+    )
         RETURNS jsonb
         LANGUAGE 'plpgsql'
         COST 100
@@ -5580,8 +5583,8 @@
                         ORDER BY param_id;';
 
                 /* NOX-NO-NO2 */
-                WHEN (mo->>'ModuleType')::integer IN ( 200, 201, 420, 850, 861, 866, 1200, 1201, 1241, 1532 ) THEN
-                    /** nox + hn3
+                WHEN (mo->>'ModuleType')::integer IN ( 200, 420, 850, 861, 866, 1200, 1201, 1532 ) THEN
+                    /** nox 
                      * 496, 4000 NOx Zero
                      * 497, 4001 NO Zero
                      * 498, 4002 NO2 Zero
@@ -5610,6 +5613,41 @@
                             metadata.parameters
                         WHERE
                             param_id IN (496,497,498,499,501,502,504,505)
+                        ORDER BY param_id;';
+                        
+                /* NOX-NO-NO2 NH3 */
+                WHEN (mo->>'ModuleType')::integer IN ( 201, 880, 1241 ) THEN
+                    /** nox + hn3
+                     *  496, 4000 NOx Zero
+                     *  497, 4001 NO Zero
+                     *  498, 4002 NO2 Zero
+                     *  499, 4003 NOx Span trovato
+                     *  501, 4005 NOx Span deriva
+                     *  502, 4006 NO Span trovato
+                     *  504, 4008 NO Span deriva
+                     *  505, 4009 NO2 Span trovato
+                     * 1229, 4054 NH3 Zero
+                     */
+                    q := 'SELECT
+                            param_id,
+                            param_name,
+                            param_unit,
+                            CASE param_id
+                                WHEN  496 THEN 4000
+                                WHEN  497 THEN 4001
+                                WHEN  498 THEN 4002
+                                WHEN  499 THEN 4003
+                                WHEN  501 THEN 4005
+                                WHEN  502 THEN 4006
+                                WHEN  504 THEN 4008
+                                WHEN  505 THEN 4009
+                                WHEN 1229 THEN 4054
+                                ELSE NULL
+                            END AS table_id
+                        FROM
+                            metadata.parameters
+                        WHERE
+                            param_id IN (496,497,498,499,501,502,504,505,1229)
                         ORDER BY param_id;';
 
                 /* O3 */
@@ -5823,7 +5861,7 @@
                                 ORDER BY param_id;';
 
                         ELSIF co->>'Name' ~ 'NOx' THEN
-                            /** nox + hn3
+                            /** nox + nh3
                              * 496, 4000 NOx Zero
                              * 499, 4003 NOx Span trovato
                              * 501, 4005 NOx Span deriva
@@ -5884,6 +5922,24 @@
                                     metadata.parameters
                                 WHERE
                                     param_id IN (497,502,504)
+                                ORDER BY param_id;';
+                                
+                        ELSIF co->>'Name' ~ 'NH3' THEN
+                            /** nox + hn3
+                             * 1229, 4054 NH3 Zero
+                             */
+                            q := 'SELECT
+                                    param_id,
+                                    param_name,
+                                    param_unit,
+                                    CASE param_id
+                                        WHEN 1229 THEN 4054
+                                        ELSE NULL
+                                    END AS table_id
+                                FROM
+                                    metadata.parameters
+                                WHERE
+                                    param_id IN (1229)
                                 ORDER BY param_id;';
 
                         ELSIF co->>'Name' ~ 'O3' THEN
@@ -6123,32 +6179,33 @@
         COST 100
         STABLE PARALLEL UNSAFE
     AS $BODY$
+        DECLARE
+            i text; -- icon
+        BEGIN
 
-    DECLARE
-        i text; -- icon
-    BEGIN
-        SELECT
-            CASE
-                WHEN ss_suspended IS TRUE THEN 'f6e2'
-                WHEN st_info_typology_fk = 5 THEN 'f3b3' -- Emissioni f240 6 per bobo
-                WHEN st_info_roaming_type_fk IN (2, 4) THEN 'f0d1' -- staz mobili e siti con stanziamento
-                WHEN st_info_roaming_type_fk = 5 THEN 'f495' -- magazzini
-                ELSE 'f3c5'
-            END INTO i
-        FROM
-            metadata.stations_info si
-            LEFT JOIN metadata.stations_status ss USING (station_id)
-        WHERE
-            station_id = stid;
+            SELECT
+                CASE
+                    WHEN ss_suspended IS TRUE THEN 'f6e2'
+                    WHEN st_info_typology_fk =  5 THEN 'f3b3' -- Emissioni f240 6 per bobo
+                    WHEN st_info_typology_fk =  6 THEN 'f495' -- magazzini
+                    WHEN st_info_typology_fk =  9 THEN 'f276' -- campionatori
+                    WHEN st_info_typology_fk = 10 THEN 'f472' -- mini cabina
+                    WHEN st_info_roaming_type_fk IN (2, 4) THEN 'f0d1' -- staz mobili e siti con stanziamento
+                    ELSE 'f3c5'
+                END INTO i
+            FROM
+                metadata.stations_info si
+                LEFT JOIN metadata.stations_status ss USING (station_id)
+            WHERE
+                station_id = stid;
 
-        RETURN i;
+            RETURN i;
 
         /* errors check */
         EXCEPTION
-        /* in case of any error */
-        WHEN OTHERS THEN RAISE NOTICE 'ERROR in f_get_icon_by_station_id: %', SQLERRM;
-    END;
-
+           /* in case of any error */
+           WHEN OTHERS THEN RAISE NOTICE 'ERROR in f_get_icon_by_station_id: %', SQLERRM;
+        END;
     $BODY$;
 
     -- grants
@@ -7054,6 +7111,38 @@
     -- --------------------------------------------------------------------------------------------
     -- TABLES
     -- --------------------------------------------------------------------------------------------
+
+    -- Tabella che contiene la lista dei file trovati sul server script e sftp
+    -- DROP TABLE IF EXISTS clients.data_file_status;
+    CREATE TABLE IF NOT EXISTS clients.data_file_status
+    (
+        id              serial     NOT NULL,
+        data_path       text       NOT NULL,
+        data_type       text       NOT NULL CHECK ( data_type IN ('dat', 'cal', 'inst', 'read') ),
+        file_name       text       NOT NULL,
+        file_date       timestamp  NOT NULL,
+        file_location   text       NOT NULL CHECK ( file_location IN ('sftp', 'import', 'backup') ),
+        file_header     text,
+
+        CONSTRAINT clients_data_file_status_pkey PRIMARY KEY (id),
+        CONSTRAINT clients_data_file_status_ukey UNIQUE (data_path, file_name)
+    );
+
+    -- grants
+    GRANT ALL ON TABLE    clients.data_file_status TO group_admin;
+    GRANT ALL ON TABLE    clients.data_file_status TO group_bobo;
+    GRANT ALL ON TABLE    clients.data_file_status TO group_tools;
+    GRANT SELECT ON TABLE clients.data_file_status TO group_readonly;
+
+    -- comments
+    COMMENT ON TABLE  clients.data_file_status               IS '[OPAS] Holds a list of file found in server script and sftp';
+    COMMENT ON COLUMN clients.data_file_status.id            IS 'Progerssive ID';
+    COMMENT ON COLUMN clients.data_file_status.data_path     IS 'Data path per netwok (arpa_xxx)';
+    COMMENT ON COLUMN clients.data_file_status.data_path     IS 'Data type (dat, cal, inst, read)';
+    COMMENT ON COLUMN clients.data_file_status.file_name     IS 'File name';
+    COMMENT ON COLUMN clients.data_file_status.file_date     IS 'File date';
+    COMMENT ON COLUMN clients.data_file_status.file_location IS 'File location (sftp, import, backup)';
+    COMMENT ON COLUMN clients.data_file_status.file_header   IS 'File header to map station_id';
 
     -- Tabella che contiene i risultati delle tarature effettuate
     -- DROP TABLE IF EXISTS clients.calibrations_result;
@@ -10885,6 +10974,81 @@
     COMMENT ON FUNCTION clients.f_measure_to_post_validity_code()
         IS 'Generate post validity code base on station code values';
 
+    -- Funzione per il controllo dei dati in ingresso nel db
+    -- DROP FUNCTION IF EXISTS clients.f_sanity_check();
+    CREATE OR REPLACE FUNCTION clients.f_sanity_check()
+        RETURNS trigger
+        LANGUAGE 'plpgsql'
+        COST 100
+        VOLATILE NOT LEAKPROOF
+    AS $BODY$
+        DECLARE
+            q text; -- query
+            r boolean; -- result
+            
+        BEGIN
+            -- RAISE NOTICE 'FUNCTION f_sanity_check';
+
+            /** 
+             * ! First check !
+             * Measure fulldate must be equal to HH:00:00 ( without minutes or seconds ) 
+             */
+            IF EXTRACT(minutes FROM NEW.measure_date_time) != 0 OR EXTRACT(seconds FROM NEW.measure_date_time) != 0 THEN
+                /* prevent insert */
+                RETURN NULL;
+            END IF;
+
+            /** 
+             * ! Second check !
+             * Measure fulldate in the future
+             */
+            IF NEW.measure_date_time > CURRENT_TIMESTAMP THEN
+                /* prevent insert */
+                RETURN NULL;
+            END IF;
+
+            /** 
+             * ! Third check !
+             * Prevent conflict
+             */
+            q := 'SELECT EXISTS ('|| E'\n'
+                ||'    SELECT 1'|| E'\n'
+                ||'    FROM '||TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME || E'\n'
+                ||'    WHERE'|| E'\n'
+                ||'        measure_id = '|| NEW.measure_id || E'\n'
+                ||'        AND measure_date_time = '|| quote_literal(NEW.measure_date_time) ||'::timestamp '|| E'\n'
+                ||');';
+
+            EXECUTE q INTO r;
+            
+            IF r THEN 
+                /* prevent insert */
+                RETURN NULL;
+            END IF;
+
+            /* return value */
+            RETURN NEW;
+
+            /* errors check */
+            EXCEPTION
+                WHEN insufficient_privilege THEN
+                        RETURN NEW;
+                WHEN OTHERS THEN
+
+                    RAISE NOTICE 'ERROR IN clients.f_sanity_check() : %', SQLERRM;
+                    /* return value */
+                    RETURN NEW;
+            END;
+    $BODY$;
+
+
+    GRANT EXECUTE ON FUNCTION clients.f_sanity_check() TO group_admin;
+    GRANT EXECUTE ON FUNCTION clients.f_sanity_check() TO group_bobo;
+    GRANT EXECUTE ON FUNCTION clients.f_sanity_check() TO group_tools;
+
+    COMMENT ON FUNCTION clients.f_sanity_check() IS 'Function that checks the sanity (or validity) of the data to be inserted';
+
+
     -- Funzione che salva i valori giornalieri di PM10, PM2.5 e PM1 dello strumento ENVEA MP101M nella prima ora del giorno precedente
     -- DROP FUNCTION IF EXISTS clients.f_mp101m_to_1h();
     CREATE OR REPLACE FUNCTION clients.f_mp101m_to_1h()
@@ -13520,6 +13684,58 @@
     -- --------------------------------------------------------------------------------------------
     -- TABLES
     -- --------------------------------------------------------------------------------------------
+    -- Tabella con la lista delle corse lanciate dagli utenti per il calcolo delle statistiche
+    -- DROP TABLE IF EXISTS clients_stats.runs;
+    CREATE TABLE clients_stats.runs
+    (
+        run_id              bigint GENERATED ALWAYS AS IDENTITY,
+        run_date            date NOT NULL,
+        province_id         integer NOT NULL,
+
+        run_result          boolean,
+        
+        run_pdf             boolean DEFAULT FALSE,
+        run_pdf_last_mod    timestamp without time zone,
+        run_pdf_creator     integer,
+
+        us_id               integer,
+        run_insert_ts       timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        run_update_ts       timestamp without time zone,
+
+        CONSTRAINT clients_stats_runs_pkey PRIMARY KEY (run_id),
+        CONSTRAINT clients_stats_runs_ukey UNIQUE (run_date, province_id)
+        -- CONSTRAINT clients_stats_runs_fkey FOREIGN KEY (province_id)
+        --     REFERENCES main.provinces (province_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE 
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT clients_stats_results_fkey2 FOREIGN KEY (run_pdf_creator)
+        --     REFERENCES bobo.users (us_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE 
+        --     ON DELETE RESTRICT,
+        -- CONSTRAINT clients_stats_results_fkey3 FOREIGN KEY (us_id)
+        --     REFERENCES bobo.users (us_id) MATCH SIMPLE
+        --     ON UPDATE CASCADE 
+        --     ON DELETE RESTRICT
+    );
+    
+    -- grants
+    GRANT ALL    ON TABLE clients_stats.runs TO group_admin;
+    GRANT ALL    ON TABLE clients_stats.runs TO group_bobo;
+    GRANT ALL    ON TABLE clients_stats.runs TO group_tools;
+    GRANT SELECT ON TABLE clients_stats.runs TO group_readonly;
+
+    -- comments
+    COMMENT ON TABLE  clients_stats.runs                     IS '[OPAS] Table holding all runs of statistics script';;
+    COMMENT ON COLUMN clients_stats.runs.run_id              IS 'Run ID (PK)';
+    COMMENT ON COLUMN clients_stats.runs.run_date            IS 'Run date (UNIQUE)';
+    COMMENT ON COLUMN clients_stats.runs.province_id         IS 'Province ID (UNIQUE, FK)';
+    COMMENT ON COLUMN clients_stats.runs.run_result          IS 'Run result (Boolean)';
+    COMMENT ON COLUMN clients_stats.runs.run_pdf             IS 'Run has PDF (Boolean)';
+    COMMENT ON COLUMN clients_stats.runs.run_pdf_last_mod    IS 'Run PDF last modified';
+    COMMENT ON COLUMN clients_stats.runs.run_pdf_creator     IS 'Creator of the PDF (FK)';
+    COMMENT ON COLUMN clients_stats.runs.us_id               IS 'Creator of the run (FK)';
+    COMMENT ON COLUMN clients_stats.runs.run_insert_ts       IS 'Run insert timestamp';
+    COMMENT ON COLUMN clients_stats.runs.run_update_ts       IS 'Run last update timestamp';
 
     -- Tabella che associa a ciascun inquinante la statistica e il tipo di valore soglia
     -- DROP TABLE IF EXISTS clients_stats.limits;
@@ -18236,371 +18452,279 @@
     -- Funzione per creare dinamicamente viste carte di controllo per ID stazione
     -- DROP FUNCTION IF EXISTS template.f_create_cc_view(integer);
     CREATE OR REPLACE FUNCTION template.f_create_cc_view(
-        stid      integer
+        stid integer
     )
         RETURNS boolean
         LANGUAGE 'plpgsql'
-        SECURITY DEFINER
         COST 100
-        VOLATILE
+        VOLATILE SECURITY DEFINER PARALLEL UNSAFE
     AS $BODY$
+        DECLARE
+            cc jsonb;  -- const variable
 
-    DECLARE
-        cc jsonb;  -- const variable
-        q text;     -- dynamic query
-        p text;     -- partial query
-        a text[];   -- array of partial queries
-        v text;     -- new view name
-        m integer;  -- param id main parameter
-        rec record;
-    BEGIN
+            q text;     -- dynamic query
+            p text;     -- partial query
+            a text[];   -- array of partial queries
 
-        /* entry */
-        RAISE NOTICE 'Function template.f_create_cc_view, stid: %', stid;
-        /* Testing
-            SELECT template.f_create_cc_view(1000::integer);
-        */
+            v text;     -- new view name
+            m integer;  -- param id main parameter
+            rec record;
 
-        -- "496" [CC] NOx Zero
-        -- "497" [CC] NO Zero
-        -- "498" [CC] NO2 Zero
-        -- "499" [CC] NOx Span trovato
-        -- "500" [CC] NOx Span verifica
-        -- "501" [CC] NOx Span deriva
-        -- "502" [CC] NO Span trovato
-        -- "503" [CC] NO Span verifica
-        -- "504" [CC] NO Span deriva
-        -- "505" [CC] NO2 in NO ref
-        -- "506" [CC] NO2 Span verifica
-        -- "507" [CC] NO2 Span deriva
-        -- "509" [CC] O3 Zero
-        -- "510" [CC] O3 Span trovato
-        -- "511" [CC] O3 Span verifica
-        -- "512" [CC] O3 Span deriva
-        -- "514" [CC] CO Zero
-        -- "515" [CC] CO Span trovato
-        -- "516" [CC] CO Span verifica
-        -- "517" [CC] CO Span deriva
-        -- "519" [CC] SO2 Zero
-        -- "520" [CC] SO2 Span trovato
-        -- "521" [CC] SO2 Span verifica
-        -- "522" [CC] SO2 Span deriva
-        -- "524" [CC] Ben Zero
-        -- "525" [CC] Tol Zero
-        -- "526" [CC] Xil Zero
-        -- "527" [CC] Ben Span trovato
-        -- "528" [CC] Ben Span verifica
-        -- "529" [CC] Ben Span deriva
-        -- "530" [CC] Tol Span trovato
-        -- "531" [CC] Tol Span verifica
-        -- "532" [CC] Tol Span deriva
-        -- "533" [CC] Xil Span trovato
-        -- "534" [CC] Xil Span verifica
-        -- "535" [CC] Xil Span deriva
-        -- "548" [CC] Ethylbenzene Span trovato
-        -- "549" [CC] Ethylbenzene Span deriva
-        -- "550" [CC] O-xylene Span trovato
-        -- "551" [CC] O-xylene Span deriva
-        -- "552" [CC] M&P-xylene Span trovato
-        -- "553" [CC] M&P-xylene Span deriva
+        BEGIN
 
-        -- "842" [CC] Cadmio su PM10 Zero
-        -- "843" [CC] Cromo su PM10 Zero
-        -- "844" [CC] Ferro su PM10 Zero
-        -- "845" [CC] Manganese su PM10 Zero
-        -- "846" [CC] Nichel su PM10 Zero
-        -- "847" [CC] Piombo su PM10 Zero
-        -- "848" [CC] Rame su PM10 Zero
-        -- "849" [CC] Zinco su PM10 Zero
-        -- "850" [CC] Arsenico su PM10 Zero
-        -- "851" [CC] Vanadio su PM10 Zero
-        -- "852" [CC] Cobalto su PM10 Zero
-        -- "853" [CC] Mercurio su PM10 Zero
-        -- "854" [CC] Fluorantene su PM10 Zero
-        -- "855" [CC] Pirene su PM10 Zero
-        -- "856" [CC] Benzo(a)Antracene su PM10 Zero
-        -- "857" [CC] Crisene su PM10 Zero
-        -- "858" [CC] Benzo(b)Fluorantene su PM10 Zero
-        -- "859" [CC] Benzo(k)Fluorantene su PM10 Zero
-        -- "860" [CC] Benzo(a)Pirene su PM10 Zero
-        -- "861" [CC] DiBenzo(a,h)Antracene su PM10 Zero
-        -- "862" [CC] Benzo(g,h,i)Perilene su PM10 Zero
-        -- "863" [CC] Sodio in PM10 Zero
-        -- "864" [CC] Ammonio in PM10 Zero
-        -- "865" [CC] Magnesio in PM10 Zero
-        -- "866" [CC] Potassio in PM10 Zero
-        -- "867" [CC] Calcio in PM10 Zero
-        -- "868" [CC] Cloruri in PM10 Zero
-        -- "869" [CC] Nitrati in PM10 Zero
-        -- "870" [CC] Solfati in PM10 Zero
-        -- "871" [CC] Alluminio su PM10 Zero
-        -- "872" [CC] PM10 Gravimetrica Zero
-        -- "873" [CC] PM2.5 Gravimetrica Zero
-        -- "874" [CC] Antimonio Zero
-        -- "875" [CC] Antracene Zero
-        -- "876" [CC] Bario Zero
-        -- "877" [CC] Benzo(b+j)fluorantene Zero
-        -- "878" [CC] Benzo(e)pirene Zero
-        -- "879" [CC] Berillio Zero
-        -- "880" [CC] Coronene Zero
-        -- "881" [CC] Fenantrene Zero
-        -- "882" [CC] Acenaftene Zero
-        -- "883" [CC] Acenaftilene Zero
-        -- "884" [CC] Selenio Zero
-        -- "885" [CC] Titanio Zero
-        -- "886" [CC] Fluorene Zero
-        -- "887" [CC] Fluoruri Zero
-        -- "888" [CC] Indeno(1,2,3-c,d)pirene Zero
-        -- "889" [CC] Naftalene Zero
-        -- "890" [CC] Sommatoria IPA Zero
+            /* entry */
+            RAISE NOTICE 'Function template.f_create_cc_view, stid: %', stid;
+            /* Testing
+                SELECT template.f_create_cc_view(1000::integer);
+            */
 
-        -- "1199" [CC] H2S Zero
-        -- "1202" [CC] H2S Span trovato
-        -- "1203" [CC] H2S Span verifica
-        -- "1204" [CC] H2S Span deriva
+            cc = '{
+                    "496": { "main_id" : "30", "step": "zero", "deriva": "false" },
+                    "497": { "main_id" : "31", "step": "zero", "deriva": "false" },
+                    "498": { "main_id" : "32", "step": "zero", "deriva": "false" },
+                    "499": { "main_id" : "30", "step": "span", "deriva": "false" },
+                    "500": { "main_id" : "30", "step": "span", "deriva": "false" },
+                    "501": { "main_id" : "30", "step": "span", "deriva": "true"  },
+                    "502": { "main_id" : "31", "step": "span", "deriva": "false" },
+                    "503": { "main_id" : "31", "step": "span", "deriva": "false" },
+                    "504": { "main_id" : "31", "step": "span", "deriva": "true"  },
+                    "505": { "main_id" : "32", "step": "span", "deriva": "false" },
+                    "506": { "main_id" : "32", "step": "span", "deriva": "false" },
+                    "507": { "main_id" : "32", "step": "span", "deriva": "true"  },
+                    "509": { "main_id" : "34", "step": "zero", "deriva": "false" },
+                    "510": { "main_id" : "34", "step": "span", "deriva": "false" },
+                    "511": { "main_id" : "34", "step": "span", "deriva": "false" },
+                    "512": { "main_id" : "34", "step": "span", "deriva": "true"  },
+                    "514": { "main_id" : "33", "step": "zero", "deriva": "false" },
+                    "515": { "main_id" : "33", "step": "span", "deriva": "false" },
+                    "516": { "main_id" : "33", "step": "span", "deriva": "false" },
+                    "517": { "main_id" : "33", "step": "span", "deriva": "true"  },
+                    "519": { "main_id" : "29", "step": "zero", "deriva": "false" },
+                    "520": { "main_id" : "29", "step": "span", "deriva": "false" },
+                    "521": { "main_id" : "29", "step": "span", "deriva": "false" },
+                    "522": { "main_id" : "29", "step": "span", "deriva": "true"  },
+                    "524": { "main_id" : "38", "step": "zero", "deriva": "false" },
+                    "525": { "main_id" : "39", "step": "zero", "deriva": "false" },
+                    "526": { "main_id" : "40", "step": "zero", "deriva": "false" },
+                    "527": { "main_id" : "38", "step": "span", "deriva": "false" },
+                    "528": { "main_id" : "38", "step": "span", "deriva": "false" },
+                    "529": { "main_id" : "38", "step": "span", "deriva": "true"  },
+                    "530": { "main_id" : "39", "step": "span", "deriva": "false" },
+                    "531": { "main_id" : "39", "step": "span", "deriva": "false" },
+                    "532": { "main_id" : "39", "step": "span", "deriva": "true"  },
+                    "533": { "main_id" : "40", "step": "span", "deriva": "false" },
+                    "534": { "main_id" : "40", "step": "span", "deriva": "false" },
+                    "535": { "main_id" : "40", "step": "span", "deriva": "true"  },
+                    "548": { "main_id" : "41", "step": "span", "deriva": "false" },
+                    "549": { "main_id" : "41", "step": "span", "deriva": "true"  },
+                    "550": { "main_id" : "42", "step": "span", "deriva": "false" },
+                    "551": { "main_id" : "42", "step": "span", "deriva": "true"  },
+                    "552": { "main_id" : "45", "step": "span", "deriva": "false" },
+                    "553": { "main_id" : "45", "step": "span", "deriva": "true"  },
 
+                    "842": { "main_id" : "51", "step": "zero", "deriva": "false" },
+                    "843": { "main_id" : "52", "step": "zero", "deriva": "false" },
+                    "844": { "main_id" : "53", "step": "zero", "deriva": "false" },
+                    "845": { "main_id" : "54", "step": "zero", "deriva": "false" },
+                    "846": { "main_id" : "55", "step": "zero", "deriva": "false" },
+                    "847": { "main_id" : "56", "step": "zero", "deriva": "false" },
+                    "848": { "main_id" : "57", "step": "zero", "deriva": "false" },
+                    "849": { "main_id" : "58", "step": "zero", "deriva": "false" },
+                    "850": { "main_id" : "59", "step": "zero", "deriva": "false" },
+                    "851": { "main_id" : "60", "step": "zero", "deriva": "false" },
+                    "852": { "main_id" : "61", "step": "zero", "deriva": "false" },
+                    "853": { "main_id" : "62", "step": "zero", "deriva": "false" },
+                    "854": { "main_id" : "64", "step": "zero", "deriva": "false" },
+                    "855": { "main_id" : "65", "step": "zero", "deriva": "false" },
+                    "856": { "main_id" : "66", "step": "zero", "deriva": "false" },
+                    "857": { "main_id" : "67", "step": "zero", "deriva": "false" },
+                    "858": { "main_id" : "68", "step": "zero", "deriva": "false" },
+                    "859": { "main_id" : "69", "step": "zero", "deriva": "false" },
+                    "860": { "main_id" : "70", "step": "zero", "deriva": "false" },
+                    "861": { "main_id" : "71", "step": "zero", "deriva": "false" },
+                    "862": { "main_id" : "72", "step": "zero", "deriva": "false" },
+                    "863": { "main_id" : "76", "step": "zero", "deriva": "false" },
+                    "864": { "main_id" : "77", "step": "zero", "deriva": "false" },
+                    "865": { "main_id" : "78", "step": "zero", "deriva": "false" },
+                    "866": { "main_id" : "79", "step": "zero", "deriva": "false" },
+                    "867": { "main_id" : "80", "step": "zero", "deriva": "false" },
+                    "868": { "main_id" : "81", "step": "zero", "deriva": "false" },
+                    "869": { "main_id" : "82", "step": "zero", "deriva": "false" },
+                    "870": { "main_id" : "83", "step": "zero", "deriva": "false" },
+                    "871": { "main_id" : "657", "step": "zero", "deriva": "false" },
+                    "872": { "main_id" : "658", "step": "zero", "deriva": "false" },
+                    "873": { "main_id" : "659", "step": "zero", "deriva": "false" },
+                    "874": { "main_id" : "809", "step": "zero", "deriva": "false" },
+                    "875": { "main_id" : "810", "step": "zero", "deriva": "false" },
+                    "876": { "main_id" : "811", "step": "zero", "deriva": "false" },
+                    "877": { "main_id" : "812", "step": "zero", "deriva": "false" },
+                    "878": { "main_id" : "813", "step": "zero", "deriva": "false" },
+                    "879": { "main_id" : "814", "step": "zero", "deriva": "false" },
+                    "880": { "main_id" : "815", "step": "zero", "deriva": "false" },
+                    "881": { "main_id" : "816", "step": "zero", "deriva": "false" },
+                    "882": { "main_id" : "817", "step": "zero", "deriva": "false" },
+                    "883": { "main_id" : "818", "step": "zero", "deriva": "false" },
+                    "884": { "main_id" : "819", "step": "zero", "deriva": "false" },
+                    "885": { "main_id" : "820", "step": "zero", "deriva": "false" },
+                    "886": { "main_id" : "821", "step": "zero", "deriva": "false" },
+                    "887": { "main_id" : "822", "step": "zero", "deriva": "false" },
+                    "888": { "main_id" : "823", "step": "zero", "deriva": "false" },
+                    "889": { "main_id" : "824", "step": "zero", "deriva": "false" },
+                    "890": { "main_id" : "825", "step": "zero", "deriva": "false" },
 
-        cc = '{
-                "496": { "main_id" : "30", "step": "zero", "deriva": "false" },
-                "497": { "main_id" : "31", "step": "zero", "deriva": "false" },
-                "498": { "main_id" : "32", "step": "zero", "deriva": "false" },
-                "499": { "main_id" : "30", "step": "span", "deriva": "false" },
-                "500": { "main_id" : "30", "step": "span", "deriva": "false" },
-                "501": { "main_id" : "30", "step": "span", "deriva": "true"  },
-                "502": { "main_id" : "31", "step": "span", "deriva": "false" },
-                "503": { "main_id" : "31", "step": "span", "deriva": "false" },
-                "504": { "main_id" : "31", "step": "span", "deriva": "true"  },
-                "505": { "main_id" : "32", "step": "span", "deriva": "false" },
-                "506": { "main_id" : "32", "step": "span", "deriva": "false" },
-                "507": { "main_id" : "32", "step": "span", "deriva": "true"  },
-                "509": { "main_id" : "34", "step": "zero", "deriva": "false" },
-                "510": { "main_id" : "34", "step": "span", "deriva": "false" },
-                "511": { "main_id" : "34", "step": "span", "deriva": "false" },
-                "512": { "main_id" : "34", "step": "span", "deriva": "true"  },
-                "514": { "main_id" : "33", "step": "zero", "deriva": "false" },
-                "515": { "main_id" : "33", "step": "span", "deriva": "false" },
-                "516": { "main_id" : "33", "step": "span", "deriva": "false" },
-                "517": { "main_id" : "33", "step": "span", "deriva": "true"  },
-                "519": { "main_id" : "29", "step": "zero", "deriva": "false" },
-                "520": { "main_id" : "29", "step": "span", "deriva": "false" },
-                "521": { "main_id" : "29", "step": "span", "deriva": "false" },
-                "522": { "main_id" : "29", "step": "span", "deriva": "true"  },
-                "524": { "main_id" : "38", "step": "zero", "deriva": "false" },
-                "525": { "main_id" : "39", "step": "zero", "deriva": "false" },
-                "526": { "main_id" : "40", "step": "zero", "deriva": "false" },
-                "527": { "main_id" : "38", "step": "span", "deriva": "false" },
-                "528": { "main_id" : "38", "step": "span", "deriva": "false" },
-                "529": { "main_id" : "38", "step": "span", "deriva": "true"  },
-                "530": { "main_id" : "39", "step": "span", "deriva": "false" },
-                "531": { "main_id" : "39", "step": "span", "deriva": "false" },
-                "532": { "main_id" : "39", "step": "span", "deriva": "true"  },
-                "533": { "main_id" : "40", "step": "span", "deriva": "false" },
-                "534": { "main_id" : "40", "step": "span", "deriva": "false" },
-                "535": { "main_id" : "40", "step": "span", "deriva": "true"  },
-                "548": { "main_id" : "41", "step": "span", "deriva": "false" },
-                "549": { "main_id" : "41", "step": "span", "deriva": "true"  },
-                "550": { "main_id" : "42", "step": "span", "deriva": "false" },
-                "551": { "main_id" : "42", "step": "span", "deriva": "true"  },
-                "552": { "main_id" : "45", "step": "span", "deriva": "false" },
-                "553": { "main_id" : "45", "step": "span", "deriva": "true"  },
-
-                "842": { "main_id" : "51", "step": "zero", "deriva": "false" },
-                "843": { "main_id" : "52", "step": "zero", "deriva": "false" },
-                "844": { "main_id" : "53", "step": "zero", "deriva": "false" },
-                "845": { "main_id" : "54", "step": "zero", "deriva": "false" },
-                "846": { "main_id" : "55", "step": "zero", "deriva": "false" },
-                "847": { "main_id" : "56", "step": "zero", "deriva": "false" },
-                "848": { "main_id" : "57", "step": "zero", "deriva": "false" },
-                "849": { "main_id" : "58", "step": "zero", "deriva": "false" },
-                "850": { "main_id" : "59", "step": "zero", "deriva": "false" },
-                "851": { "main_id" : "60", "step": "zero", "deriva": "false" },
-                "852": { "main_id" : "61", "step": "zero", "deriva": "false" },
-                "853": { "main_id" : "62", "step": "zero", "deriva": "false" },
-                "854": { "main_id" : "64", "step": "zero", "deriva": "false" },
-                "855": { "main_id" : "65", "step": "zero", "deriva": "false" },
-                "856": { "main_id" : "66", "step": "zero", "deriva": "false" },
-                "857": { "main_id" : "67", "step": "zero", "deriva": "false" },
-                "858": { "main_id" : "68", "step": "zero", "deriva": "false" },
-                "859": { "main_id" : "69", "step": "zero", "deriva": "false" },
-                "860": { "main_id" : "70", "step": "zero", "deriva": "false" },
-                "861": { "main_id" : "71", "step": "zero", "deriva": "false" },
-                "862": { "main_id" : "72", "step": "zero", "deriva": "false" },
-                "863": { "main_id" : "76", "step": "zero", "deriva": "false" },
-                "864": { "main_id" : "77", "step": "zero", "deriva": "false" },
-                "865": { "main_id" : "78", "step": "zero", "deriva": "false" },
-                "866": { "main_id" : "79", "step": "zero", "deriva": "false" },
-                "867": { "main_id" : "80", "step": "zero", "deriva": "false" },
-                "868": { "main_id" : "81", "step": "zero", "deriva": "false" },
-                "869": { "main_id" : "82", "step": "zero", "deriva": "false" },
-                "870": { "main_id" : "83", "step": "zero", "deriva": "false" },
-                "871": { "main_id" : "657", "step": "zero", "deriva": "false" },
-                "872": { "main_id" : "658", "step": "zero", "deriva": "false" },
-                "873": { "main_id" : "659", "step": "zero", "deriva": "false" },
-                "874": { "main_id" : "809", "step": "zero", "deriva": "false" },
-                "875": { "main_id" : "810", "step": "zero", "deriva": "false" },
-                "876": { "main_id" : "811", "step": "zero", "deriva": "false" },
-                "877": { "main_id" : "812", "step": "zero", "deriva": "false" },
-                "878": { "main_id" : "813", "step": "zero", "deriva": "false" },
-                "879": { "main_id" : "814", "step": "zero", "deriva": "false" },
-                "880": { "main_id" : "815", "step": "zero", "deriva": "false" },
-                "881": { "main_id" : "816", "step": "zero", "deriva": "false" },
-                "882": { "main_id" : "817", "step": "zero", "deriva": "false" },
-                "883": { "main_id" : "818", "step": "zero", "deriva": "false" },
-                "884": { "main_id" : "819", "step": "zero", "deriva": "false" },
-                "885": { "main_id" : "820", "step": "zero", "deriva": "false" },
-                "886": { "main_id" : "821", "step": "zero", "deriva": "false" },
-                "887": { "main_id" : "822", "step": "zero", "deriva": "false" },
-                "888": { "main_id" : "823", "step": "zero", "deriva": "false" },
-                "889": { "main_id" : "824", "step": "zero", "deriva": "false" },
-                "890": { "main_id" : "825", "step": "zero", "deriva": "false" },
-                "1199": { "main_id" : "37", "step": "zero", "deriva": "false" },
-                "1202": { "main_id" : "37", "step": "span", "deriva": "false" },
-                "1203": { "main_id" : "37", "step": "span", "deriva": "false" },
-                "1204": { "main_id" : "37", "step": "span", "deriva": "true"  }
-            }'::jsonb;
-
-        SELECT
-            station_schema || '.' || COALESCE(station_prefix, '')|| station_table||'_cc' INTO v
-        FROM
-            metadata.stations
-        WHERE
-            station_id = stid;
-
-        RAISE NOTICE 'Generazione SQL per creazione della vista: %', v;
-        RAISE NOTICE '--';
-
-        q = 'DROP VIEW IF EXISTS '||v||';'||E'\n'
-        ||'CREATE OR REPLACE VIEW '||v||' AS'||E'\n';
-
-        FOR rec IN
+                    "1199": { "main_id" : "37", "step": "zero", "deriva": "false" },
+                    "1202": { "main_id" : "37", "step": "span", "deriva": "false" },
+                    "1203": { "main_id" : "37", "step": "span", "deriva": "false" },
+                    "1204": { "main_id" : "37", "step": "span", "deriva": "true"  },
+                    
+                    "1229": { "main_id" : "183", "step": "zero", "deriva": "false" }
+                }'::jsonb;
 
             SELECT
-                param_id, parameter_name, stpr_table_id, stpr_group_id
+                station_schema || '.' || COALESCE(station_prefix, '')|| station_table||'_cc' INTO v
             FROM
-                metadata.view_stations_parameters
+                metadata.stations
             WHERE
-                station_id = stid
-                AND parameter_type_id = 12 -- taratura
-            ORDER BY param_id
+                station_id = stid;
 
-        LOOP
+            RAISE NOTICE 'Generazione SQL per creazione della vista: %', v;
+            RAISE NOTICE '--';
 
-            -- RAISE NOTICE 'Param id: %, param name: %, table id: %, Main id: %, step: %', rec.param_id, rec.parameter_name, rec.stpr_table_id, cc->(rec.param_id)::text->>'main_id', cc->(rec.param_id)::text->>'step';
+            q = 'DROP VIEW IF EXISTS '||v||';'||E'\n'
+            ||'CREATE OR REPLACE VIEW '||v||' AS'||E'\n';
 
-            -- recupero table id del main parameter
-            -- query diverse a seconda che il group id è definito o meno
-            IF rec.stpr_group_id IS NULL THEN
+            FOR rec IN
+
                 SELECT
-                    stpr_table_id INTO m
+                    param_id, parameter_name, stpr_table_id, stpr_group_id
                 FROM
-                    metadata.stations_parameters
+                    metadata.view_stations_parameters
                 WHERE
                     station_id = stid
-                    AND param_id = ( cc->(rec.param_id)::text->>'main_id' )::integer;
-            ELSE
-                SELECT
-                    stpr_table_id INTO m
-                FROM
-                    metadata.stations_parameters
-                WHERE
-                    station_id = stid
-                    AND param_id = ( cc->(rec.param_id)::text->>'main_id' )::integer
-                    AND stpr_group_id = rec.stpr_group_id;
+                    AND parameter_type_id = 12 -- taratura
+                ORDER BY param_id
+
+            LOOP
+
+                RAISE NOTICE 'Param id: %, param name: %, table id: %, Main id: %, step: %', rec.param_id, rec.parameter_name, rec.stpr_table_id, cc->(rec.param_id)::text->>'main_id', cc->(rec.param_id)::text->>'step';
+
+                -- recupero table id del main parameter
+                -- query diverse a seconda che il group id è definito o meno
+                IF rec.stpr_group_id IS NULL THEN
+                    SELECT
+                        stpr_table_id INTO m
+                    FROM
+                        metadata.stations_parameters
+                    WHERE
+                        station_id = stid
+                        AND param_id = ( cc->(rec.param_id)::text->>'main_id' )::integer;
+                ELSE
+                    SELECT
+                        stpr_table_id INTO m
+                    FROM
+                        metadata.stations_parameters
+                    WHERE
+                        station_id = stid
+                        AND param_id = ( cc->(rec.param_id)::text->>'main_id' )::integer
+                        AND stpr_group_id = rec.stpr_group_id;
+                END IF;
+
+                RAISE NOTICE 'Table id parametro main: %', m;
+                -- skip the current iteration if m IS NULL
+                CONTINUE WHEN m IS NULL;
+
+                IF ( cc->(rec.param_id)::text->>'deriva' )::boolean IS TRUE THEN
+
+                    p =
+                    'SELECT '||E'\n'
+                    ||'    date_trunc(''hour''::text, c.calibration_date_time) AS measure_date_time,'||E'\n'
+                    ||'    '||rec.stpr_table_id||'::smallint AS measure_id, -- '||rec.parameter_name||' '||E'\n'
+                    ||'    CASE '||E'\n'
+                    ||'        WHEN c.reference_value <> 0 THEN ROUND(-(100::real - (( c.result_value / c.reference_value) * 100::real) )::numeric, 2)'||E'\n'
+                    ||'        ELSE NULL '||E'\n'
+                    ||'    END AS measure_value,'||E'\n'
+                    ||'    100::smallint AS measure_perc,'||E'\n'
+                    ||'    NULL AS measure_min,'||E'\n'
+                    ||'    NULL AS measure_min_time,'||E'\n'
+                    ||'    NULL AS measure_max,'||E'\n'
+                    ||'    NULL AS measure_max_time,'||E'\n'
+                    ||'    NULL AS measure_std_dev,'||E'\n'
+                    ||'    0::integer  AS measure_code,'||E'\n'
+                    ||'    0::smallint AS station_code,'||E'\n'
+                    ||'    0::integer  AS auto_validity_code,'||E'\n'
+                    ||'    2::integer  AS post_validity_code,'||E'\n'
+                    ||'    0::smallint AS final_validity_code,'||E'\n'
+                    ||'    24::smallint AS extract_code,'||E'\n'
+                    ||'    NULL::timestamp AS db_insert_time,'||E'\n'
+                    ||'    NULL::timestamp AS db_update_time'||E'\n'
+                    ||'FROM '||E'\n'
+                    ||'    clients.calibrations_result c'||E'\n'
+                    ||'WHERE c.station_id = '||stid||' '||E'\n'
+                    ||'AND c.measure_id = '|| m ||' '||E'\n'
+                    ||'AND c.calibration_step = '||quote_literal(UPPER( cc->(rec.param_id)::text->>'step' ))||'::text '||E'\n';
+
+                ELSE
+                    p =
+                    'SELECT '||E'\n'
+                    ||'    date_trunc(''hour''::text, c.calibration_date_time) AS measure_date_time,'||E'\n'
+                    ||'    '||rec.stpr_table_id||'::smallint AS measure_id, -- '||rec.parameter_name||' '||E'\n'
+                    ||'    c.result_value AS measure_value,'||E'\n'
+                    ||'    100::smallint AS measure_perc,'||E'\n'
+                    ||'    NULL AS measure_min,'||E'\n'
+                    ||'    NULL AS measure_min_time,'||E'\n'
+                    ||'    NULL AS measure_max,'||E'\n'
+                    ||'    NULL AS measure_max_time,'||E'\n'
+                    ||'    NULL AS measure_std_dev,'||E'\n'
+                    ||'    0::integer  AS measure_code,'||E'\n'
+                    ||'    0::smallint AS station_code,'||E'\n'
+                    ||'    0::integer  AS auto_validity_code,'||E'\n'
+                    ||'    2::integer  AS post_validity_code,'||E'\n'
+                    ||'    0::smallint AS final_validity_code,'||E'\n'
+                    ||'    24::smallint AS extract_code,'||E'\n'
+                    ||'    NULL::timestamp AS db_insert_time,'||E'\n'
+                    ||'    NULL::timestamp AS db_update_time'||E'\n'
+                    ||'FROM '||E'\n'
+                    ||'    clients.calibrations_result c'||E'\n'
+                    ||'WHERE c.station_id = '||stid||' '||E'\n'
+                    ||'AND c.measure_id = '|| m ||' '||E'\n'
+                    ||'AND c.calibration_step = '||quote_literal(UPPER( cc->(rec.param_id)::text->>'step' ))||'::text '||E'\n';
+
+                END IF;
+
+                /* notice */
+                -- RAISE NOTICE 'Partial query: %', E'\n'||p;
+
+                a = a || p;
+
+            END LOOP;
+
+            IF ARRAY_LENGTH(a, 1) IS NULL THEN
+
+                RAISE NOTICE 'Nessun parametro CC!';
+                RETURN TRUE;
             END IF;
 
-            IF ( cc->(rec.param_id)::text->>'deriva' )::boolean IS TRUE THEN
+            q = q
+            || ARRAY_TO_STRING( a , 'UNION ALL'||E'\n', '')
+            || 'ORDER BY 1,2;'||E'\n'
+            || '  '||E'\n'
+            || 'GRANT ALL ON TABLE '||v||' TO group_admin;'||E'\n'
+            || 'GRANT ALL ON TABLE '||v||' TO group_bobo;'||E'\n'
+            || 'GRANT ALL ON TABLE '||v||' TO group_tools;'||E'\n'
+            || 'GRANT SELECT ON TABLE '||v||' TO group_readonly;'||E'\n';
 
-                p =
-                'SELECT '||E'\n'
-                ||'    date_trunc(''hour''::text, c.calibration_date_time) AS measure_date_time,'||E'\n'
-                ||'    '||rec.stpr_table_id||'::smallint AS measure_id, -- '||rec.parameter_name||' '||E'\n'
-                ||'    CASE '||E'\n'
-                ||'        WHEN c.reference_value <> 0 THEN ROUND(-(100::real - (( c.result_value / c.reference_value) * 100::real) )::numeric, 2)'||E'\n'
-                ||'        ELSE NULL '||E'\n'
-                ||'    END AS measure_value,'||E'\n'
-                ||'    100::smallint AS measure_perc,'||E'\n'
-                ||'    NULL AS measure_min,'||E'\n'
-                ||'    NULL AS measure_min_time,'||E'\n'
-                ||'    NULL AS measure_max,'||E'\n'
-                ||'    NULL AS measure_max_time,'||E'\n'
-                ||'    NULL AS measure_std_dev,'||E'\n'
-                ||'    0::integer  AS measure_code,'||E'\n'
-                ||'    0::smallint AS station_code,'||E'\n'
-                ||'    0::integer  AS auto_validity_code,'||E'\n'
-                ||'    2::integer  AS post_validity_code,'||E'\n'
-                ||'    0::smallint AS final_validity_code,'||E'\n'
-                ||'    24::smallint AS extract_code,'||E'\n'
-                ||'    NULL::timestamp AS db_insert_time,'||E'\n'
-                ||'    NULL::timestamp AS db_update_time'||E'\n'
-                ||'FROM '||E'\n'
-                ||'    clients.calibrations_result c'||E'\n'
-                ||'WHERE c.station_id = '||stid||' '||E'\n'
-                ||'AND c.measure_id = '|| m ||' '||E'\n'
-                ||'AND c.calibration_step = '||quote_literal(UPPER( cc->(rec.param_id)::text->>'step' ))||'::text '||E'\n';
+            RAISE NOTICE '--';
+            -- RAISE NOTICE 'Query finale: %', q;
 
-            ELSE
-                p =
-                'SELECT '||E'\n'
-                ||'    date_trunc(''hour''::text, c.calibration_date_time) AS measure_date_time,'||E'\n'
-                ||'    '||rec.stpr_table_id||'::smallint AS measure_id, -- '||rec.parameter_name||' '||E'\n'
-                ||'    c.result_value AS measure_value,'||E'\n'
-                ||'    100::smallint AS measure_perc,'||E'\n'
-                ||'    NULL AS measure_min,'||E'\n'
-                ||'    NULL AS measure_min_time,'||E'\n'
-                ||'    NULL AS measure_max,'||E'\n'
-                ||'    NULL AS measure_max_time,'||E'\n'
-                ||'    NULL AS measure_std_dev,'||E'\n'
-                ||'    0::integer  AS measure_code,'||E'\n'
-                ||'    0::smallint AS station_code,'||E'\n'
-                ||'    0::integer  AS auto_validity_code,'||E'\n'
-                ||'    2::integer  AS post_validity_code,'||E'\n'
-                ||'    0::smallint AS final_validity_code,'||E'\n'
-                ||'    24::smallint AS extract_code,'||E'\n'
-                ||'    NULL::timestamp AS db_insert_time,'||E'\n'
-                ||'    NULL::timestamp AS db_update_time'||E'\n'
-                ||'FROM '||E'\n'
-                ||'    clients.calibrations_result c'||E'\n'
-                ||'WHERE c.station_id = '||stid||' '||E'\n'
-                ||'AND c.measure_id = '|| m ||' '||E'\n'
-                ||'AND c.calibration_step = '||quote_literal(UPPER( cc->(rec.param_id)::text->>'step' ))||'::text '||E'\n';
-
-            END IF;
-
-            /* notice */
-            -- RAISE NOTICE 'Partial query: %', E'\n'||p;
-
-            a = a || p;
-
-        END LOOP;
-
-        IF ARRAY_LENGTH(a, 1) IS NULL THEN
-
-            RAISE NOTICE 'Nessun parametro CC!';
+            /* return value */
+            EXECUTE q;
             RETURN TRUE;
-        END IF;
-
-        q = q
-        || ARRAY_TO_STRING( a , 'UNION ALL'||E'\n', '')
-        || 'ORDER BY 1,2;'||E'\n'
-        || '  '||E'\n'
-        || 'GRANT ALL ON TABLE '||v||' TO group_admin;'||E'\n'
-        || 'GRANT ALL ON TABLE '||v||' TO group_bobo;'||E'\n'
-        || 'GRANT ALL ON TABLE '||v||' TO group_tools;'||E'\n'
-        || 'GRANT SELECT ON TABLE '||v||' TO group_readonly;'||E'\n';
-
-        RAISE NOTICE '--';
-        RAISE NOTICE 'Query finale: %', q;
-
-        /* return value */
-        EXECUTE q;
-        RETURN TRUE;
 
         /* errors check */
         EXCEPTION
             WHEN OTHERS THEN RAISE NOTICE 'ERROR template.f_create_cc_view(): %', SQLERRM;
             RETURN FALSE;
-    END;
-
+        END;
     $BODY$;
 
     -- grants
@@ -19661,59 +19785,50 @@
     -- stations
     -- DROP VIEW IF EXISTS webservice.v1_stations;
     CREATE OR REPLACE VIEW webservice.v1_stations AS
-        SELECT
-             st.station_id                                                                                   AS id,
-            st.station_name                                                                                 AS name,
-            -- st.station_schema                                                                               AS schema,
-            -- st.station_table                                                                                AS table,
-            -- st.station_prefix                                                                               AS prefix,
-            -- ((st.station_schema || '.'::text) || COALESCE(st.station_prefix, ''::text)) || st.station_table AS fulltable,
-            st.station_active                                                                               AS active,
-            st.station_note                                                                                 AS note,
-            st.station_ext_id                                                                               AS external_id,
-            -- st.station_file_header                                                                          AS file_header,
-            -- st.station_remote_ctrl                                                                          AS remote_ctrl,
-            -- sm.st_info_shortname                                                                            AS shortname,
-            -- sm.st_info_longname                                                                             AS longname,
-            sm.st_info_startup_date                                                                         AS startup_date,
-            sm.st_info_dismiss_date                                                                         AS dismiss_date,
-            -- sm.st_info_basepath                                                                             AS base_path,
-            -- (sm.st_info_basepath || '/'::text) || st.station_id                                             AS media_path,
-            r.region_istat_code                                                                             AS region_istat_code,
-            r.region_name                                                                                   AS region_name,
-            sm.st_info_locality                                                                             AS locality,
-            sm.st_info_zone                                                                                 AS zone,
-            sm.st_info_basin                                                                                AS basin,
-            sm.st_info_community                                                                            AS community,
-            sm.st_info_north_utm                                                                            AS north_utm,
-            sm.st_info_east_utm                                                                             AS east_utm,
-            sm.st_info_altitude                                                                             AS altitude,
-            sm.st_info_lat_wgs84                                                                            AS lat_wgs84,
-            sm.st_info_lon_wgs84                                                                            AS lon_wgs84,
-            sm.st_info_national_code                                                                        AS national_code,
-            -- sm.st_info_network_type_fk                                                                      AS network_type_id,
-            snt.st_network_desc                                                                             AS network_type_desc,
-            snt.st_network_name                                                                             AS network_type_name,
-            -- snt.st_network_logo                                                                             AS network_type_logo,
-            -- sm.st_info_roaming_type_fk                                                                      AS roaming_type_id,
-            srt.st_roaming_desc                                                                             AS roaming_type_desc,
-            -- sm.st_info_typology_fk                                                                          AS typology_id,
-            stt.st_typology_desc                                                                            AS typology_desc,
-            -- sm.st_info_measure_fk                                                                           AS measure_type_id,
-            mt.measure_type_desc                                                                            AS measure_type_desc,
-            -- sm.st_info_cadence_fk                                                                           AS cadence_type_id,
-            mc.measure_cadence_desc                                                                         AS cadence_type_desc,
-            mc.measure_cadence_min                                                                          AS cadence_type_min,
-            -- mc.measure_cadence_db                                                                           AS cadence_type_db,
-            sm.st_info_note                                                                                 AS metadata_note,
-            sm.st_info_export_id                                                                            AS export_id,
-            sm.st_info_ws_name                                                                              AS ws_name
-            -- sm.st_info_import_ws_id                                                                         AS import_ws_id
-        FROM
+        SELECT 
+            st.station_id                                       AS id,
+            st.station_name                                     AS name,
+            st.station_active                                   AS active,
+            st.station_note                                     AS note,
+            st.station_ext_id                                   AS external_id,
+            sm.st_info_startup_date                             AS startup_date,
+            sm.st_info_dismiss_date                             AS dismiss_date,
+            (sm.st_info_basepath || '/'::text) || st.station_id AS media_path,
+            m.mu_istat_code                                     AS municipality_istat_code,
+            m.mu_name                                           AS municipality_name,
+            p.province_istat_code,
+            p.province_name,
+            p.province_code,
+            r.region_istat_code,
+            r.region_name,
+            sm.st_info_locality                                 AS locality,
+            sm.st_info_zone                                     AS zone,
+            sm.st_info_basin                                    AS basin,
+            sm.st_info_community                                AS community,
+            sm.st_info_north_utm                                AS north_utm,
+            sm.st_info_east_utm                                 AS east_utm,
+            sm.st_info_altitude                                 AS altitude,
+            sm.st_info_lat_wgs84                                AS lat_wgs84,
+            sm.st_info_lon_wgs84                                AS lon_wgs84,
+            sm.st_info_national_code                            AS national_code,
+            snt.st_network_desc                                 AS network_type_desc,
+            snt.st_network_name                                 AS network_type_name,
+            srt.st_roaming_desc                                 AS roaming_type_desc,
+            stt.st_typology_desc                                AS typology_desc,
+            mt.measure_type_desc,
+            mc.measure_cadence_desc                             AS cadence_type_desc,
+            mc.measure_cadence_min                              AS cadence_type_min,
+            sm.st_info_note                                     AS metadata_note,
+            sm.st_info_export_id                                AS export_id,
+            sm.st_info_ws_name                                  AS ws_name
+
+        FROM 
             metadata.stations st
             LEFT JOIN metadata.stations_info sm USING (station_id)
             LEFT JOIN metadata.stations_municipality stm USING (station_id)
+            LEFT JOIN main.municipalities m USING (mu_id)
             LEFT JOIN main.province_municipalities pm USING (mu_id)
+            LEFT JOIN main.provinces p USING (province_id)
             LEFT JOIN main.region_provinces rp USING (province_id)
             LEFT JOIN main.regions r USING (region_id)
             LEFT JOIN metadata.stations_network_type snt ON snt.st_network_id = sm.st_info_network_type_fk
@@ -19721,9 +19836,9 @@
             LEFT JOIN metadata.stations_typology stt ON stt.st_typology_id = sm.st_info_typology_fk
             LEFT JOIN metadata.measures_type mt ON mt.measure_type_id = sm.st_info_measure_fk
             LEFT JOIN metadata.measures_cadence mc ON mc.measure_cadence_id = sm.st_info_cadence_fk
-        WHERE
-            sm.st_info_roaming_type_fk IN (1,2) -- stazioni fisse e mobili
-        ORDER BY
+        WHERE 
+            sm.st_info_roaming_type_fk = ANY (ARRAY[1, 2])
+        ORDER BY 
             st.station_id;
 
     -- grants
@@ -19871,9 +19986,9 @@
 
     -- DROP TABLE IF EXISTS client_lig_alims.arguments;
     CREATE TABLE client_lig_alims.arguments (
-        arg_id   integer NOT NULL,
-        arg_desc text NOT NULL,
-
+        arg_id      integer NOT NULL,
+        arg_desc    text NOT NULL,
+        arg_info    text,
         CONSTRAINT client_lig_alims_arguments_pkey PRIMARY KEY (arg_id)
     );
 
@@ -19887,6 +20002,7 @@
     COMMENT ON TABLE  client_lig_alims.arguments          IS 'Arguments table';
     COMMENT ON COLUMN client_lig_alims.arguments.arg_id   IS 'Argument ID (PK)';
     COMMENT ON COLUMN client_lig_alims.arguments.arg_desc IS 'Argument description';
+    COMMENT ON COLUMN client_lig_alims.arguments.arg_info IS 'Argument information';
 
     -- DROP TABLE IF EXISTS client_lig_alims.filters;
     CREATE TABLE client_lig_alims.filters (

@@ -56,23 +56,15 @@ sub get_cylinders_by_date {
                     WHERE user_id = ?
                 )
             AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(vc.cylinder_built_date, vc.cylinder_expiry_date, '[]')
-    };
-
-    if ($net != -1) {
-        $sql .= qq{ AND $net = ANY(vc.network_types) };
-    }
-
-    $sql .= qq{
+            AND (? = -1 OR ? = ANY(vc.network_types) )
         )
         SELECT *
         FROM t
         ORDER BY cylinder_built_date DESC;
     };
 
-    # $self->app->log->debug($sql, $user_id, $from, $to);
-
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, $user_id, $from, $to, $net, $net)->hashes();
 }
 
 sub get_cylinders_by_date_station {
@@ -80,6 +72,7 @@ sub get_cylinders_by_date_station {
 
     # log
     $self->app->log->debug("Bobo::Model::DbcnfBombole sub get_cylinders_by_date_station");
+    $stid = ($stid != -1 ? "^$stid\$": ".*");
 
     # query
     my $sql = qq{
@@ -114,22 +107,13 @@ sub get_cylinders_by_date_station {
                 WHERE user_id = ?
             )
         AND tsrange(?::timestamp, ?::timestamp, '[]') && tsrange(station_cy_startup_date, station_cy_dismiss_date, '[]')
-    };
-
-    if ($net != -1) {
-        $sql .= qq{ AND $net = ANY(network_types) };
-    }
-
-    if ($stid != -1) {
-        $sql .= qq{ AND station_id = $stid };
-    }
-
-    $sql .= qq{
+        AND (? = -1 OR ? = ANY(network_types) )
+        AND station_id::text ~ ?
         ORDER BY station_cy_startup_date DESC;
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id, $from, $to)->hashes();
+    return $self->pg->db->query($sql, $user_id, $from, $to, $net, $net, $stid)->hashes();
 }
 
 sub get_cylinders_for_location {
@@ -176,8 +160,6 @@ sub get_cylinders_for_location {
         FROM t
         ORDER BY 1;
     };
-
-    # $self->app->log->debug($sql, $user_id, $from, $to);
 
     # return
     return $self->pg->db->query($sql, $user_id)->hashes();
@@ -330,34 +312,6 @@ sub insert_new_cylinder {
     eval {
         $tx = $self->pg->db->begin;
 
-        # {
-        #   "add-location" => "on",
-        #   "loc-end-date" => "06/09/2021 09:31",
-        #   "loc-notes" => "TEST NOTA LOCATION",
-        #   "loc-prov" => 1,
-        #   "loc-start-date" => "06/09/2021 09:31",
-        #   "loc-stat" => 1004,
-        #   "tank-active" => "on",
-        #   "tank-arpa-id" => "OPAS0001",
-        #   "tank-category" => 2,
-        #   "tank-cy-id" => "",
-        #   "tank-date-built" => "01/09/2021",
-        #   "tank-date-expiry" => "30/09/2021",
-        #   "tank-description" => "Test Miscela",
-        #   "tank-exhausted" => "on",
-        #   "tank-iszero" => "on",
-        #   "tank-name" => "Test Nome",
-        #   "tank-networks" => [
-        #                        6,
-        #                        1
-        #                      ],
-        #   "tank-not-compliant" => "on",
-        #   "tank-note" => "TEST NOTA BOMBOLA",
-        #   "tank-returned" => "on",
-        #   "val-first" => "9.26",
-        #   "val-second" => "",
-        #   "val-third" => ""
-        # }
 
         # ARRAY networks
         my @networks;
@@ -379,14 +333,6 @@ sub insert_new_cylinder {
         if (defined $params->{'val-third'} && $params->{'val-third'} ne '') {
             push @values, $params->{'val-third'};
         }
-
-        # INSERT INTO equipments.cylinders
-        #     (cy_id, cy_arpa_id, cy_name, cy_mixture, category_id, cy_built_date, cy_expiry_date, cy_ch_values, cy_all_stations, cy_is_zero, cy_is_exhausted, cy_is_returned, cy_not_compliant, cy_active, cy_note, network_types )
-        # VALUES
-        #     (DEFAULT, 'OPAS00001', 'Pluto', 'NO 79,80 ppm', 2, '2020-02-07'::date, '2021-08-07'::date, '{80.01, 79.8, 0.3}'::real[],  TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, 'Nota di esempio', '{1}'::integer[]   ), -- 1
-        #     (DEFAULT, 'OPAS46657', NULL   , 'CO'          , 3, '2020-01-09'::date, '2022-01-09'::date, '{10.35}'::real[]           , FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, NULL             , '{2,3}'::integer[] )  -- 2
-
-        # RETURNING cy_id;
 
         $id = $self->pg->db->insert('equipments.cylinders', {
             #id                     => # id progressivo
@@ -465,17 +411,6 @@ sub insert_new_location {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfBombole insert_new_location");
 
-    # {
-    #   "modal-loc-end-date" => "16/09/2021 10:59",
-    #   "modal-loc-id" => 1,
-    #   "modal-loc-notes" => "prova location Modifica",
-    #   "modal-loc-prov" => -1,
-    #   "modal-loc-start-date" => "01/09/2021 09:11",
-    #   "modal-loc-stat" => 1004,
-    #   "modal-networks" => "[1]",
-    #   "modal-loc-tank" => 2
-    # }
-
     my $id;
 
     eval{
@@ -509,34 +444,6 @@ sub update_cylinder_by_id {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfBombole update_cylinder_by_id");
 
-    # {
-    #   "add-location" => "on",
-    #   "loc-end-date" => "06/09/2021 09:31",
-    #   "loc-notes" => "TEST NOTA LOCATION",
-    #   "loc-prov" => 1,
-    #   "loc-start-date" => "06/09/2021 09:31",
-    #   "loc-stat" => 1004,
-    #   "tank-active" => "on",
-    #   "tank-arpa-id" => "OPAS0001",
-    #   "tank-category" => 2,
-    #   "tank-cy-id" => "",
-    #   "tank-date-built" => "01/09/2021",
-    #   "tank-date-expiry" => "30/09/2021",
-    #   "tank-description" => "Test Miscela",
-    #   "tank-exhausted" => "on",
-    #   "tank-iszero" => "on",
-    #   "tank-name" => "Test Nome",
-    #   "tank-networks" => [
-    #                        6,
-    #                        1
-    #                      ],
-    #   "tank-not-compliant" => "on",
-    #   "tank-note" => "TEST NOTA BOMBOLA",
-    #   "tank-returned" => "on",
-    #   "val-first" => "9.26",
-    #   "val-second" => "",
-    #   "val-third" => ""
-    # }
 
     # ARRAY networks
     my @networks;
@@ -558,14 +465,6 @@ sub update_cylinder_by_id {
     if (defined $params->{'val-third'} && $params->{'val-third'} ne '') {
         push @values, $params->{'val-third'};
     }
-
-    # INSERT INTO equipments.cylinders
-    #     (cy_id, cy_arpa_id, cy_name, cy_mixture, category_id, cy_built_date, cy_expiry_date, cy_ch_values, cy_all_stations, cy_is_zero, cy_is_exhausted, cy_is_returned, cy_not_compliant, cy_active, cy_note, network_types )
-    # VALUES
-    #     (DEFAULT, 'OPAS00001', 'Pluto', 'NO 79,80 ppm', 2, '2020-02-07'::date, '2021-08-07'::date, '{80.01, 79.8, 0.3}'::real[],  TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, 'Nota di esempio', '{1}'::integer[]   ), -- 1
-    #     (DEFAULT, 'OPAS46657', NULL   , 'CO'          , 3, '2020-01-09'::date, '2022-01-09'::date, '{10.35}'::real[]           , FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, NULL             , '{2,3}'::integer[] )  -- 2
-
-    # RETURNING cy_id;
 
     my $res = $self->pg->db->update('equipments.cylinders', {
         # id               => # id progressivo
@@ -602,17 +501,6 @@ sub update_location_by_id {
 
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfBombole update_location_by_id");
-
-    # {
-    #   "modal-loc-end-date" => "16/09/2021 10:59",
-    #   "modal-loc-id" => 1,
-    #   "modal-loc-notes" => "prova location Modifica",
-    #   "modal-loc-prov" => -1,
-    #   "modal-loc-start-date" => "01/09/2021 09:11",
-    #   "modal-loc-stat" => 1004,
-    #   "modal-networks" => "[1]",
-    #   "modal-loc-tank" => 2
-    # }
 
     my $res;
 
@@ -724,18 +612,11 @@ sub close_location_by_id {
     # log
     $self->app->log->debug("sub Bobo::Model::DbcnfBombole close_location_by_id");
 
-    # my $sql = qq{
-    #     UPDATE metadata.stations_cylinders
-    #     SET stcy_dismiss_date = ( DATE_TRUNC('hour', ?::timestamp ) )::timestamp
-    #     WHERE stcy_id = ?;
-    # };
-
     my $res = $self->pg->db->update('metadata.stations_cylinders', {
         stcy_dismiss_date => $self->app->helperGetLocaleFullDate()
     }, {stcy_id => $stcyid });
 
     # error check
-    # my $res = $self->pg->db->query($sql, $self->app->helperGetLocaleFullDate(), $stcyid);
     if (defined $res) {
         return 1;
     }
@@ -788,12 +669,6 @@ sub check_location {
     $self->app->log->debug("stcyid: $stcyid");
 
     # per controllo associazione con report tarature e planning query:
-
-    # station_id
-    # cy_id
-    # stcy_startup_date
-    # stcy_dismiss_date
-
     # query
     my $sql = qq{
         WITH t1 AS (

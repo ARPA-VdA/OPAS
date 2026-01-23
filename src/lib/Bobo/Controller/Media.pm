@@ -119,6 +119,9 @@ sub navigate_filesystem{
     elsif( scalar(@levels) == 3){
         $self->app->log->debug("Livello 3");
 
+        my %names_map;
+        @names_map{@{$grants->{station_ids}}} = @{$grants->{station_names}};
+
         # crea un hash nella forma { "1000": 1, "1002": 1, "9999": 1, ... }
         my %vals_to_find = map { $_ => 1 } @{$grants->{station_ids}}; # qw( 1000 1002 )
 
@@ -132,6 +135,7 @@ sub navigate_filesystem{
         local *check = sub { 
             if( $_->{basename} =~ /^[0-9]+$/ ){
                 $_->{editable} = 0;
+                $_->{station} = @names_map{ $_->{basename} };
             }
             else{
                 $_->{editable} = 1;

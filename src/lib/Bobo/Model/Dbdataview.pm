@@ -158,12 +158,15 @@ sub get_dataview_stations {
             AND si.station_lon_wgs84 IS NOT NULL
     };
 
+    my @binds;
     if ($regid != -1) {
-        $sql .= qq{ AND sm.region_id = $regid };
+        $sql .= qq{ AND sm.region_id = ? };
+        push @binds, $regid;
     }
 
     if ($provid != -1) {
-        $sql .= qq{ AND sm.province_id = $provid };
+        $sql .= qq{ AND sm.province_id = ? };
+        push @binds, $provid;
     }
 
     $sql .= qq{
@@ -172,7 +175,7 @@ sub get_dataview_stations {
     };
 
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_dataview_all_stations {
@@ -212,12 +215,15 @@ sub get_dataview_all_stations {
             AND si.station_lon_wgs84 IS NOT NULL
     };
 
+    my @binds = ($user_id);
     if ($regid != -1) {
-        $sql .= qq{ AND sm.region_id = $regid };
+        $sql .= qq{ AND sm.region_id = ? };
+        push @binds, $regid;
     }
 
     if ($provid != -1) {
-        $sql .= qq{ AND sm.province_id = $provid };
+        $sql .= qq{ AND sm.province_id = ? };
+        push @binds, $provid;
     }
 
     $sql .= qq{
@@ -226,7 +232,7 @@ sub get_dataview_all_stations {
     };
 
     # return
-    return $self->pg->db->query($sql, $user_id)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub check_permission_station {
@@ -338,6 +344,7 @@ sub get_map_stations {
     $self->app->log->debug("Bobo::Model::Dbcommon sub get_map_stations");
     my $filter_sql = '';
 
+    my @binds;
     if (defined $params_array && scalar @{$params_array} > 0) {
         my $flag = 0;
         $filter_sql = qq{ AND station_id IN ( };
@@ -355,14 +362,16 @@ sub get_map_stations {
             $filter_sql .= qq{
                 SELECT DISTINCT(station_id)
                 FROM metadata.stations_parameters
-                WHERE param_id = $param
+                WHERE param_id = ?
                 AND stpr_active IS TRUE
             };
 
             $flag = 1;
+            push @binds, $param;
         }
 
         $filter_sql .= qq{ ) };
+
     }
 
     # query
@@ -433,7 +442,7 @@ sub get_map_stations {
     };
 
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_map_all_stations {
@@ -444,6 +453,7 @@ sub get_map_all_stations {
 
     my $filter_sql = '';
 
+    my @binds;
     if (defined $params_array && scalar @{$params_array} > 0) {
         my $flag = 0;
         $filter_sql = qq{ AND station_id IN ( };
@@ -461,11 +471,12 @@ sub get_map_all_stations {
             $filter_sql .= qq{
                 SELECT DISTINCT(station_id)
                 FROM metadata.stations_parameters
-                WHERE param_id = $param
+                WHERE param_id = ?
                 AND stpr_active IS TRUE
             };
 
             $flag = 1;
+            push @binds, $param;
         }
 
         $filter_sql .= qq{ ) };
@@ -548,7 +559,7 @@ sub get_map_all_stations {
     };
 
     # return
-    return $self->pg->db->query($sql, $userid)->hashes();
+    return $self->pg->db->query($sql, $userid, @binds)->hashes();
 }
 
 sub get_near_stations {
@@ -632,8 +643,6 @@ sub get_near_stations {
             ST_Distance(t.geom, (SELECT s.geom FROM s)) ASC
         LIMIT 16;
     };
-
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $stid )->hashes();
@@ -730,8 +739,6 @@ sub get_all_near_stations {
         LIMIT 16;
     };
 
-    # $self->app->log->debug($sql);
-
     # return
     return $self->pg->db->query($sql, $userid, $stid )->hashes();
 }
@@ -759,6 +766,7 @@ sub get_stations_by_dates_params {
     $self->app->log->debug("Bobo::Model::Dbdataview sub get_stations_by_dates_params");
 
     my $sql;
+    my @binds;
     if (!defined $params_array || scalar @{$params_array} == 0) {
         # query
         $sql = qq{
@@ -774,10 +782,14 @@ sub get_stations_by_dates_params {
                 (station_startup_date, CASE WHEN station_dismiss_date IS NULL THEN CURRENT_TIMESTAMP ELSE station_dismiss_date END )
             ORDER BY station_name;
         };
+
+        push @binds, $date_from, $date_to;
     }
     else {
         my $inner_sql;
         my $flag = 0;
+
+        push @binds, $date_from, $date_to;
 
         for my $param (@{$params_array}){
             $self->app->log->debug($param);
@@ -792,10 +804,11 @@ sub get_stations_by_dates_params {
             $inner_sql .= qq{
                 SELECT DISTINCT(station_id)
                 FROM metadata.view_stations_parameters
-                WHERE param_id = $param
+                WHERE param_id = ?
             };
 
             $flag = 1;
+            push @binds, $param;
         }
 
         # query
@@ -817,10 +830,8 @@ sub get_stations_by_dates_params {
         }
     }
 
-    # $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql, $date_from, $date_to )->hashes();
+    return $self->pg->db->query($sql, @binds )->hashes();
 }
 
 sub get_params_by_dates_stations {
@@ -848,6 +859,7 @@ sub get_params_by_dates_stations {
         $filter_aggr = 'vpi.parameter_aggr_yy_enabled';
     }
 
+    my @binds;
     if (!defined $stations_array || scalar @{$stations_array} == 0) {
         $sql = qq{
             SELECT *
@@ -861,6 +873,7 @@ sub get_params_by_dates_stations {
         my $inner_sql;
         my $flag = 0;
 
+        
         for my $station (@{$stations_array}) {
             return undef
                 unless looks_like_number($station);
@@ -869,16 +882,16 @@ sub get_params_by_dates_stations {
                 $inner_sql .= qq{INTERSECT};
             }
 
-            # -- RIGHT JOIN @todo vista con parametri filtrati
             $inner_sql .= qq{
                 SELECT DISTINCT(parameter_id)
                 FROM metadata.view_stations_parameters
                 RIGHT JOIN metadata.view_parameters_info USING (parameter_id)
-                WHERE station_id = $station
+                WHERE station_id = ?
                 AND parameter_dataview_flag IS TRUE
             };
 
             $flag = 1;
+            push @binds, $station;
         }
 
         $sql = qq{
@@ -892,10 +905,8 @@ sub get_params_by_dates_stations {
         }
     }
 
-    # $self->app->log->debug($sql);
-
     # return
-    return $self->pg->db->query($sql)->hashes();
+    return $self->pg->db->query($sql, @binds)->hashes();
 }
 
 sub get_params_by_station {
@@ -926,8 +937,6 @@ sub get_params_by_station {
         AND vfpd.parameter_dataview_flag IS TRUE
         ORDER BY vsp.parameter_name;
     };
-
-    # $self->app->log->debug($sql);
 
     # return
     return $self->pg->db->query($sql, $station_id)->hashes();
@@ -961,8 +970,6 @@ sub get_pending_jobs_by_params {
 
     # log
     $self->app->log->debug("Bobo::Model::Dbdataview sub get_pending_jobs_by_params");
-
-    # $self->app->helperDumper($args);
 
     $args = decode_utf8(encode_json($args));
 

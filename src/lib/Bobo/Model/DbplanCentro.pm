@@ -196,7 +196,7 @@ sub get_tickets {
             LEFT JOIN bobo.groups g ON (g.gr_id = s.last_gr_id)
 
         WHERE
-            ct.ct_fulldate BETWEEN ?::timestamp AND ?::timestamp
+            ( ct.ct_fulldate BETWEEN ?::timestamp AND ?::timestamp OR s.last_status != 'closed')
             AND s.last_status::text ~ ?
             AND s.last_ctu_id::text ~ ?
             AND s.last_ctt_id::text ~ ?

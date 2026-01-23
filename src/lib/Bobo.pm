@@ -529,6 +529,7 @@ sub startup {
     # MENU USER SYSTEM ADMIN - AJAX
     $auth->post('/usr_sysadmin_get_options'              )->to(controller => 'sysadmin', action => 'get_options' );
     $auth->post('/usr_sysadmin_get_system_emails'        )->to(controller => 'sysadmin', action => 'get_system_emails'  );
+    $auth->post('/usr_sysadmin_get_system_access_logs'   )->to(controller => 'sysadmin', action => 'get_system_access_logs'  );
     $auth->post('/usr_sysadmin_put_options'              )->to(controller => 'sysadmin', action => 'put_options' );
 
     # MENU USER PROFILE - AJAX
@@ -628,6 +629,7 @@ sub startup {
     $auth->get('/dat_tarature_aut/<stid:num>/<start:num>'       )->requires(has_priv => '/dat_tarature_aut'  )->to( controller => 'taratureaut'  , action => 'tarature_aut', stid => undef, start => undef );
     $auth->get('/dat_allarmi'                                   )->requires(has_priv => '/dat_allarmi'       )->to( controller => 'utilities'    , action => 'allarmi'        );
     $auth->get('/dat_warning'                                   )->requires(has_priv => '/dat_warning'       )->to( controller => 'utilities'    , action => 'warning'        );
+    $auth->get('/dat_filepath'                   )->requires(has_priv => '/dat_filepath'       )->to(controller => 'utilities'     ,  action => 'filepath'          );
 
     # DATI - VALIDAZIONE - AJAX
     $auth->post('/dat_val_get_codes'                     )->to(controller => 'common'     , action => 'get_codes'                     );
@@ -683,6 +685,9 @@ sub startup {
     # DATi - WARNING - AJAX
     $auth->post('/dat_warning_get_stations'            )->to( controller => 'common'   , action => 'get_stations'             );
     $auth->post('/dat_warning_get_instruments_messages')->to( controller => 'utilities', action => 'get_instruments_messages' );
+    # DATI - FILE PATH - AJAX
+    $auth->post('/dat_filepath_get_files'                )->to(controller => 'utilities'     , action => 'get_files'                     );
+
 
     # !!AVANZATE
     $auth->get('/str_ava_analyser'   )->requires(has_priv => '/str_ava_analyser'   )->to( controller => 'avaanalyser'   , action => 'ava_analyser'    );
@@ -739,12 +744,13 @@ sub startup {
     $auth->get('/stat_info'           )->requires(has_priv => '/stat_info'           )->to( controller => 'statistiche' , action => 'info'            );
 
     # STATISTICHE - AJAX
-    $auth->post('/stat_indicatori_get_stations'         )->to( controller => 'common'     , action => 'get_stations_by_net_province' );
-    $auth->post('/stat_indicatori_get_pdf_files'        )->to( controller => 'indicatori' , action => 'get_pdf_files'                );
-    $auth->post('/stat_indicatori_get_table_by_date'    )->to( controller => 'indicatori' , action => 'get_table_by_date'            );
-    $auth->post('/stat_indicatori_get_table_by_station' )->to( controller => 'indicatori' , action => 'get_table_by_station'         );
-    $auth->post('/stat_indicatori_put_stats_calculation')->to( controller => 'indicatori' , action => 'put_stats_calculation'        );
-    $auth->post('/stat_indicatori_put_pdf_by_date_net'  )->to( controller => 'indicatori' , action => 'put_pdf'                      );
+    $auth->post('/stat_indicatori_get_stations'         )->to(controller => 'common'        ,  action => 'get_stations_by_net_province'  );
+    $auth->post('/stat_indicatori_get_pdf_files'        )->to(controller => 'indicatori'    ,  action => 'get_pdf_files'                 );
+    $auth->post('/stat_indicatori_get_runs'             )->to(controller => 'indicatori'    ,  action => 'get_runs'                      );
+    $auth->post('/stat_indicatori_get_table_by_date'    )->to(controller => 'indicatori'    ,  action => 'get_table_by_date'             );
+    $auth->post('/stat_indicatori_get_table_by_station' )->to(controller => 'indicatori'    ,  action => 'get_table_by_station'          );
+    $auth->post('/stat_indicatori_put_stats_calculation')->to(controller => 'indicatori'    ,  action => 'put_stats_calculation'         );
+    $auth->post('/stat_indicatori_put_pdf_by_date_net'  )->to(controller => 'indicatori'    ,  action => 'put_pdf'                       );
 
     # REPORTISTICA - AJAX
     $auth->post('/stat_reportistica_get_stations_by_zone' )->to( controller => 'reportistica' , action => 'get_stations_by_zone'  );

@@ -117,7 +117,7 @@ $(document).ready(function() {
     });
 
     $( "#stations, #str-categories" ).on( "change", function() {
-        var stid = $(this).val();
+        var stid = $('#stations').val();
         // refresh reports list in the first tab
         loadReports(dateFrom, dateTo, stid);
     });
@@ -383,6 +383,9 @@ $(document).ready(function() {
     $('.multiple-calibration').hide();
     // hide all instruments fields
     $('.hide-fields-instrument').hide();
+
+    // set default value
+    $('#reason-calib').val(1);
 
     $( "#prov-calib, #instrument-calib" ).select2();
 
@@ -1599,6 +1602,27 @@ $(document).ready(function() {
         var methodZero = result.method_zero;
         var methodSpan = result.method_span;
         var calibrator = result.calibrator;
+
+        // calib_fulldate: "2021-01-29 12:14:00"
+        // calib_fulldate_formatted: "29/01/2021 alle 12:14"
+        // calib_id: 1
+        // calib_multipoint: 0
+        // calib_note: "TEST TEST TEST"
+        // calib_re_id: 6
+        // calib_reason: "Altro"
+        // category_id: 2
+        // category_name: "Analizzatore NOx"
+        // instr_arpa_id: "OPAS00011"
+        // instr_id: 4
+        // instr_name: "Test1_Plouves"
+        // instr_serial_num: "1200011"
+        // instr_type_fullname: "Teledyne API 200EU"
+        // instr_unit
+        // instr_type_id: 10
+        // station_id: 1000
+        // station_name: "Aosta - Plouves"
+        // us_id: 4
+        // user_fullname: "Hillary Martello"
 
         // dynamically build tab content
         var html  ='<div class="tab-pane p-20" id="rep'+rpid+'" role="tabpanel">';
