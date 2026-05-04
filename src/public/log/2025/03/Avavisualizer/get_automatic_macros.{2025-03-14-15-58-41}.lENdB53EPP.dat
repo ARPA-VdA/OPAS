@@ -1,7 +1,0 @@
-{
-  "auto-instruments" => -1,
-  "auto-net" => 1,
-  "auto-params-type" => 1,
-  "auto-prov" => 1,
-  "auto-stations" => 1000
-}

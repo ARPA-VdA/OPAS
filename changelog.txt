@@ -1,5 +1,17 @@
 -- CHANGELOG
 
+-- 2026-03-31 - V2.0.4
+OPAS-DL
+- Simulatori server per testing
+  > aggiunto campbell, palas, silena, synthec, thermo
+
+- Opas-Dl.neo
+  > sviluppo (in testing) diverse soluzioni grafiche per visualizzazione dati
+  > sviluppo (in testing) servizio principale core
+  > sviluppo (in testing) funzionalità common
+  > sviluppo (in testing) gestione vecchie configurazioni, verifica compatibilità
+
+
 -- 2025-12-31 - V2.0.4
 - Aggiornata sezione Statistiche > Indicatori per gestire viste diversificate, aggiunta tabella con runs 
   > aggiunta tabella di supporto per salvare runs calcoli

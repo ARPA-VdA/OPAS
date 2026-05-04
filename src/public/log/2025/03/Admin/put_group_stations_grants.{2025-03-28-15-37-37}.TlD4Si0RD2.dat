@@ -1,4 +1,0 @@
-{
-  "grants" => "[{\"stid\":1000,\"visible\":true,\"insert\":true,\"update\":true,\"delete\":true}]",
-  "grid" => 3
-}
