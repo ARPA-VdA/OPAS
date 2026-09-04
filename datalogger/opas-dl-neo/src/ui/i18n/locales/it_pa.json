@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "instruments": "Strumèns",
+    "drivers": "Chofeurs",
+    "configurations": "Configurachons",
+    "graphs": "Dessens",
+    "views": "Viste",
+    "settings": "Impostachons",
+    "documentation": "Documentassion",
+    "system": "Sistema"
+  },
+  "user": {
+    "profile": "Persoun-a",
+    "logout": "Sorte foura"
+  }
+}

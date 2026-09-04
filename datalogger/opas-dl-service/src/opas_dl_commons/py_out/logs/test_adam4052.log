@@ -1,0 +1,19 @@
+2026-08-04 09:14:18,971 [WARNING] root: [output_manager] No output broker configured; falling back to direct disk writes for station 'unknown-station'. Expected only when running a driver standalone.
+2026-08-04 09:14:18,973 [INFO] root: [RuntimePaths] base_dir resolved to: C:\Dev\opas-dl-dir\opas-dl-service\src
+2026-08-04 09:14:18,973 [INFO] root: [RuntimePaths] Absolute paths resolved:
+2026-08-04 09:14:18,973 [INFO] root: [RuntimePaths]   BASE_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src
+2026-08-04 09:14:18,973 [INFO] root: [RuntimePaths]   OPAS_COMMONS_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\opas_dl_commons
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   DRIVERS_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\opas_dl_commons\drivers
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   SOURCE_DRIVERS_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\opas_dl_commons\drivers
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   CONFIG_ACTIVE_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\opas_dl_commons\config\active
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   LIBS_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\libs
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   PYOUT_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   LOGS_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out\logs
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   OUTPUT_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out\output
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   OPAS_NEO_DATA_DIR = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out\data
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   GENERAL_LOG = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out\logs\service.log
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths]   WEB_LOG = C:\Dev\opas-dl-dir\opas-dl-service\src\py_out\logs\web.log
+2026-08-04 09:14:18,974 [INFO] root: [RuntimePaths] Initialization complete
+2026-08-04 09:14:18,974 [INFO] root: Creating TCP channel: 127.0.0.1:3004
+2026-08-04 09:14:18,975 [INFO] root: Connecting to 127.0.0.1:3004
+2026-08-04 09:14:19,975 [WARNING] driver_sdk.test_adam4052: connect() failed; reporting simulated/missing values for this run: timed out

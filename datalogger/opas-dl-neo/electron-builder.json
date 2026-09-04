@@ -1,0 +1,9 @@
+{
+  "appId": "com.manumbo.opas-dl-neo",
+  "productName": "OPAS DL Neo",
+  "files": ["dist-electron", "dist-react"],
+  "extraResources": ["dist-electron/preload.cjs", "build/splash/splash.png"],
+  "icon": "./build/icons/win/icon.ico",
+  "linux": { "target": "AppImage", "category": "Utility" },
+  "win": { "target": ["portable"], "icon": "./build/icons/win/icon.ico" }
+}

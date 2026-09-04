@@ -1,0 +1,13 @@
+{
+  "OPAS_COMMONS_DIR": "opas_dl_commons",
+  "DRIVERS_DIR": "opas_dl_commons/drivers",
+  "SOURCE_DRIVERS_DIR": "opas_dl_commons/drivers",
+  "CONFIG_ACTIVE_DIR": "opas_dl_commons/config/active",
+  "LIBS_DIR": "libs",
+  "PYOUT_DIR": "py_out",
+  "LOGS_DIR": "py_out/logs",
+  "OUTPUT_DIR": "py_out/output",
+  "OPAS_NEO_DATA_DIR": "py_out/data",
+  "GENERAL_LOG": "py_out/logs/service.log",
+  "WEB_LOG": "py_out/logs/web.log"
+}

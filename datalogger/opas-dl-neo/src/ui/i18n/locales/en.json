@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "instruments": "Instruments",
+    "drivers": "Drivers",
+    "configurations": "Configurations",
+    "graphs": "Charts",
+    "views": "Views",
+    "settings": "Settings",
+    "documentation": "Documentation",
+    "system": "System"
+  },
+  "user": {
+    "profile": "User Profile",
+    "logout": "Log out"
+  }
+}
