@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "instruments": "Strumenti",
+    "drivers": "Driver",
+    "configurations": "Configurazioni",
+    "graphs": "Grafici",
+    "views": "Viste",
+    "settings": "Impostazioni",
+    "documentation": "Documentazione",
+    "system": "Sistema"
+  },
+  "user": {
+    "profile": "Profilo utente",
+    "logout": "Esci"
+  }
+}

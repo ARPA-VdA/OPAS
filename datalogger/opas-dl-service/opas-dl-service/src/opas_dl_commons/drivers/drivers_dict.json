@@ -1,0 +1,525 @@
+{
+    "1": {
+        "Name": "PIPE CSV",
+        "Producer": "Manumbo",
+        "Description": "Module PIPE CSV",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "PIPE/CSV",
+        "DefaultConfig": {
+
+        }
+    },
+    "100": {
+        "Name": "API 100",
+        "Producer": "Teledyne",
+        "Description": "Module API 100",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "API/API_XXX",
+        "DefaultConfig": {
+            "ModuleType": 100,
+            "ComunicationType": 1,
+            "Name": "API 100",
+            "Info": "API 100 parametri principali + diagnostici",
+            "TimeoutAnswer": 1000,
+            "TCPIPPort": 3001,
+            "Channels": [
+            {
+                "StoreCsv": true,
+                "ParameterId": 0,
+                "Address": "SO2",
+                "RegularExpression": "^T.+SO2=(.+)(PPB|UGM)",
+                "Unit": "ppb",
+                "Decimals": 1,
+                "Name": "SO2",
+                "DataType": 0,
+                "Type": 0
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "SAMPPRESS",
+                "RegularExpression": "^T.+PRES=(.+)\\sIN-HG-A",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "SAMPPRESS",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "SAMPFLOW",
+                "RegularExpression": "^T.+FL=(.+)\\sCC/M",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "SAMPFLOW",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "PMTDET",
+                "RegularExpression": "^T.+PMT=(.+)\\sMV",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "PMTDET",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "UVDET",
+                "RegularExpression": "^T.+LAMP=(.+)\\sMV",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "UVDET",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "SLOPE",
+                "RegularExpression": "^T.+SLOPE=(.+)",
+                "Unit": "",
+                "Decimals": 3,
+                "Name": "SLOPE",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "OFFSET",
+                "RegularExpression": "^T.+OFFSET=(.+)\\sMV",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "OFFSET",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "DCPS",
+                "RegularExpression": "^T.+DCPS=(.+)\\sMV",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "DCPS",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "RCELLTEMP",
+                "RegularExpression": "^T.+RCELL TEMP=(.+)\\sC",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "RCELLTEMP",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "BOXTEMP",
+                "RegularExpression": "^T.+BOX TEMP=(.+)\\sC",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "BOXTEMP",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "PMTTEMP",
+                "RegularExpression": "^T.+PMT TEMP=(.+)\\sC",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "PMTTEMP",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "HVPS",
+                "RegularExpression": "^T.+HVPS=(.+)\\sVOLTS",
+                "Unit": "",
+                "Decimals": 1,
+                "Name": "HVPS",
+                "DataType": 0,
+                "Type": 1
+            },
+            {
+                "StoreCsv": false,
+                "ParameterId": 0,
+                "Address": "W LIST",
+                "RegularExpression": "",
+                "Unit": "",
+                "Decimals": 0,
+                "Name": "W LIST",
+                "DataType": 0,
+                "Type": 1
+            }
+            ]
+    }
+    },
+    "200": {
+        "Name": "API 200",
+        "Producer": "Teledyne",
+        "Description": "Module API 200",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "API/API_XXX",
+        "DefaultConfig": {
+
+        }
+    },
+    "300": {
+        "Name": "API 300",
+        "Producer": "Teledyne",
+        "Description": "Module API 300",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "API/API_XXX",
+        "Calibration": "",
+        "DefaultConfig": {
+
+        }
+    },
+    "400": {
+        "Name": "API 400",
+        "Producer": "Teledyne",
+        "Description": "Module API 400",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "API/API_XXX",
+        "DefaultConfig": {
+
+        }
+    },
+
+
+    "600": {
+        "Name": "OPSIS SM200",
+        "Producer": "Opsis",
+        "Description": "Module OPSIS SM200",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "OPSIS/SM200",
+        "DefaultConfig": {
+
+        }
+    },
+
+
+    "950": {
+        "Name": "SILENA Gamma 600CE",
+        "Producer": "Silena",
+        "Description": "Module SILENA Gamma 600CE",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "SILENA/GAMMA_600CE",
+        "DefaultConfig": {
+
+        }
+    },
+    "951": {
+        "Name": "SILENA Gamma",
+        "Producer": "Silena",
+        "Description": "Module SILENA Gamma",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "SILENA/GAMMA",
+        "DefaultConfig": {
+
+        }
+    },
+
+    "1200": {
+        "Name": "Thermo 42i",
+        "Producer": "Thermo",
+        "Description": "Module Thermo 42i",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "THERMO/THERMO_XXX",
+        "DefaultConfig": {
+
+        }
+    },
+    "1210": {
+        "Name": "Thermo 49i",
+        "Producer": "Thermo",
+        "Description": "Module Thermo 49i",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "THERMO/THERMO_XXX",
+        "DefaultConfig": {
+
+        }
+    },
+    "1220": {
+        "Name": "Thermo 48i",
+        "Producer": "Thermo",
+        "Description": "Module Thermo 48i",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "THERMO/THERMO_XXX",
+        "Calibration": "",
+        "DefaultConfig": {
+
+        }
+    },
+    "1230": {
+        "Name": "Thermo 43i",
+        "Producer": "Thermo",
+        "Description": "Module Thermo 43i",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "THERMO/THERMO_XXX",
+        "DefaultConfig": {
+
+        }
+    },
+    "750": {
+        "Name": "MCZ LVS16",
+        "Producer": "MCZ",
+        "Description": "Module MCZ LVS16",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "MCZ/LVS16",
+        "DefaultConfig": {
+
+        }
+    },
+    "850": {
+        "Name": "Horiba APNA 370",
+        "Producer": "Horiba",
+        "Description": "Module Horiba APNA 370",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "HORIBA/HORIBA_APNA_370",
+        "DefaultConfig": {
+
+        }
+    },
+    "802": {
+        "Name": "Synspec GC955",
+        "Producer": "Synspec",
+        "Description": "Module Synspec GC955",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "SYNSPEC/GC955",
+        "DefaultConfig": {
+
+        }
+    },
+    "1151": {
+        "Name": "Palas Fidas 200",
+        "Producer": "Palas",
+        "Description": "Module Palas Fidas 200",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "PALAS/FIDAS_200",
+        "DefaultConfig": {
+
+        }
+    },
+    "1001": {
+        "Name": "VAISALA WXT536",
+        "Producer": "Vaisala",
+        "Description": "Module VAISALA WXT536",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "VAISALA/WXT536",
+        "DefaultConfig": {
+
+        }
+    },
+    "4013": {
+        "Name": "ADAM 4013",
+        "Producer": "Advantech",
+        "Description": "Module ADAM 4013",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "ADAM/ADAM_4013",
+        "DefaultConfig": {
+
+        }
+    },
+    "4052": {
+        "Name": "ADAM 4052",
+        "Producer": "Advantech",
+        "Description": "Module ADAM 4052",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "ADAM/ADAM_4052",
+        "DefaultConfig": {
+
+        }
+    },
+    "3050": {
+        "Name": "CAMPBELL CR1000",
+        "Producer": "Campbell",
+        "Description": "Module CAMPBELL CR1000",
+        "Version": "1.0.0",
+        "Author": "Manumbo",
+        "Drivers": "CAMPBELL/CR1000",
+        "DefaultConfig": {
+        }
+    },
+    "FullConfig":{
+        "Name": "DEFAULT CONFIG",
+        "ConfigLastUpdate": "2026-07-29T15:56:59.7023584+02:00",
+        "DataFileHeader": "default",
+        "GenerateReadingsFile": false,
+        "GenerateZipDataFile": false,
+        "DataFileFormat": 0,
+        "Modules": [
+            {
+            "ID": 1,
+            "ModuleType": 100,
+            "ComunicationType": 0,
+            "Active": true,
+            "Status": 0,
+            "Name": "MODULO",
+            "Info": "INFO",
+            "PollingInterval": 10,
+            "PollingDiagsEveryX": 60,
+            "PollingLastTime": 0,
+            "Temporary": false,
+            "Address": "",
+            "Slot": null,
+            "Position": 1,
+            "TimeoutAnswer": 1000,
+            "DateTimeShift": 0,
+            "ModuleDateAllowdGap": 0,
+            "ModuleCheckWarnings": false,
+            "MinutesFrameWindow": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+            ],
+            "ComPortName": 0,
+            "ComPortBauds": 9600,
+            "ComPortParity": 0,
+            "ComPortDataBits": 8,
+            "ComPortStopBits": 1,
+            "TCPIPAddress": "0.0.0.0",
+            "TCPIPPort": 0,
+            "TCPIPForceOpenPort": false,
+            "PipeFileName": "",
+            "PipeFileMissingError": true,
+            "Channels": [
+                {
+                "MeanInterval": 3600,
+                "StoreCsv": true,
+                "DatabaseId": 1,
+                "ParameterId": 0,
+                "ParameterNote": null,
+                "DataArrayIdx": 0,
+                "DataFormule": null,
+                "Address": null,
+                "RegularExpression": null,
+                "Unit": "ppb",
+                "Decimals": 1,
+                "Algorithm": 0,
+                "Formule": "y=x",
+                "DetectionLimit": null,
+                "RegisterId": 0,
+                "AddressCalibration": null,
+                "RegisterFunctionCode": 3,
+                "RegisterOrder": 0,
+                "RegisterType": 0,
+                "RegisterQuantity": 0,
+                "ReadingsMinPercentage": 75,
+                "AllowedMinValue": null,
+                "NegativeValueSetToZero": null,
+                "AllowedMaxValue": null,
+                "AllowedMinMean": null,
+                "ID": 1,
+                "Name": "PARAMETRO",
+                "Active": true,
+                "Position": 0,
+                "DataType": 0,
+                "Type": 0
+                }
+            ],
+            "ModuleCommands": [],
+            "InCalibration": false,
+            "ModuleCommand": null,
+            "CurrentCalibrationStatus": 0,
+            "CurrentCalibrationCommand": 0
+            }
+        ],
+        "ModuleAdamCalibrations": null,
+        "GeneratePipeFiles": false,
+        "StationAlarm": 0,
+        "MinimunFreeDiskSpace": 10,
+        "CalculateSpanDeltaZero": true
+    }
+}
